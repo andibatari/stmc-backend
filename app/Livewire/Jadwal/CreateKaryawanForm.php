@@ -3,91 +3,200 @@
 namespace App\Livewire\Jadwal;
 
 use Livewire\Component;
-use App\Models\Karyawan; // Asumsikan model Karyawan sudah ada
+use App\Models\Karyawan;
+use App\Models\PesertaMcu;
 use Illuminate\Support\Collection;
-use App\Models\JadwalMcu; 
+use App\Models\JadwalMcu;
+use App\Models\Dokter;
+use App\Models\PaketMcu;
+use App\Models\JadwalPoli;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CreateKaryawanForm extends Component
 {
     public $search = '';
-    public $karyawan_id;
-    public $karyawan_nama;
+    public $karyawan_id = null;
+    public $peserta_mcus_id = null;
     public $tanggal_mcu;
-    public $results = []; // Ini akan di-cast otomatis oleh Livewire menjadi Collection saat digunakan
-    public $selectedKaryawan; // <--- Properti baru untuk menyimpan objek karyawan
-    public $tipe_pasien = 'ptst'; // Tambahkan properti ini
+    public $results = [];
+    public $selectedKaryawan;
+    public $patientType = null;
+    public $paket_mcus_id = null;
+    public $dokter_id = null;
+    public $daftarDokter = [];
+    public $daftarPaket = [];
+    public $finalNoSap = null;
+    public $finalNamaPasien = null;
+    public $finalNikPasien = null;
+    public $finalPerusahaanAsal = null;
 
-     public function mount()
+    protected $rules = [
+        'tanggal_mcu' => 'required|date',
+        'karyawan_id' => 'required_without:peserta_mcus_id|nullable|exists:karyawans,id',
+        'peserta_mcus_id' => 'required_without:karyawan_id|nullable|exists:peserta_mcus,id',
+        'dokter_id' => 'required|exists:dokters,id',
+        'paket_mcus_id' => 'required|exists:paket_mcus,id',
+    ];
+
+    public function mount()
     {
         $this->results = new Collection();
+        $this->daftarDokter = Dokter::all();
+        $this->daftarPaket = PaketMcu::all();
+        $this->tanggal_mcu = now()->toDateString(); // Inisiasi tanggal dengan tanggal hari ini
     }
 
-    // Properti ini akan di-update secara real-time saat user mengetik
     public function updatedSearch()
     {
         if (strlen($this->search) < 2) {
-            $this->results = new Collection();
+            $this->results = [];
             return;
         }
 
-        // Query database untuk mencari karyawan berdasarkan nama, NIK, atau No. SAP
-        $this->results = Karyawan::where('nama_karyawan', 'like', '%' . $this->search . '%')
-                                 ->orWhere('nik_karyawan', 'like', '%' . $this->search . '%')
-                                 ->orWhere('no_sap', 'like', '%' . $this->search . '%')
-                                 ->limit(10) // Batasi hasil untuk performa
-                                 ->get();
+        $searchTerm = $this->search;
+        $karyawanResults = Karyawan::where('nama_karyawan', 'like', '%' . $searchTerm . '%')
+                                     ->orWhere('nik_karyawan', 'like', '%' . $searchTerm . '%')
+                                     ->orWhere('no_sap', 'like', '%' . $searchTerm . '%')
+                                     ->limit(10)
+                                     ->get();
+        $pesertaMcuResults = PesertaMcu::where('nama_lengkap', 'like', '%' . $searchTerm . '%')
+                                           ->orWhere('nik_pasien', 'like', '%' . $searchTerm . '%')
+                                           ->orWhere('no_sap', 'like', '%' . $searchTerm . '%')
+                                           ->limit(10)
+                                           ->get();
+        $mappedKaryawan = $karyawanResults->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'search_name' => $item->nama_karyawan,
+                'search_nik' => $item->nik_karyawan,
+                'no_sap' => $item->no_sap,
+                'search_type' => 'karyawan',
+            ];
+        })->toArray();
+        $mappedPesertaMcu = $pesertaMcuResults->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'search_name' => $item->nama_lengkap,
+                'search_nik' => $item->nik_pasien,
+                'no_sap' => $item->no_sap,
+                'search_type' => 'peserta_mcu',
+            ];
+        })->toArray();
+        $this->results = array_merge($mappedKaryawan, $mappedPesertaMcu);
     }
 
-    // Metode untuk memilih karyawan dari hasil pencarian
-    public function selectKaryawan($id)
+    public function selectPatient($id, $type)
     {
-        $this->karyawan_id = $id;
-        $this->selectedKaryawan = Karyawan::with('departemen')->find($id);
+        $this->reset(['karyawan_id', 'peserta_mcus_id', 'selectedKaryawan', 'patientType']);
+        $this->patientType = $type;
 
-        // Isi kotak pencarian dengan nama karyawan yang dipilih
-        // $this->search = $this->selectedKaryawan->nama;
-        
-        // Sembunyikan daftar hasil
-        $this->results = new Collection(); 
+        if ($type === 'karyawan') {
+            $this->karyawan_id = $id;
+            $this->selectedKaryawan = Karyawan::find($id);
+            if ($this->selectedKaryawan) {
+                $this->search = $this->selectedKaryawan->nama_karyawan;
+                $this->finalNoSap = $this->selectedKaryawan->no_sap ?? null;
+                $this->finalNamaPasien = $this->selectedKaryawan->nama_karyawan ?? null;
+                $this->finalNikPasien = $this->selectedKaryawan->nik_karyawan ?? null;
+                $this->finalPerusahaanAsal = 'PT. Semen Tonasa';
+            }
+        } elseif ($type === 'peserta_mcu') {
+            $this->peserta_mcus_id = $id;
+            $this->selectedKaryawan = PesertaMcu::find($id);
+            if ($this->selectedKaryawan) {
+                $this->search = $this->selectedKaryawan->nama_lengkap;
+                $this->finalNoSap = $this->selectedKaryawan->no_sap ?? null;
+                $this->finalNamaPasien = $this->selectedKaryawan->nama_lengkap ?? null;
+                $this->finalNikPasien = $this->selectedKaryawan->nik_pasien ?? null;
+                $this->finalPerusahaanAsal = $this->selectedKaryawan->perusahaan_asal ?? null;
+            }
+        }
+        $this->results = [];
     }
 
-    // Metode untuk menyimpan data jadwal
     public function save()
     {
-        // 1. Validasi input
-        $this->validate([
-            'karyawan_id' => 'required',
-            'tanggal_mcu' => 'required|date',
-        ]);
-    
-        // 2. Cek apakah jadwal sudah ada untuk karyawan dan tanggal yang sama
-        if (JadwalMcu::where('karyawan_id', $this->karyawan_id)->where('tanggal_mcu', $this->tanggal_mcu)->exists()) {
-            session()->flash('error', 'Jadwal untuk karyawan ini pada tanggal tersebut sudah ada!');
-            return;
+        $this->validate();
+
+        $finalKaryawanId = $this->karyawan_id;
+        $finalPesertaMcuId = $this->peserta_mcus_id;
+        $finalNoSap = $this->finalNoSap;
+        $finalNamaPasien = $this->finalNamaPasien;
+        $finalNikPasien = $this->finalNikPasien;
+        $finalPerusahaanAsal = $this->finalPerusahaanAsal;
+
+        $lastAntrean = JadwalMcu::where('tanggal_mcu', $this->tanggal_mcu)
+                                ->where('dokter_id', $this->dokter_id)
+                                ->select(DB::raw('MAX(CAST(SUBSTR(no_antrean, 2) AS UNSIGNED)) as max_number'))
+                                ->first();
+        $lastNumber = $lastAntrean ? $lastAntrean->max_number : 0;
+        $newNumber = $lastNumber + 1;
+        $newAntrean = 'C' . sprintf('%03d', $newNumber);
+        $uuid = Str::uuid()->toString();
+
+        try {
+            DB::beginTransaction();
+            $jadwal = JadwalMcu::create([
+                'karyawan_id' => $finalKaryawanId,
+                'peserta_mcus_id' => $finalPesertaMcuId,
+                'dokter_id' => $this->dokter_id,
+                'tanggal_mcu' => $this->tanggal_mcu,
+                'tanggal_pendaftaran' => now(),
+                'no_antrean' => $newAntrean,
+                'no_sap' => $finalNoSap,
+                'nama_pasien' => $finalNamaPasien,
+                'nik_pasien' => $finalNikPasien,
+                'perusahaan_asal' => $finalPerusahaanAsal,
+                'status' => 'Scheduled',
+                'qr_code_id' => $uuid,
+                'paket_mcus_id' => $this->paket_mcus_id,
+            ]);
+
+            $paket = PaketMcu::with('poli')->find($this->paket_mcus_id);
+            if ($paket) {
+                foreach ($paket->poli as $poli) {
+                    JadwalPoli::create([
+                        'jadwal_mcus_id' => $jadwal->id,
+                        'poli_id' => $poli->id,
+                        'status' => 'Pending',
+                    ]);
+                }
+            }
+            DB::commit();
+
+            // Kirim event sukses dengan pesan
+            $this->dispatch('jadwal-created', [
+                'type' => 'success',
+                'message' => 'Jadwal MCU berhasil ditambahkan!',
+            ]);
+            $this->resetForm();
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Kirim event gagal dengan pesan
+            $this->dispatch('jadwal-created', [
+                'type' => 'error',
+                'message' => 'Gagal menyimpan jadwal: ' . $e->getMessage(),
+            ]);
         }
-    
-        // 3. Simpan data ke database
-        JadwalMcu::create([
-            'tipe_pasien' => $this->tipe_pasien, // Mengambil nilai dari properti
-            'karyawan_id' => $this->karyawan_id,
-            'tanggal_mcu' => $this->tanggal_mcu,
-            'tanggal_pendaftaran' => now(), // Otomatis mengisi tanggal pendaftaran saat ini
-            'no_antrean' => null, // Biarkan null, bisa diisi nanti
-            'no_sap' => $this->selectedKaryawan->no_sap,
-            'status' => 'Scheduled', // Atur status awal
-        ]);
-    
-        // 4. Beri notifikasi sukses dan reset form
-        session()->flash('success', 'Jadwal MCU berhasil ditambahkan!');
-        $this->reset(['search', 'karyawan_id', 'tanggal_mcu', 'selectedKaryawan']);
-    
-        // 5. Opsional: Redirect ke halaman lain
-        // return redirect()->route('jadwal.index');
     }
 
+    public function resetForm()
+    {
+        $this->reset([
+            'search', 'karyawan_id', 'peserta_mcus_id', 'tanggal_mcu', 
+            'dokter_id', 'paket_mcus_id', 'results', 'selectedKaryawan', 
+            'patientType', 'finalNoSap', 'finalNamaPasien', 'finalNikPasien', 
+            'finalPerusahaanAsal'
+        ]);
+    }
 
     public function render()
     {
-        return view('livewire.jadwal.create-karyawan-form');
+        return view('livewire.jadwal.create-karyawan-form',[
+            'daftarDokter' => $this->daftarDokter,
+            'daftarPaket' => $this->daftarPaket,
+        ]);
     }
 }

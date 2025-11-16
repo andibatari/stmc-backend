@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lokasi', function (Blueprint $table) {
+        Schema::create('paket_mcus', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_lokasi')->unique();
+            $table->string('nama_paket')->unique();
             $table->timestamps();
         });
     }
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('lokasi');
+        Schema::dropIfExists('paket_mcus');
     }
 };

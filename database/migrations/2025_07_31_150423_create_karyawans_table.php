@@ -17,13 +17,17 @@ return new class extends Migration
             $table->string('nik_karyawan', 16)->unique();
             $table->string('nama_karyawan')->nullable();
             
-            // Kolom-kolom yang Anda tambahkan
             $table->string('pekerjaan')->nullable();
             $table->string('pendidikan')->nullable();
             $table->string('kebangsaan')->nullable();
             $table->string('tempat_lahir')->nullable();
             $table->date('tanggal_lahir')->nullable();
             $table->integer('umur')->nullable();
+            
+            // Kolom baru
+            $table->decimal('tinggi_badan', 5, 2)->nullable();
+            $table->decimal('berat_badan', 5, 2)->nullable();
+            
             $table->string('jenis_kelamin')->nullable();
             $table->string('golongan_darah')->nullable();
             $table->string('agama')->nullable();
@@ -37,11 +41,10 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
             $table->string('foto_profil')->nullable();
-           // Kolom yang diperbaiki
+            
             $table->unsignedBigInteger('departemens_id')->nullable();
             $table->unsignedBigInteger('unit_kerjas_id')->nullable();
 
-            // Foreign keys
             $table->foreign('departemens_id')->references('id')->on('departemens')->onDelete('set null');
             $table->foreign('unit_kerjas_id')->references('id')->on('unit_kerjas')->onDelete('set null');
 

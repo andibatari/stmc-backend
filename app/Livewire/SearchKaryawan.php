@@ -4,60 +4,78 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\Karyawan; // Impor model Karyawan
-use App\Models\UnitKerja; // Impor model UnitKerja
-use App\Models\Departemen; // Impor model Departemen
-
+use App\Models\Karyawan; 
+use App\Models\UnitKerja;
+use App\Models\Departemen;
+use App\Models\PesertaMcu; 
 
 class SearchKaryawan extends Component
 {
-    // Gunakan trait WithPagination untuk mendukung paginasi
     use WithPagination;
 
-    // Properti untuk menyimpan data karyawan yang dicari
+    // Separate search properties for each tab
     public $searchSap = '';
     public $searchNama = '';
     public $searchUnitKerja = '';
 
-    // Properti untuk tab aktif
+    public $searchNik = '';
+    public $searchNamaPasien = '';
+    public $searchPerusahaanAsal = '';
+
     public $activeTab = 'ptst';
 
-    protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'sortBy', 'sortDirection', 'activeTab'];
+    // The queryString configuration is correct for keeping the search in the URL
+    protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'];
 
+    // This method handles resetting the page when any search property changes
     public function updating($key)
     {
-        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja'])) {
+        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'])) {
             $this->resetPage();
         }
     }
 
+    // Reset all search fields when the tab is changed
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
+        $this->searchSap = '';
+        $this->searchNama = '';
+        $this->searchUnitKerja = '';
+
+        $this->searchNik = '';
+        $this->searchNamaPasien = '';
+        $this->searchPerusahaanAsal = '';
+
         $this->resetPage();
     }
-
-
+    
     public function render()
     {
+        if ($this->activeTab === 'ptst') {
+            $query = Karyawan::query()
+                ->with(['unitKerja', 'departemen']);
 
-        // Ambil data karyawan dengan relasi yang diperlukan
-        $karyawans = Karyawan::with(['departemen', 'unitKerja'])
-            ->when($this->searchSap, function ($query) {
-                $query->where('no_sap', 'like', '%' . $this->searchSap . '%');
-            })
-            ->when($this->searchNama, function ($query) {
-                $query->where('nama_karyawan', 'like', '%' . $this->searchNama . '%');
-            })
-            ->when($this->searchUnitKerja, function ($query) {
-                $query->whereHas('unitKerja', function ($subQuery) {
-                    $subQuery->where('nama_unit_kerja', 'like', '%' . $this->searchUnitKerja . '%');
-                });
-            })
-            ->paginate(20); // Paginasi 10 karyawan per halaman
+            // Apply search filters for the PTST tab
+            $query->when($this->searchSap, fn($q) => $q->where('no_sap', 'like', '%' . $this->searchSap . '%'));
+            $query->when($this->searchNama, fn($q) => $q->where('nama_karyawan', 'like', '%' . $this->searchNama . '%'));
+            $query->when($this->searchUnitKerja, fn($q) => $q->whereHas('unitKerja', fn($sq) => $sq->where('nama_unit_kerja', 'like', '%' . $this->searchUnitKerja . '%')));
+            
+            $items = $query->paginate(15, pageName: 'ptstPage');
+        } else {
+            $query = PesertaMcu::query()
+                ->with('karyawan');
+            
+            // Apply search filters for the Non-PTST tab
+            $query->when($this->searchNik, fn($q) => $q->where('nik_pasien', 'like', '%' . $this->searchNik . '%'));
+            $query->when($this->searchNamaPasien, fn($q) => $q->where('nama_lengkap', 'like', '%' . $this->searchNamaPasien . '%'));
+            $query->when($this->searchPerusahaanAsal, fn($q) => $q->where('perusahaan_asal', 'like', '%' . $this->searchPerusahaanAsal . '%'));
+
+            $items = $query->paginate(15, pageName: 'nonPtstPage');
+        }
 
         return view('livewire.search-karyawan', [
-            'karyawans' => $karyawans,
+            'items' => $items,
         ]);
     }
 }

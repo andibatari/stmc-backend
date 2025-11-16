@@ -1,39 +1,41 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Jadwal MCU')
+@section('title', 'Manajemen Jadwal / Daftar Jadwal')
 
 @section('content')
 <div class="container mx-auto p-6">
     <h1 class="text-3xl font-bold text-gray-800 mb-6">Manajemen Jadwal MCU</h1>
 
     <div class="bg-white rounded-xl shadow-lg p-8">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold text-gray-700">Daftar Jadwal</h2>
-            <a href="{{ route('jadwal.create') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-150 ease-in-out mt-4 md:mt-0">
-                + Tambah Jadwal
-            </a>
+        <div class="flex flex-col md:flex-row md:justify-between mb-6">
+            <div class="mb-4 md:mb-0">
+                <h2 class="text-xl font-semibold text-gray-700">Daftar Jadwal</h2>
+            </div>
+            <div>
+                <a href="{{ route('jadwal.create') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-150 ease-in-out">
+                    + Tambah Jadwal
+                </a>
+            </div>
         </div>
 
         <form method="GET" action="{{ route('jadwal.index') }}">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-<div>
+            <div class="flex flex-col md:flex-row md:items-end md:justify-start gap-4 mb-6">
+
+                <div class="flex-1 md:flex-none">
                     <label for="tanggal_filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Tanggal</label>
                     <div class="flex items-center gap-2">
-                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ request('tanggal_filter') }}" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
-                        <button type="button" onclick="document.getElementById('tanggal_filter').value = ''; this.form.submit();" class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
+                        <button 
+                            type="button" 
+                            onclick="document.getElementById('tanggal_filter').value = ''; this.closest('form').submit();"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200 whitespace-nowrap"
+                        >
                             Hapus
                         </button>
                     </div>
                 </div>
-                 <div>
-                    <label for="tipe_pasien" class="block text-sm font-medium text-gray-700 mb-1">Tipe Pasien</label>
-                    <select id="tipe_pasien" name="tipe_pasien" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
-                        <option value="" @if(!$tipe_pasien) selected @endif>All</option>
-                        <option value="ptst" @if($tipe_pasien == 'ptst') selected @endif>PTST</option>
-                        <option value="non-ptst" @if($tipe_pasien == 'non-ptst') selected @endif>Non-PTST</option>
-                    </select>
-                </div>
-                <div>
+
+                <div class="flex-1 md:flex-none">
                     <label for="status_jadwal" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select id="status_jadwal" name="status" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
                         <option value="" @if(!$status) selected @endif>All</option>
@@ -42,6 +44,16 @@
                         <option value="Canceled" @if($status == 'Canceled') selected @endif>Canceled</option>
                         <option value="Finished" @if($status == 'Finished') selected @endif>Finished</option>
                     </select>
+                </div>
+
+                <div class="flex-1 md:flex-none md:self-end">
+                    <button 
+                        type="button" 
+                        onclick="window.location.href = '{{ route('jadwal.index') }}';"
+                        class="w-full px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-700 transition-colors duration-200"
+                    >
+                        Tampilkan Semua
+                    </button>
                 </div>
             </div>
             <noscript><button type="submit" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-md">Filter</button></noscript>
@@ -58,7 +70,7 @@
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal Pendaftaran</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal MCU</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Dokter</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tipe Pasien</th>
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Paket</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Status</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-center">Aksi</th>
                     </tr>
@@ -70,16 +82,14 @@
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $jadwalMcu->no_antrean ?? '-' }}</td>
                             
                             <td class="py-3 px-4 text-sm text-gray-700">
-                                @if ($jadwalMcu->tipe_pasien === 'ptst')
-                                    {{ $jadwalMcu->karyawan->no_sap ?? '-' }}
-                                @else
-                                    -
-                                @endif
+                                {{ $jadwalMcu->no_sap ?? '-' }}
                             </td>
-                            
+
                             <td class="py-3 px-4 text-sm text-gray-700">
-                                @if ($jadwalMcu->tipe_pasien === 'ptst')
+                                @if ($jadwalMcu->karyawan_id)
                                     {{ $jadwalMcu->karyawan->nama_karyawan ?? '-' }}
+                                @elseif ($jadwalMcu->peserta_mcus_id)
+                                    {{ $jadwalMcu->pesertaMcu->nama_lengkap ?? '-' }}
                                 @else
                                     {{ $jadwalMcu->nama_pasien ?? '-' }}
                                 @endif
@@ -87,8 +97,11 @@
 
                             <td class="py-3 px-4 text-sm text-gray-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_pendaftaran)->format('d-m-Y') }}</td>
                             <td class="py-3 px-4 text-sm text-gray-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d-m-Y') }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ $jadwalMcu->dokter ?? '-' }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ strtoupper($jadwalMcu->tipe_pasien) }}</td>
+                            <td class="py-3 px-4 text-sm text-gray-700">
+                                {{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-700">{{ $jadwalMcu->paketMcu->nama_paket ?? '-' }}</td>
+                            {{-- <td class="py-3 px-4 text-sm text-gray-700">{{ strtoupper($jadwalMcu->tipe_pasien) }}</td> --}}
                             <td class="py-3 px-4 text-sm text-gray-700">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($jadwalMcu->status === 'Scheduled') bg-yellow-100 text-yellow-800 @endif
@@ -140,57 +153,57 @@
          @click.outside="open = false"
          class="fixed w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
          
-         <div class="py-1">
-             <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                 @csrf
-                 <input type="hidden" name="status" value="Scheduled">
-                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                     <svg class="h-5 w-5 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h6m-1 0v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6z"></path></svg>
-                     Scheduled
-                 </button>
-             </form>
-             
-             <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                 @csrf
-                 <input type="hidden" name="status" value="Waited">
-                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                     <svg class="h-5 w-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                     Waited
-                 </button>
-             </form>
+        <div class="py-1">
+            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="Scheduled">
+                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
+                    <svg class="h-5 w-5 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h6m-1 0v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6z"></path></svg>
+                    Scheduled
+                </button>
+            </form>
+            
+            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="Present">
+                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
+                    <svg class="h-5 w-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Present
+                </button>
+            </form>
 
-             <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                 @csrf
-                 <input type="hidden" name="status" value="Canceled">
-                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                     <svg class="h-5 w-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                     Canceled
-                 </button>
-             </form>
-             
-             <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                 @csrf
-                 <input type="hidden" name="status" value="Finished">
-                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                     <svg class="h-5 w-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                     Finished
-                 </button>
-             </form>
+            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="Canceled">
+                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
+                    <svg class="h-5 w-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Canceled
+                </button>
+            </form>
+            
+            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="Finished">
+                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
+                    <svg class="h-5 w-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Finished
+                </button>
+            </form>
 
-             <a x-bind:href="`{{ route('jadwal.show', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" title="Detail" role="menuitem">
-                 <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                 Details
-             </a>
-             <form x-data :action="`{{ route('jadwal.destroy', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');" class="w-full">
-                 @csrf
-                 @method('DELETE')
-                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                     <svg class="h-5 w-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                     Delete
-                 </button>
-             </form>
-         </div>
-     </div>
+            <a x-bind:href="`{{ route('qr-patient-detail', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" title="Detail" role="menuitem">
+                <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                Details
+            </a>
+            <form x-data :action="`{{ route('jadwal.destroy', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST" class="w-full">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
+                    <svg class="h-5 w-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Delete
+                </button>
+            </form>
+        </div>
+      </div>
 </div>
 
 <script>

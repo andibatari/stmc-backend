@@ -42,6 +42,10 @@ class EditKaryawanForm extends Component
     public $email;
     public $password = ''; // Nilai awal kosong agar tidak terisi secara otomatis
 
+    // Properti baru untuk tinggi dan berat badan
+    public $tinggi_badan;
+    public $berat_badan;
+
     // Properti untuk dropdown
     public $departemens = [];
     public $unitKerjas = [];
@@ -161,31 +165,33 @@ class EditKaryawanForm extends Component
         return [
             'no_sap' => ['required', 'string', Rule::unique('karyawans', 'no_sap')->ignore($this->karyawan->id)],
             'nik_karyawan' => ['required', 'string', Rule::unique('karyawans', 'nik_karyawan')->ignore($this->karyawan->id)],
-            'nama_karyawan' => 'required|string|max:255',
-            'pekerjaan' => 'required|string',
-            'tempat_lahir' => 'required|string',
-            'tanggal_lahir' => 'required|date',
+            'nama_karyawan' => 'nullable|string|max:255',
+            'pekerjaan' => 'nullable|string',
+            'tempat_lahir' => 'nullable|string',
+            'tanggal_lahir' => 'nullable|date',
             'umur' => 'nullable|integer', // Mengubah aturan validasi untuk umur
-            'jenis_kelamin' => 'required|string',
-            'golongan_darah' => 'required|string',
-            'agama' => 'required|string',
-            'status_pernikahan' => 'required|string',
-            'hubungan' => 'required|string',
-            'kebangsaan' => 'required|string',
-            'jabatan' => 'required|string',
-            'eselon' => 'required|string',
-            'pendidikan' => 'required|string',
-            'departemens_id' => 'required|integer|exists:departemens,id',
-            'unit_kerjas_id' => 'required|integer|exists:unit_kerjas,id',
-            'provinsi_id' => 'required|integer|exists:provinsis,id',
-            'kabupaten_id' => 'required|integer|exists:kabupatens,id',
-            'kecamatan_id' => 'required|integer|exists:kecamatans,id',
-            'email' => ['required', 'email', Rule::unique('karyawans', 'email')->ignore($this->karyawan->id)],
+            'jenis_kelamin' => 'nullable|string',
+            'golongan_darah' => 'nullable|string',
+            'agama' => 'nullable|string',
+            'status_pernikahan' => 'nullable|string',
+            'hubungan' => 'nullable|string',
+            'kebangsaan' => 'nullable|string',
+            'jabatan' => 'nullable|string',
+            'eselon' => 'nullable|string',
+            'pendidikan' => 'nullable|string',
+            'departemens_id' => 'nullable|integer|exists:departemens,id',
+            'unit_kerjas_id' => 'nullable|integer|exists:unit_kerjas,id',
+            'provinsi_id' => 'nullable|integer|exists:provinsis,id',
+            'kabupaten_id' => 'nullable|integer|exists:kabupatens,id',
+            'kecamatan_id' => 'nullable|integer|exists:kecamatans,id',
+            'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($this->karyawan->id)],
             'suami_istri' => 'nullable|string',
             'pekerjaan_suami_istri' => 'nullable|string',
-            'alamat' => 'required|string',
-            'no_hp' => 'required|string',
+            'alamat' => 'nullable|string',
+            'no_hp' => 'nullable|string',
             'password' => 'nullable|min:6',
+            'tinggi_badan' => 'nullable|numeric|min:1',
+            'berat_badan' => 'nullable|numeric|min:1',
         ];
     }
 
@@ -218,33 +224,6 @@ class EditKaryawanForm extends Component
         $this->dispatch('karyawanUpdated');
     }
 
-    // /**
-    //  * Metode untuk memproses pembaruan data karyawan.
-    //  */
-    // public function updateKaryawan()
-    // {
-    //     // Validasi semua properti publik
-    //     $validatedData = $this->validate();
-
-    //     // Logging data yang divalidasi untuk debugging
-    //     Log::info('Validated Data:', $validatedData);
-    //     Log::info('Karyawan ID:', ['id' => $this->karyawan->id]);
-
-    //     // Memperbarui data karyawan
-    //     // Pastikan model Karyawan memiliki $fillable yang mencakup semua field di validatedData
-    //     $this->karyawan->update($validatedData);
-
-    //     // Perbarui password jika diisi
-    //     if ($this->password) {
-    //         $this->karyawan->employeeLogin()->updateOrCreate(
-    //             ['karyawan_id' => $this->karyawan->id],
-    //             ['password' => Hash::make($this->password)]
-    //         );
-    //     }
-
-    //     // Memancarkan event untuk menampilkan notifikasi
-    //     $this->dispatch('karyawanUpdated');
-    // }
 
     /**
      * Render tampilan komponen.

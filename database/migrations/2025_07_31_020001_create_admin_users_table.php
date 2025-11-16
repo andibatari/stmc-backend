@@ -15,14 +15,19 @@ return new class extends Migration
             $table->id();
 
             // Kolom untuk Login & Informasi Admin
-            $table->string('no_sap', 50)->unique();
+            $table->string('no_sap', 50)->unique()->nullable();
             $table->string('nama_lengkap')->nullable();
+            $table->string('nik',20)->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('password');
+            $table->string('role')->default('admin'); // Bisa diisi 'admin', 'superadmin', dll.
+            $table->string('foto_profil')->nullable();
             
+            // Kolom dokter_id hanya ditambahkan jika role adalah 'dokter'
+            $table->unsignedBigInteger('dokter_id')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
-        
         });
     }
 
