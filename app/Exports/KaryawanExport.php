@@ -36,6 +36,8 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             $karyawan->tempat_lahir,
             $karyawan->tanggal_lahir,
             $karyawan->umur,
+            $karyawan->tinggi_badan,
+            $karyawan->berat_badan,
             $karyawan->jenis_kelamin,
             $karyawan->golongan_darah,
             $karyawan->agama,
@@ -53,8 +55,6 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             $karyawan->provinsi->nama_provinsi ?? 'N/A',
             $karyawan->kabupaten->nama_kabupaten ?? 'N/A',
             $karyawan->kecamatan->nama_kecamatan ?? 'N/A',
-            $karyawan->created_at,
-            $karyawan->updated_at,
         ];
     }
     
@@ -75,6 +75,8 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             'Tempat Lahir',
             'Tanggal Lahir',
             'Umur',
+            'Tinggi Badan (cm)',
+            'Berat Badan (kg)',
             'Jenis Kelamin',
             'Golongan Darah',
             'Agama',
@@ -85,15 +87,13 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             'Nama Suami/Istri',
             'Pekerjaan Suami/Istri',
             'Alamat',
-            'No. HP',
+            'No HP',
             'Email',
             'Departemen',
             'Unit Kerja',
             'Provinsi',
             'Kabupaten',
             'Kecamatan',
-            'Created At',
-            'Updated At',
         ];
     }
 }
