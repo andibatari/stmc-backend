@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         DepartemenSeeder::class,
         UnitKerjaSeeder::class,
         LokasiSeeder::class,
+        PaketPoliSeeder::class,
         // ... seeder lainnya jika ada
         ]);
     }

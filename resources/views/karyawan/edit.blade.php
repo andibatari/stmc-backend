@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Karyawan')
+@section('title', 'Manajemen Pasien / Daftar Pasien / Edit Data Karyawan')
 
 @section('content')
 <div class="container mx-auto p-6">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\JadwalMcu;
 use App\Models\Notif; 
 use App\Models\UnitKerja;
@@ -12,6 +13,7 @@ use App\Models\Departemen;
 use App\Models\Kecamatan;
 use App\Models\Kabupaten;
 use App\Models\Provinsi;
+use App\Models\PesertaMcu; // Pastikan model ini diimpor
 
 class Karyawan extends Model
 {
@@ -47,11 +49,14 @@ class Karyawan extends Model
         'pekerjaan_suami_istri',
         'alamat',
         'no_hp',
+        'foto_profil',
+        'tinggi_badan',
+        'berat_badan',
     ];
 
     public function jadwalMcu()
     {
-        return $this->hasMany(JadwalMcu::class);
+        return $this->hasMany(JadwalMcu::class, 'karyawan_id');
     }
 
     public function notifs()
@@ -83,9 +88,18 @@ class Karyawan extends Model
     {
         return $this->belongsTo(Provinsi::class);
     }
+    public function keluargas(): HasMany
+    {
+        return $this->hasMany(PesertaMcu::class, 'karyawan_id','id');
+    }
     // Relasi tambahan
     public function employeeLogin()
     {
         return $this->hasOne(EmployeeLogin::class);
+    }
+     public function pasangan()
+    {
+        return $this->hasOne(PesertaMcu::class, 'karyawan_id', 'id')
+                    ->whereIn('tipe_anggota', ['Suami', 'Istri']);
     }
 }

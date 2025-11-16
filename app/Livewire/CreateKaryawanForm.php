@@ -25,6 +25,9 @@ class CreateKaryawanForm extends Component
     public $email, $password, $suami_istri, $pekerjaan_suami_istri;
     public $alamat, $no_hp;
 
+    // Tambahkan properti baru
+    public $tinggi_badan, $berat_badan;
+
     protected $listeners = [
         'departemenUpdated',
         'unitKerjaUpdated',
@@ -37,7 +40,7 @@ class CreateKaryawanForm extends Component
     public function departemenUpdated($payload)
     {
         $this->departemens_id = $payload['id'] ?? null;
-        $this->unit_kerjas_id = null; // reset unit kerja kalau departemen ganti
+        $this->unit_kerjas_id = null;
     }
 
     // Update event dropdown Unit Kerja
@@ -92,30 +95,33 @@ class CreateKaryawanForm extends Component
     protected $rules = [
         'no_sap' => 'required|string|unique:karyawans,no_sap',
         'nik_karyawan' => 'required|string|unique:karyawans,nik_karyawan',
-        'nama_karyawan' => 'required|string|max:255',
-        'jenis_kelamin' => 'required|string',
-        'unit_kerjas_id' => 'required|integer|exists:unit_kerjas,id',
-        'departemens_id' => 'required|integer|exists:departemens,id',
-        'tanggal_lahir' => 'required|date',
-        'alamat' => 'required|string',
-        'email' => 'required|email|unique:karyawans,email',
-        'no_hp' => 'required|string',
-        'password' => 'required|min:6',
-        'pendidikan' => 'required|string',
-        'kebangsaan' => 'required|string',
-        'tempat_lahir' => 'required|string',
-        'golongan_darah' => 'required|string',
-        'pekerjaan' => 'required|string',
-        'agama' => 'required|string',
-        'status_pernikahan' => 'required|string',
-        'hubungan' => 'required|string',
-        'jabatan' => 'required|string',
-        'eselon' => 'required|string',
+        'nama_karyawan' => 'nullable|string|max:255',
+        'jenis_kelamin' => 'nullable|string',
+        'unit_kerjas_id' => 'nullable|integer|exists:unit_kerjas,id',
+        'departemens_id' => 'nullable|integer|exists:departemens,id',
+        'tanggal_lahir' => 'nullable|date',
+        'alamat' => 'nullable|string',
+        'email' => 'nullable|email|unique:karyawans,email',
+        'no_hp' => 'nullable|string',
+        'password' => 'nullable|min:6',
+        'pendidikan' => 'nullable|string',
+        'kebangsaan' => 'nullable|string',
+        'tempat_lahir' => 'nullable|string',
+        'golongan_darah' => 'nullable|string',
+        'pekerjaan' => 'nullable|string',
+        'agama' => 'nullable|string',
+        'status_pernikahan' => 'nullable|string',
+        'hubungan' => 'nullable|string',
+        'jabatan' => 'nullable|string',
+        'eselon' => 'nullable|string',
         'suami_istri' => 'nullable|string',
         'pekerjaan_suami_istri' => 'nullable|string',
-        'provinsi_id' => 'required|integer|exists:provinsis,id',
-        'kabupaten_id' => 'required|integer|exists:kabupatens,id',
-        'kecamatan_id' => 'required|integer|exists:kecamatans,id',
+        'provinsi_id' => 'nullable|integer|exists:provinsis,id',
+        'kabupaten_id' => 'nullable|integer|exists:kabupatens,id',
+        'kecamatan_id' => 'nullable|integer|exists:kecamatans,id',
+        // Tambahkan aturan validasi untuk tinggi dan berat badan
+        'tinggi_badan' => 'nullable|numeric|min:1',
+        'berat_badan' => 'nullable|numeric|min:1',
     ];
 
     public function saveKaryawan()
@@ -131,6 +137,9 @@ class CreateKaryawanForm extends Component
             'kebangsaan' => $this->kebangsaan,
             'tempat_lahir' => $this->tempat_lahir,
             'umur' => $this->umur,
+            // Simpan data tinggi dan berat badan
+            'tinggi_badan' => $this->tinggi_badan,
+            'berat_badan' => $this->berat_badan,
             'golongan_darah' => $this->golongan_darah,
             'pekerjaan' => $this->pekerjaan,
             'agama' => $this->agama,
@@ -162,7 +171,7 @@ class CreateKaryawanForm extends Component
         $this->reset([
             'no_sap', 'nik_karyawan', 'nama_karyawan', 'jenis_kelamin',
             'pendidikan', 'kebangsaan', 'tempat_lahir', 'umur',
-            'golongan_darah', 'pekerjaan', 'agama', 'status_pernikahan',
+            'tinggi_badan', 'berat_badan', 'golongan_darah', 'pekerjaan', 'agama', 'status_pernikahan',
             'hubungan', 'jabatan', 'eselon', 'suami_istri',
             'pekerjaan_suami_istri', 'unit_kerjas_id', 'departemens_id',
             'tanggal_lahir', 'alamat', 'email', 'no_hp', 'password',
