@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Imports;
+
+use App\Models\PesertaMcu;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Illuminate\Support\Facades\DB;
+
+class PesertaMcuImport implements ToModel, WithHeadingRow, WithChunkReading
+{
+    /**
+    * @param array $row
+    *
+    * @return \Illuminate\Database\Eloquent\Model|null
+    */
+    public function model(array $row)
+    {
+        // Langsung return null jika tidak ada data yang valid
+        if (!isset($row['nama_lengkap'])) {
+            return null;
+        }
+
+        return new PesertaMcu([
+            'karyawan_id'       => null, // Menandakan ini adalah pasien non-PTST
+            'hubungan'          => 'Non-PTST', // Menandakan tipe pasien
+            'no_sap'           => $row['no_sap'] ?? null,
+            'nik_pasien'        => $row['nik_pasien'] ?? null,
+            'nama_lengkap'      => $row['nama_lengkap'] ?? null,
+            'jenis_kelamin'     => $row['jenis_kelamin'] ?? null,
+            'tempat_lahir'      => $row['tempat_lahir'] ?? null,
+            'tanggal_lahir'     => $row['tanggal_lahir'] ?? null,
+            'umur'              => $row['umur'] ?? null,
+            'golongan_darah'    => $row['golongan_darah'] ?? null,
+            'pendidikan'        => $row['pendidikan'] ?? null,
+            'pekerjaan'         => $row['pekerjaan'] ?? null,
+            'perusahaan_asal'   => $row['perusahaan_asal'] ?? null,
+            'agama'             => $row['agama'] ?? null,
+            'alamat'            => $row['alamat'] ?? null,
+            'no_hp'             => $row['no_hp'] ?? null,
+            'email'             => $row['email'] ?? null,
+            'provinsi_id'       => $row['provinsi_id'] ?? null,
+            'kabupaten_id'      => $row['kabupaten_id'] ?? null,
+            'kecamatan_id'      => $row['kecamatan_id'] ?? null,
+            'departemens_id'    => $row['departemens_id'] ?? null,
+            'unit_kerjas_id'    => $row['unit_kerjas_id'] ?? null,
+        ]);
+    }
+    
+    public function headingRow(): int
+    {
+        return 1;
+    }
+
+    public function chunkSize(): int
+    {
+        return 1000;
+    }
+}
