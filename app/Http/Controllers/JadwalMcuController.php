@@ -147,4 +147,60 @@ class JadwalMcuController extends Controller
             return back()->with('error', 'Gagal menghapus jadwal: ' . $e->getMessage());
         }
     }
+
+    // --- METODE API KHUSUS UNTUK FLUTTER (INDEX) ---
+
+    /**
+     * Mengambil daftar jadwal MCU yang akan datang (API INDEX).
+     * Endpoint: /api/jadwal-mcu
+     */
+    public function apiIndex(Request $request)
+    {
+        // Secara default, ambil jadwal yang statusnya 'Scheduled' atau 'Present'
+        $query = JadwalMcu::with('dokter', 'paketMcu', 'karyawan') // Tambahkan relasi karyawan
+                         ->whereIn('status', ['Scheduled', 'Present'])
+                         ->orderBy('tanggal_mcu', 'asc');
+
+        // Anda dapat menambahkan filter tanggal dari request jika diperlukan
+        if ($request->has('tanggal_mcu')) {
+            $query->whereDate('tanggal_mcu', $request->tanggal_mcu);
+        }
+
+        $jadwals = $query->get();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Daftar jadwal MCU berhasil diambil.',
+            'data' => $jadwals,
+        ]);
+    }
+
+    /**
+     * Mengambil detail jadwal MCU tertentu (API SHOW).
+     * Endpoint: /api/jadwal-mcu/{id}
+     */
+    public function apiShow($id)
+    {
+        try {
+            // Ambil data dengan semua relasi yang mungkin dibutuhkan di layar detail Flutter
+            $jadwal = JadwalMcu::with([
+                'dokter', 
+                'paketMcu', 
+                'karyawan.departemen', // Relasi nested karyawan
+                'karyawan.unitKerja'
+            ])->findOrFail($id);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Detail jadwal MCU berhasil diambil.',
+                'data' => $jadwal,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Jadwal tidak ditemukan.',
+            ], 404);
+        }
+    }
 }

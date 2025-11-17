@@ -7,10 +7,65 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-use App\Models\AdminUser; // Asumsikan nama model untuk Admin Anda adalah AdminUser
+use App\Models\AdminUser; // Model untuk Admin Web
+use App\Models\Karyawan; // Model Karyawan untuk data profil mobile
 
 class AdminProfileController extends Controller
 {
+    // --- METODE API KHUSUS UNTUK FLUTTER ---
+
+    /**
+     * Mengambil detail profil karyawan yang sedang login (API SHOW PROFILE).
+     * Endpoint: /api/user (Sesuai routes/api.php)
+     * Catatan: Menggunakan data Karyawan yang terhubung dengan user yang login.
+     */
+    public function apiShowProfile(Request $request)
+    {
+        // $request->user() mengembalikan model User/EmployeeLogin yang sedang login
+        $user = $request->user(); 
+
+        if (!$user) {
+            return response()->json(['status' => 'error', 'message' => 'Pengguna tidak terautentikasi.'], 401);
+        }
+
+        try {
+            // Asumsi: User/EmployeeLogin memiliki field 'no_sap' yang sesuai dengan tabel Karyawans
+            // Ambil detail Karyawan lengkap dengan semua relasi yang dibutuhkan di Flutter
+            $profile = Karyawan::with([
+                'departemen', 
+                'unitKerja', 
+                'kecamatan.kabupaten.provinsi',
+                'keluargas', // Relasi keluarga
+                'pasangan'   // Relasi pasangan
+            ])
+            ->where('no_sap', $user->no_sap) // Mencari Karyawan berdasarkan no_sap dari user yang login
+            ->firstOrFail(); 
+
+            // Kita juga bisa menambahkan path foto profil yang dapat diakses publik di sini
+            if ($profile->foto_profil) {
+                // Asumsi: Storage::url() dikonfigurasi untuk public disk
+                $profile->foto_profil_url = Storage::url($profile->foto_profil);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Data profil berhasil diambil.',
+                'data' => $profile,
+            ]);
+
+        } catch (\Exception $e) {
+            // Jika data karyawan tidak ditemukan atau ada error relasi
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Data profil karyawan tidak ditemukan atau terjadi kesalahan: ' . $e->getMessage(),
+            ], 404);
+        }
+    }
+    
+    // ----------------------------------------------------------------------
+    // --- METODE WEB VIEW UNTUK ADMIN (KODE ASLI ANDA) ---
+    // ----------------------------------------------------------------------
+
     /**
      * Menampilkan form untuk mengedit profil Admin yang sedang login.
      * @return \Illuminate\View\View
@@ -81,6 +136,6 @@ class AdminProfileController extends Controller
         $admin->update($dataToUpdate);
 
         return redirect()->route('admin.profile.edit')
-                         ->with('success', 'Profil berhasil diperbarui!');
+                             ->with('success', 'Profil berhasil diperbarui!');
     }
 }

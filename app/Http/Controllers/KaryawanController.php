@@ -38,34 +38,6 @@ class KaryawanController extends Controller
         return view('karyawan.create');
     }
 
-    // public function edit(Karyawan $karyawan)
-    // {
-    //     // Mendapatkan semua data untuk dropdown
-    //     $departemens = Departemen::all();
-    //     $unitKerjas = UnitKerja::all();
-    //     $provinsis = Provinsi::all();
-        
-    //     // Memuat data kabupaten dan kecamatan berdasarkan data karyawan
-    //     $kabupatens = collect();
-    //     $kecamatans = collect();
-    //     if ($karyawan->kecamatan_id) {
-    //         $kecamatan = Kecamatan::find($karyawan->kecamatan_id);
-    //         if ($kecamatan) {
-    //             $kabupatens = Kabupaten::where('provinsi_id', $kecamatan->kabupaten->provinsi_id)->get();
-    //             $kecamatans = Kecamatan::where('kabupaten_id', $kecamatan->kabupaten_id)->get();
-    //         }
-    //     }
-
-    //     return view('karyawan.edit', compact(
-    //         'karyawan', 
-    //         'departemens', 
-    //         'unitKerjas', 
-    //         'provinsis', 
-    //         'kabupatens', 
-    //         'kecamatans'
-    //     ));
-    // }
-
     public function edit(Karyawan $karyawan)
     {
         // Pastikan variabel 'karyawan' dikirim ke view
@@ -90,19 +62,6 @@ class KaryawanController extends Controller
         $karyawan->delete();
         return redirect()->route('karyawan.index')->with('success', 'Data karyawan berhasil dihapus.');
     }
-
-    // // Metode API untuk mendapatkan Unit Kerja berdasarkan Departemen ID
-    // public function getUnitsByDepartemen(Departemen $departemen)
-    // {
-    //     // Pastikan relasi 'unitKerjas' sudah didefinisikan di model Departemen
-    //     // Mengambil unit kerja berdasarkan departemen yang diberikan
-    //     $unitKerjas = $departemen->unitKerjas()->get([
-    //         'id',
-    //         'nama_unit_kerja',
-    //     ]);
-        
-    //     return response()->json($unitKerjas);
-    // }
 
     public function importExcel(Request $request)
     {
@@ -134,50 +93,7 @@ class KaryawanController extends Controller
     {
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\PesertaMcuExport, 'Data Pasien Mcu.xlsx');
     }
-    /**
-     * Ambil data keluarga dalam format JSON.
-     */
-    // public function showKeluarga($karyawan_id, $tipe)
-    // {
-    //     $karyawan = Karyawan::findOrFail($karyawan_id);
 
-    //     $data = [];
-
-    //     // Siapkan data berdasarkan tipe
-    //     if ($tipe === 'istri') {
-    //         $data = [
-    //             'nama' => $karyawan->suami_istri,
-    //             'pekerjaan' => $karyawan->pekerjaan_suami_istri
-    //         ];
-    //     } elseif ($tipe === 'suami') {
-    //         $data = [
-    //             'nama' => $karyawan->suami_istri,
-    //             'pekerjaan' => $karyawan->pekerjaan_suami_istri
-    //         ];
-    //     } elseif ($tipe === 'anak1') {
-    //         $data = [
-    //             'nama' => $karyawan->anak1_nama,
-    //             'tanggal_lahir' => $karyawan->anak1_tanggal_lahir
-    //         ];
-    //     } elseif ($tipe === 'anak2') {
-    //         $data = [
-    //             'nama' => $karyawan->anak2_nama,
-    //             'tanggal_lahir' => $karyawan->anak2_tanggal_lahir
-    //         ];
-    //     } elseif ($tipe === 'anak3') {
-    //         $data = [
-    //             'nama' => $karyawan->anak3_nama,
-    //             'tanggal_lahir' => $karyawan->anak3_tanggal_lahir
-    //         ];
-    //     }
-
-    //     return response()->json(['data' => $data, 'tipe' => $tipe]);
-    // }
-
-    /**
-     * Tampilkan formulir untuk menambahkan anggota keluarga baru atau pasien non-karyawan.
-     * Menggunakan parameter opsional $karyawan_id.
-     */
     public function addKeluarga($karyawan_id = null)
     {
         $karyawan = null;
@@ -229,4 +145,53 @@ class KaryawanController extends Controller
         }
     }
     
+    // --- METODE API KHUSUS UNTUK FLUTTER (INDEX) ---
+
+    /**
+     * Mengambil daftar semua karyawan dalam format JSON (API INDEX).
+     * Endpoint: /api/karyawan
+     */
+    public function apiIndex()
+    {
+        // Ambil data karyawan dengan relasi dasar yang dibutuhkan di LIST view Flutter
+        $karyawans = Karyawan::with(['departemen', 'unitKerja'])
+                         ->select('id', 'no_sap', 'nama_karyawan', 'departemens_id', 'unit_kerjas_id', 'jabatan', 'email')
+                         ->get();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Daftar karyawan berhasil diambil.',
+            'data' => $karyawans,
+        ]);
+    }
+
+    /**
+     * Mengambil detail satu karyawan dalam format JSON (API SHOW).
+     * Endpoint: /api/karyawan/{id}
+     */
+    public function apiShow($id)
+    {
+        try {
+            // Ambil detail lengkap dengan semua relasi yang mungkin dibutuhkan (Lokasi, Kerja, Keluarga)
+            $karyawan = Karyawan::with([
+                'departemen', 
+                'unitKerja', 
+                'kecamatan.kabupaten.provinsi', // Menggunakan nested relasi lokasi
+                'keluargas', // Relasi ke PesertaMcu/Keluarga
+                'pasangan' // Relasi ke pasangan
+            ])->findOrFail($id);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Detail karyawan berhasil diambil.',
+                'data' => $karyawan,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Karyawan tidak ditemukan.',
+            ], 404);
+        }
+    }
 }
