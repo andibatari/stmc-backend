@@ -158,11 +158,7 @@ class KaryawanController extends Controller
                          ->select('id', 'no_sap', 'nama_karyawan', 'departemens_id', 'unit_kerjas_id', 'jabatan', 'email')
                          ->get();
         
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Daftar karyawan berhasil diambil.',
-            'data' => $karyawans,
-        ]);
+        return KaryawanResource::collection($karyawans);
     }
 
     /**
@@ -181,17 +177,19 @@ class KaryawanController extends Controller
                 'pasangan' // Relasi ke pasangan
             ])->findOrFail($id);
             
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Detail karyawan berhasil diambil.',
-                'data' => $karyawan,
-            ]);
+            return new KaryawanResource($karyawan);
 
-        } catch (\Exception $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Karyawan tidak ditemukan.',
             ], 404);
+        } catch (\Exception $e) {
+             // JIKA TERJADI KESALAHAN SERVER LAINNYA, kembalikan status 500
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan server: ' . $e->getMessage()
+            ], 500);
         }
     }
 }
