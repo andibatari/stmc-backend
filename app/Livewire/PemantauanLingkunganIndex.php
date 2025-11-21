@@ -41,6 +41,12 @@ class PemantauanLingkunganIndex extends Component
     // Menambahkan $listeners untuk memastikan Unit Kerja diperbarui
     protected $listeners = ['departemenFilterUpdated' => 'applyDepartemenFilter'];
 
+    // --- Properti Filter NAB Baru ---
+    public $filterNabCahaya = ''; // 'below', 'above'
+    public $filterNabBising = ''; 
+    public $filterNabDebu = '';
+    public $filterNabSuhuIsbb = ''; // Menggabungkan ISBB Indoor dan Outdoor
+
     // Lifecycle hook to handle Department change in EDIT modal
     public function updatedEditingDataDepartemensId($value) 
     {
@@ -66,10 +72,15 @@ class PemantauanLingkunganIndex extends Component
     public function resetFilters()
     {
         // Menggunakan $this->reset() adalah cara paling bersih di Livewire
-        $this->reset(['filterArea', 'filterDepartemen', 'filterUnitKerja']);
-        
-        // PENTING: Karena ini adalah aksi Livewire, method render() akan otomatis dipanggil
-        // dan data tabel akan dimuat ulang dengan filter kosong.
+        $this->reset([
+            'filterArea', 
+            'filterDepartemen', 
+            'filterUnitKerja', 
+            'filterNabCahaya', 
+            'filterNabBising', 
+            'filterNabDebu',
+            'filterNabSuhuIsbb' // Tambahkan properti NAB baru di sini
+        ]);
     }
     
     protected function getDefaultPemantauanData()
@@ -86,28 +97,34 @@ class PemantauanLingkunganIndex extends Component
         $dataValue = $data->data_pemantauan[$dataKey] ?? null;
         $nabValue = null;
 
+        // Menghapus logika lama dan fokus pada mendapatkan NAB dan Data
+        
         if ($nabKey === 'nab_cahaya') {
             $nabValue = $data->nab_cahaya;
         } elseif ($nabKey === 'nab_bising') {
             $nabValue = $data->nab_bising;
         } elseif ($nabKey === 'nab_debu') {
             $nabString = $data->nab_debu;
+            // Hanya ambil angka pertama dari string nab_debu
             $matches = [];
             if (preg_match('/^(\d+(\.\d+)?)/', $nabString, $matches)) {
                 $nabValue = (float)$matches[1];
             }
-            $dataValue = (float) $dataValue; 
+            $dataValue = (float) $dataValue; // Pastikan dataValue juga float
         } elseif ($nabKey === 'nab_suhu') {
             if ($dataKey === 'isbb_indoor' || $dataKey === 'isbb_outdoor') {
                 $nabValue = $data->nab_suhu; 
             }
         }
         
+        // PENTING: Mengembalikan status NAB
+        // true = DI ATAS NAB (Melampaui Batas)
+        // false = DI BAWAH NAB (Aman/Memenuhi Batas)
         if (is_numeric($dataValue) && is_numeric($nabValue) && $nabValue > 0) {
             return $dataValue > $nabValue; 
         }
 
-        return false;
+        return false; // Jika salah satu tidak valid, anggap aman/tidak dapat dibandingkan
     }
 
     public function mount()
@@ -129,8 +146,10 @@ class PemantauanLingkunganIndex extends Component
 
     public function downloadExcel()
     {
-         // Untuk fungsi ini, kita harus mengambil data berdasarkan filter yang aktif
-        $dataToExport = $this->applyFilters(PemantauanLingkungan::query())->get();
+        // Untuk fungsi ini, kita harus mengambil data berdasarkan filter yang aktif
+        $dataToExport = $this->applyFilters(PemantauanLingkungan::query()); // applyFilters sekarang mengembalikan Collection
+        
+        // Tidak perlu lagi ->get() karena applyFilters sudah mengembalikan Collection
         return Excel::download(new PemantauanLingkunganExport($dataToExport), 'LaporanPemantauanLingkungan_' . Carbon::now()->format('Ymd_His') . '.xlsx');
     }
 
@@ -145,16 +164,56 @@ class PemantauanLingkunganIndex extends Component
         }
 
         if ($this->filterDepartemen) {
-            // Filter berdasarkan ID Departemen
             $query->where('departemens_id', $this->filterDepartemen);
         }
 
         if ($this->filterUnitKerja) {
-            // Filter berdasarkan ID Unit Kerja
             $query->where('unit_kerjas_id', $this->filterUnitKerja);
         }
         
-        return $query;
+        // --- LOGIKA FILTER NAB BARU (PENTING) ---
+        // Karena logika NAB melibatkan data JSON/Mutator dan perbandingan run-time, 
+        // cara paling andal di Livewire adalah dengan memfilter Collection setelah query dasar selesai.
+        // **Ubah PemantauanLingkungan::query() menjadi PemantauanLingkungan::all() dan filter**
+
+        // **Catatan Penting:** Untuk membuat filter ini bekerja dengan $query builder secara efisien,
+        // kita perlu akses ke kolom 'data_pemantauan' yang merupakan JSON dan 'nab_cahaya', dll.
+        // Jika data terlalu besar, ini bisa menjadi lambat. Mari kita gunakan filter pada Collection.
+
+        // 1. Ambil semua data (setelah filter Departemen/Unit/Area)
+        $allData = $query->get();
+
+        // 2. Filter Collection berdasarkan status NAB
+        $filteredData = $allData->filter(function ($data) {
+            $cahayaStatus = $this->checkNabStatus($data, 'cahaya', 'nab_cahaya'); // true = di atas NAB
+            $bisingStatus = $this->checkNabStatus($data, 'bising', 'nab_bising');
+            $debuStatus = $this->checkNabStatus($data, 'debu', 'nab_debu');
+            
+            // ISBB Indoor atau Outdoor > NAB Suhu
+            $isbbIndoorStatus = $this->checkNabStatus($data, 'isbb_indoor', 'nab_suhu');
+            $isbbOutdoorStatus = $this->checkNabStatus($data, 'isbb_outdoor', 'nab_suhu');
+            $isbbStatus = $isbbIndoorStatus || $isbbOutdoorStatus; // true jika salah satu ISBB di atas NAB
+
+            // Logika Filter Cahaya
+            if ($this->filterNabCahaya === 'above' && !$cahayaStatus) return false;
+            if ($this->filterNabCahaya === 'below' && $cahayaStatus) return false;
+            
+            // Logika Filter Bising
+            if ($this->filterNabBising === 'above' && !$bisingStatus) return false;
+            if ($this->filterNabBising === 'below' && $bisingStatus) return false;
+
+            // Logika Filter Debu
+            if ($this->filterNabDebu === 'above' && !$debuStatus) return false;
+            if ($this->filterNabDebu === 'below' && $debuStatus) return false;
+            
+            // Logika Filter Suhu/ISBB
+            if ($this->filterNabSuhuIsbb === 'above' && !$isbbStatus) return false;
+            if ($this->filterNabSuhuIsbb === 'below' && $isbbStatus) return false;
+            
+            return true;
+        });
+
+        return $filteredData; // Kembalikan Collection yang sudah difilter
     }
 
     // Metode Edit, SaveNewLocation, Update, Cancel, Delete tetap sama
@@ -320,10 +379,10 @@ class PemantauanLingkunganIndex extends Component
 
     public function render()
     {
-        // Panggil query dengan filter
-        $pemantauanLingkungan = $this->applyFilters(PemantauanLingkungan::query())->get();
-
-        // Grouping data yang sudah difilter
+        // Panggil query dengan filter yang sekarang mengembalikan Collection
+        $pemantauanLingkungan = $this->applyFilters(PemantauanLingkungan::query()); // applyFilters sekarang mengembalikan Collection
+        
+        // Grouping data yang sudah difilter (tetap menggunakan Collection)
         $pemantauanLingkunganGrouped = $pemantauanLingkungan->groupBy('area');
 
         // Filter daftar Unit Kerja berdasarkan Departemen yang dipilih (untuk filter view)

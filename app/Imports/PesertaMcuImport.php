@@ -24,14 +24,16 @@ class PesertaMcuImport implements ToModel, WithHeadingRow, WithChunkReading
 
         return new PesertaMcu([
             'karyawan_id'       => null, // Menandakan ini adalah pasien non-PTST
-            'hubungan'          => 'Non-PTST', // Menandakan tipe pasien
             'no_sap'           => $row['no_sap'] ?? null,
+            'tipe_anggota'      => $row['tipe_anggota'] ?? null,
             'nik_pasien'        => $row['nik_pasien'] ?? null,
             'nama_lengkap'      => $row['nama_lengkap'] ?? null,
             'jenis_kelamin'     => $row['jenis_kelamin'] ?? null,
             'tempat_lahir'      => $row['tempat_lahir'] ?? null,
             'tanggal_lahir'     => $row['tanggal_lahir'] ?? null,
             'umur'              => $row['umur'] ?? null,
+            'tinggi_badan'      => $row['tinggi_badan'] ?? null,
+            'berat_badan'       => $row['berat_badan'] ?? null,
             'golongan_darah'    => $row['golongan_darah'] ?? null,
             'pendidikan'        => $row['pendidikan'] ?? null,
             'pekerjaan'         => $row['pekerjaan'] ?? null,
@@ -43,8 +45,6 @@ class PesertaMcuImport implements ToModel, WithHeadingRow, WithChunkReading
             'provinsi_id'       => $row['provinsi_id'] ?? null,
             'kabupaten_id'      => $row['kabupaten_id'] ?? null,
             'kecamatan_id'      => $row['kecamatan_id'] ?? null,
-            'departemens_id'    => $row['departemens_id'] ?? null,
-            'unit_kerjas_id'    => $row['unit_kerjas_id'] ?? null,
         ]);
     }
     

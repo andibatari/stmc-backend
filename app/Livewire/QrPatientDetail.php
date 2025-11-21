@@ -32,7 +32,7 @@ class QrPatientDetail extends Component
     // Tambahkan properti untuk menyimpan nama file yang telah diunggah
     public $uploadedFileNames = [];
     
-    public $uploadablePoliNames = ['LABORATORIUM', 'SPIROMETRI', 'AUDIOMETRI', 'EKG'];
+    public $uploadablePoliNames = ['LABORATORIUM', 'SPIROMETRI', 'AUDIOMETRI', 'EKG', 'THORAX PHOTO', 'TREADMILL', 'USG'];
 
     protected $listeners = ['updatePoliStatus'];
     

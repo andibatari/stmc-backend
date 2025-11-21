@@ -146,9 +146,6 @@
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">SAP</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">NIK</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Nama Lengkap</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Nama Suami/Istri</th>
-                        {{-- <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Agama</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Jabatan</th> --}}
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal Lahir</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Alamat</th>
                         <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Email</th>
@@ -165,9 +162,6 @@
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->no_sap }}</td>
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->nik_pasien }}</td>
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->nama_lengkap }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->karyawan->nama_karyawan?? 'N/A' }}</td>
-                            {{-- <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->agama ?? 'N/A' }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->jabatan ?? 'N/A' }}</td> --}}
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->tanggal_lahir }}</td>
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->alamat }}</td>
                             <td class="py-3 px-4 text-sm text-gray-700">{{ $pesertaMcu->email }}</td>

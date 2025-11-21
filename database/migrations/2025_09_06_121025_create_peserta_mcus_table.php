@@ -37,12 +37,6 @@ return new class extends Migration
             $table->unsignedBigInteger('provinsi_id')->nullable();
             $table->unsignedBigInteger('kabupaten_id')->nullable();
             $table->unsignedBigInteger('kecamatan_id')->nullable();
-
-            $table->unsignedBigInteger('departemens_id')->nullable();
-            $table->unsignedBigInteger('unit_kerjas_id')->nullable();
-
-            $table->foreign('departemens_id')->references('id')->on('departemens')->onDelete('set null');
-            $table->foreign('unit_kerjas_id')->references('id')->on('unit_kerjas')->onDelete('set null');
             
             $table->foreign('provinsi_id')->references('id')->on('provinsis')->onDelete('set null');
             $table->foreign('kabupaten_id')->references('id')->on('kabupatens')->onDelete('set null');

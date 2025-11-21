@@ -23,8 +23,9 @@ return new class extends Migration
             $table->string('role')->default('admin'); // Bisa diisi 'admin', 'superadmin', dll.
             $table->string('foto_profil')->nullable();
             
-            // Kolom dokter_id hanya ditambahkan jika role adalah 'dokter'
+            // Kolom ID Sumber Admin
             $table->unsignedBigInteger('dokter_id')->nullable();
+            $table->unsignedBigInteger('karyawan_id')->nullable(); // <-- TAMBAH KOLOM INI
 
             $table->rememberToken();
             $table->timestamps();

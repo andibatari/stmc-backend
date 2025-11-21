@@ -32,7 +32,8 @@ Unduh Excel
         </h3>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    {{-- BARIS FILTER 1: DEPARTEMEN, UNIT, AREA, RESET --}}
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
         
         {{-- Filter Departemen --}}
         <div>
@@ -77,6 +78,61 @@ Unduh Excel
                 </svg>
                 Reset Filter
             </button>
+        </div>
+    </div>
+    
+    <hr class="border-gray-200 mb-4">
+    
+    {{-- BARIS FILTER 2: STATUS NAB (DIBUAT TERPISAH) --}}
+    <div>
+        <h4 class="text-md font-extrabold text-gray-700 mb-3 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            Filter Berdasarkan Status NAB
+        </h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
+            
+            {{-- Filter NAB Cahaya --}}
+            <div>
+                <label for="filter_nab_cahaya" class="block text-sm font-semibold text-gray-700 mb-1">Cahaya (Lux)</label>
+                <select id="filter_nab_cahaya" wire:model.live="filterNabCahaya" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 transition duration-150">
+                    <option value="">-- Semua Status --</option>
+                    <option value="below">✅ Di Bawah NAB</option>
+                    <option value="above">❌ Di Atas NAB</option>
+                </select>
+            </div>
+
+            {{-- Filter NAB Bising --}}
+            <div>
+                <label for="filter_nab_bising" class="block text-sm font-semibold text-gray-700 mb-1">Bising (dB)</label>
+                <select id="filter_nab_bising" wire:model.live="filterNabBising" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 transition duration-150">
+                    <option value="">-- Semua Status --</option>
+                    <option value="below">✅ Di Bawah NAB</option>
+                    <option value="above">❌ Di Atas NAB</option>
+                </select>
+            </div>
+
+            {{-- Filter NAB Debu --}}
+            <div>
+                <label for="filter_nab_debu" class="block text-sm font-semibold text-gray-700 mb-1">Debu (mg/Nm3)</label>
+                <select id="filter_nab_debu" wire:model.live="filterNabDebu" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 transition duration-150">
+                    <option value="">-- Semua Status --</option>
+                    <option value="below">✅ Di Bawah NAB</option>
+                    <option value="above">❌ Di Atas NAB</option>
+                </select>
+            </div>
+
+            {{-- Filter NAB ISBB (Suhu) --}}
+            <div>
+                <label for="filter_nab_suhu_isbb" class="block text-sm font-semibold text-gray-700 mb-1">ISBB</label>
+                <select id="filter_nab_suhu_isbb" wire:model.live="filterNabSuhuIsbb" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 transition duration-150">
+                    <option value="">-- Semua Status --</option>
+                    <option value="below">✅ Di Bawah NAB</option>
+                    <option value="above">❌ Di Atas NAB</option>
+                </select>
+            </div>
+            
         </div>
     </div>
 </div>
@@ -133,12 +189,12 @@ Unduh Excel
                         @error('newLocationData.nab_bising') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label for="new_nab_debu" class="block text-sm font-medium text-gray-700">NAB Debu (mg/Nm$^3$)</label>
+                        <label for="new_nab_debu" class="block text-sm font-medium text-gray-700">NAB Debu (mg/Nm3)</label>
                         <input type="text" id="new_nab_debu" wire:model.defer="newLocationData.nab_debu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('newLocationData.nab_debu') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label for="new_nab_suhu" class="block text-sm font-medium text-gray-700">NAB Suhu ($^\circ$C)</label>
+                        <label for="new_nab_suhu" class="block text-sm font-medium text-gray-700">NAB Suhu</label>
                         <input type="number" step="0.01" id="new_nab_suhu" wire:model.defer="newLocationData.nab_suhu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                         @error('newLocationData.nab_suhu') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>

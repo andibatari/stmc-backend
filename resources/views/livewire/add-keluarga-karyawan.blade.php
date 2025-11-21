@@ -129,30 +129,6 @@
             @error('password_confirmation') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
         </div>
         @endif
-            {{-- Jika tipe adalah non_karyawan, Istri, atau Suami, tampilkan dropdown departemen dan unit kerja --}}
-            {{-- Departemen dan Unit Kerja hanya relevan untuk karyawan dan pasangan mereka --}}
-        @if ($karyawan && in_array($tipe_anggota, ['Istri', 'Suami']))
-        <div class="col-span-1">
-            <label for="departemens_id" class="block text-sm font-medium text-gray-700 mb-1">Departemen</label>
-            <select wire:model.live="departemens_id" id="departemens_id" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
-                <option value="">Pilih Departemen</option>
-                @foreach($departemens as $departemen)
-                <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}</option>
-                @endforeach
-            </select>
-            @error('departemens_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-        </div>
-        <div class="col-span-1">
-            <label for="unit_kerjas_id" class="block text-sm font-medium text-gray-700 mb-1">Unit Kerja</label>
-            <select wire:model.live="unit_kerjas_id" id="unit_kerjas_id" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
-                <option value="">Pilih Unit Kerja</option>
-                @foreach($unitKerjas as $unitKerja)
-                    <option value="{{ $unitKerja->id }}">{{ $unitKerja->nama_unit_kerja }}</option>
-                @endforeach
-            </select>
-            @error('unit_kerjas_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-        </div>
-        @endif
 
         {{-- BARIS 5: ALAMAT & PASSWORD --}}
         <div class="col-span-1">

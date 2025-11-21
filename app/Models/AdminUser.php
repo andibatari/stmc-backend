@@ -18,8 +18,9 @@ class AdminUser extends Authenticatable
         'nama_lengkap',
         'email',
         'password',
-        'user_type', // Tambahkan
+        'role', // Tambahkan
         'dokter_id', // Tambahkan
+        'karyawan_id', // Tambahkan
         'foto_profil'
     ];
 
@@ -36,5 +37,11 @@ class AdminUser extends Authenticatable
     public function dokter()
     {
         return $this->belongsTo(Dokter::class, 'dokter_id');
+    }
+
+    // Relasi ke tabel karyawans
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 }

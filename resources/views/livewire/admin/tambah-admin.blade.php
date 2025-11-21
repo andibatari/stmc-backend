@@ -25,42 +25,80 @@
                     <select id="role" wire:model.live="role" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50">
                         <option value="admin">Admin</option>
                         <option value="dokter">Dokter</option>
+                        <option value="karyawan">Karyawan</option>
                     </select>
                     @error('role') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
-                <!-- Input Nama Lengkap (dinamis) -->
-                <div>
+                
+                <!-- Input/Dropdown Nama Lengkap (Dinamis) -->
+                <div class="relative">
                     <label for="nama_lengkap" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    
                     @if ($role === 'dokter')
+                        <!-- DROPDOWN DOKTER -->
                         <select id="nama_lengkap" wire:model.live="selectedDokterId" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                             <option value="">Pilih Dokter</option>
                             @foreach ($listDokter as $id => $nama)
                                 <option value="{{ $id }}">{{ $nama }}</option>
                             @endforeach
                         </select>
+
+                    @elseif ($role === 'karyawan')
+                        <!-- INPUT PENCARIAN KARYAWAN -->
+                        <!-- Jika sudah terpilih, tampilkan field biasa (non-disabled) -->
+                        <input type="text" id="searchQuery" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari No. SAP atau Nama Karyawan..."
+                               class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                        
+                        <!-- HASIL AUTOCOMPLETE KARYAWAN -->
+                        @if (!empty($searchQuery) && count($searchedKaryawans) > 0)
+                            <div class="absolute z-10 w-full bg-white border border-gray-300 mt-1 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                @foreach ($searchedKaryawans as $karyawan)
+                                    <p wire:click="selectKaryawan({{ $karyawan->id }})" class="p-2 cursor-pointer hover:bg-gray-100 text-sm">
+                                        {{ $karyawan->no_sap }} - {{ $karyawan->nama_karyawan }}
+                                    </p>
+                                @endforeach
+                            </div>
+                        @endif
+
                     @else
+                        <!-- Input Nama Lengkap manual untuk Role Admin -->
                         <input type="text" id="nama_lengkap" wire:model="nama_lengkap" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     @endif
+                    
+                    @if ($selectedKaryawanId || $selectedDokterId)
+                         <p class="text-sm text-green-600 mt-1">Data terpilih: {{ $nama_lengkap }} ({{ $no_sap }})</p>
+                    @endif
+
                     @error('nama_lengkap') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
-                <!-- Input No. SAP -->
+                
+                <!-- Input No. SAP (Otomatis/Manual tergantung role) -->
                 <div>
                     <label for="no_sap" class="block text-sm font-medium text-gray-700 mb-1">No. SAP</label>
-                    <input type="text" id="no_sap" wire:model="no_sap" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    <input type="text" id="no_sap" wire:model="no_sap" 
+                           class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 
+                           {{ ($role === 'karyawan' || $selectedDokterId) ? 'bg-gray-100' : '' }}" 
+                           {{ ($role === 'karyawan' && $selectedKaryawanId) ? 'disabled' : '' }} 
+                           {{ ($role === 'dokter' && $selectedDokterId) ? '' : '' }} 
+                           {{ ($role === 'admin') ? '' : '' }}>
+
                     @error('no_sap') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                
                 <!-- Input NIK -->
                 <div>
                     <label for="nik" class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                    <input type="text" id="nik" wire:model="nik" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    <input type="text" id="nik" wire:model="nik" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 {{ ($role === 'dokter' || $role === 'karyawan') ? 'bg-gray-100' : '' }}" disabled>
                     @error('nik') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                
                 <!-- Input Email -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="email" wire:model="email" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    <input type="email" id="email" wire:model="email" class="block w-full px-4 py-2.5 rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 {{ ($role === 'dokter' || $role === 'karyawan') ? 'bg-gray-100' : '' }}" {{ ($role === 'dokter' || $role === 'karyawan') ? 'disabled' : '' }}>
                     @error('email') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                 </div>
+                
                 <!-- Input Password (hanya muncul di mode tambah) -->
                 @if (!$isEditing)
                     <div>
