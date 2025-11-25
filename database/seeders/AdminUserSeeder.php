@@ -5,7 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\AdminUser; 
-use Illuminate\Support\Facades\Hash; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 
 class AdminUserSeeder extends Seeder
@@ -15,10 +16,16 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Hapus data lama jika ada untuk menghindari duplikasi saat seeding ulang
+        // 1. Matikan Foreign Key Checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;'); 
+
+        // 2. Hapus data lama
         AdminUser::truncate();
 
-        // Buat satu pengguna admin default
+        // 3. Hidupkan kembali Foreign Key Checks
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;'); 
+
+        // 4. Buat satu pengguna admin default
         AdminUser::create([
             'no_sap' => '012025',
             'nama_lengkap' => 'Andi Batari Saudah S',

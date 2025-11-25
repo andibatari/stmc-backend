@@ -18,6 +18,8 @@ use App\Livewire\QrScanner;
 use App\Livewire\PaketPoli;
 use App\Livewire\PemantauanLingkunganIndex;
 use App\Livewire\PemantauanLingkunganForm;
+use App\Livewire\NotificationDashboard;
+use App\Livewire\NotificationHistory;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use App\Models\PoliGigiResult;
@@ -81,6 +83,9 @@ Route::get('/admin/dashboard/lingkungan-data', [DashboardController::class, 'get
     Route::get('/scan-qr', QrScanner::class)->name('scan.qr');
     Route::get('/jadwal-mcu/{jadwalMcu}/input-hasil', [HasilMcuController::class, 'showInputForm'])->name('hasil.create');
     Route::post('/jadwal-mcu/{jadwalMcu}/input-hasil', [HasilMcuController::class, 'simpanHasil'])->name('hasil.store');
+
+    Route::get('/notifications/dashboard', NotificationDashboard::class)->name('notifications.dashboard');
+    Route::get('/notifications/history', NotificationHistory::class)->name('notifications.history');
 
     // Manajemen Pengguna (Tambah Admin & Dokter)
     Route::get('/tambah-admin', TambahAdmin::class)->name('admin.create');

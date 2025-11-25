@@ -58,4 +58,35 @@ class JadwalMcu extends Model
     {
         return $this->hasMany(JadwalPoli::class, 'jadwal_mcus_id');
     }
+
+    /**
+     * Relasi dinamis untuk mendapatkan data Pasien (baik Karyawan atau Peserta MCU).
+     * Ini digunakan di Livewire untuk menyatukan relasi.
+     * * @return BelongsTo|MorphTo
+     */
+    public function patient()
+    {
+        // Jika ada karyawan_id, gunakan relasi karyawan.
+        if ($this->karyawan_id !== null) {
+            return $this->karyawan();
+        }
+        
+        // Jika ada peserta_mcus_id, gunakan relasi pesertaMcu.
+        if ($this->peserta_mcus_id !== null) {
+            return $this->pesertaMcu();
+        }
+
+        // Fallback: Gunakan kolom lokal di JadwalMcu sebagai object dummy
+        return new class extends BelongsTo {
+            public function getResults() {
+                // Membuat objek Patient palsu dari data lokal JadwalMcu
+                return (object)[
+                    'nama_lengkap' => $this->getParent()->nama_pasien ?? 'Pasien Tidak Terdaftar',
+                    'nama_karyawan' => $this->getParent()->nama_pasien ?? 'Pasien Tidak Terdaftar',
+                    'nik_karyawan' => $this->getParent()->nik_pasien ?? 'N/A',
+                    'no_sap' => $this->getParent()->no_sap ?? 'N/A',
+                ];
+            }
+        };
+    }
 }

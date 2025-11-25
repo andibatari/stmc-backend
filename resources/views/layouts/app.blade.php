@@ -202,6 +202,31 @@
                                 </li>
                             </ul>
                         </li>
+
+                        {{-- START - MENU BARU UNTUK MANAJEMEN NOTIFIKASI --}}
+                        <li class="my-1">
+                            <button id="toggleNotifikasi" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 
+                                    {{ request()->routeIs('notifications.*') ? 'active bg-red-700' : '' }}">
+                                <span class="flex items-center">
+                                    {{-- Menggunakan ikon Bell untuk Notifikasi --}}
+                                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.38-1.12-2.5-2.5-2.5S8.5 2.62 8.5 4v.68C5.63 5.36 4 7.93 4 11v5l-2 2v1h20v-1l-2-2z"/></svg>
+                                    <span>Manajemen Notifikasi</span>
+                                </span>
+                                <svg class="h-4 w-4 transform {{ request()->routeIs('notifications.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <ul id="submenuNotifikasi" class="sub-menu pl-8 mt-1 {{ request()->routeIs('notifications.*') ? 'block' : 'hidden' }}">
+                                <li class="my-1">
+                                    <a href="{{ route('notifications.dashboard') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.dashboard') ? 'active bg-red-700' : '' }}">
+                                        Dashboard Notif
+                                    </a>
+                                </li>
+                                <li class="my-1">
+                                    <a href="{{ route('notifications.history') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.history') ? 'active bg-red-700' : '' }}">
+                                        Riwayat Pengiriman
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -371,6 +396,10 @@
             var toggleLingkungan = document.getElementById('toggleLingkungan');
             var submenuLingkungan = document.getElementById('submenuLingkungan');
 
+            // KRITIS: Tambahkan variabel baru untuk Notifikasi
+            var toggleNotifikasi = document.getElementById('toggleNotifikasi');
+            var submenuNotifikasi = document.getElementById('submenuNotifikasi');
+
             // elemen dropdown notifikasi & profil
             var notificationDropdownButton = document.getElementById('notificationDropdownButton');
             var notificationDropdownMenu = document.getElementById('notificationDropdownMenu');
@@ -445,6 +474,11 @@
             });
             toggleLingkungan.addEventListener('click', function() {
                 submenuLingkungan.style.display = submenuLingkungan.style.display === "block" ? "none" : "block";
+            });
+
+            // KRITIS: Tambahkan event listener untuk menu Notifikasi
+            toggleNotifikasi.addEventListener('click', function() {
+                submenuNotifikasi.style.display = submenuNotifikasi.style.display === "block" ? "none" : "block";
             });
 
             // toggle sidebar

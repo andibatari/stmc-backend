@@ -44,4 +44,9 @@ class AdminUser extends Authenticatable
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
+
+    public function notificationLogs(): HasMany
+    {
+        return $this->hasMany(NotificationLog::class, 'admin_users_id');
+    }
 }
