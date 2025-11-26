@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
             $table->string('foto_profil')->nullable();
+            $table->string('fcm_token', 255)->nullable();
 
             $table->unsignedBigInteger('provinsi_id')->nullable();
             $table->unsignedBigInteger('kabupaten_id')->nullable();

@@ -59,34 +59,39 @@ class JadwalMcu extends Model
         return $this->hasMany(JadwalPoli::class, 'jadwal_mcus_id');
     }
 
-    /**
-     * Relasi dinamis untuk mendapatkan data Pasien (baik Karyawan atau Peserta MCU).
-     * Ini digunakan di Livewire untuk menyatukan relasi.
-     * * @return BelongsTo|MorphTo
+     /**
+     * Accessor untuk mendapatkan objek Pasien (Karyawan atau Peserta MCU).
+     * Digunakan sebagai pengganti relasi dinamis yang bermasalah saat Eager Loading.
+     * Dapat diakses via $jadwal->patient
      */
-    public function patient()
+    public function getPatientAttribute()
     {
-        // Jika ada karyawan_id, gunakan relasi karyawan.
-        if ($this->karyawan_id !== null) {
-            return $this->karyawan();
-        }
-        
-        // Jika ada peserta_mcus_id, gunakan relasi pesertaMcu.
-        if ($this->peserta_mcus_id !== null) {
-            return $this->pesertaMcu();
+        // Cek Eager Loading relasi yang sudah ada untuk efisiensi
+        if ($this->relationLoaded('karyawan') && $this->karyawan) {
+            return $this->karyawan;
         }
 
-        // Fallback: Gunakan kolom lokal di JadwalMcu sebagai object dummy
-        return new class extends BelongsTo {
-            public function getResults() {
-                // Membuat objek Patient palsu dari data lokal JadwalMcu
-                return (object)[
-                    'nama_lengkap' => $this->getParent()->nama_pasien ?? 'Pasien Tidak Terdaftar',
-                    'nama_karyawan' => $this->getParent()->nama_pasien ?? 'Pasien Tidak Terdaftar',
-                    'nik_karyawan' => $this->getParent()->nik_pasien ?? 'N/A',
-                    'no_sap' => $this->getParent()->no_sap ?? 'N/A',
-                ];
-            }
-        };
+        if ($this->relationLoaded('pesertaMcu') && $this->pesertaMcu) {
+            return $this->pesertaMcu;
+        }
+        
+        // Jika data pasien tidak dimuat melalui relasi (contoh: di Livewire), muat secara langsung
+        if ($this->karyawan_id) {
+            return $this->karyawan()->first(); // Muat Karyawan
+        }
+
+        if ($this->peserta_mcus_id) {
+            return $this->pesertaMcu()->first(); // Muat PesertaMcu
+        }
+
+        // Fallback: Mengembalikan objek Pasien dummy dari data lokal JadwalMcu
+        return (object)[
+            'nama_lengkap' => $this->nama_pasien ?? 'Pasien Tidak Terdaftar',
+            'nik_karyawan' => $this->nik_pasien ?? 'N/A',
+            'no_sap' => $this->no_sap ?? 'N/A',
+            // Tambahkan properti lain yang mungkin diperlukan di view
+            'email_karyawan' => null, // Email harus di-handle di Livewire
+            'fcm_token' => null,
+        ];
     }
 }

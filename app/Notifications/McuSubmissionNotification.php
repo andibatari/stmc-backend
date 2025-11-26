@@ -30,7 +30,7 @@ class McuSubmissionNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'fcm'];
     }
 
     /**
@@ -43,6 +43,7 @@ class McuSubmissionNotification extends Notification
             ->action('Notification Action', url('/'))
             ->line('Thank you for using our application!');
     }
+    
 
     /**
      * Get the array representation of the notification.
@@ -52,6 +53,7 @@ class McuSubmissionNotification extends Notification
     public function toFCM($notifiable)
     {
         return [
+            // KRITIS: Menggunakan fcm_token dari Model Karyawan
             'token' => $notifiable->fcm_token, 
             'notification' => [
                 'title' => '🚨 Penting: Segera Ajukan Jadwal MCU',

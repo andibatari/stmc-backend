@@ -2,16 +2,18 @@
 
 namespace App\Jobs;
 
+use App\Models\Karyawan;
+use App\Models\NotificationLog;
+use App\Mail\SubmissionReminderMail;
+use App\Notifications\McuSubmissionNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Karyawan; // Target: Model Karyawan
-use App\Models\NotificationLog;
-use App\Mail\SubmissionReminderMail; // Mailable baru
-use App\Notifications\McuSubmissionNotification; // Notifikasi baru
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 use Exception;
 
 class ProcessSubmissionReminders implements ShouldQueue
@@ -19,49 +21,70 @@ class ProcessSubmissionReminders implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $karyawanIds;
-    protected $log;
+    protected $notificationLog;
 
-    public function __construct($karyawanIds, $log)
+    public function __construct(array $karyawanIds, $log)
     {
         $this->karyawanIds = $karyawanIds;
-        $this->log = $log;
+        $this->notificationLog = $log;
     }
 
     public function handle()
     {
-        $emailSuccessCount = 0;
-        $fcmSuccessCount = 0;
+        // Eager load departemen untuk template email
+        $recipients = Karyawan::with('departemen')->whereIn('id', $this->karyawanIds)->get();
+        
+        $successEmailCount = 0;
+        $successAppCount = 0;
         $failedRecipients = [];
-        $recipients = Karyawan::whereIn('id', $this->karyawanIds)->get();
 
         foreach ($recipients as $karyawan) {
+            $email = $karyawan->email_karyawan ?? null;
+            $fcmToken = $karyawan->fcm_token ?? null;
+            $nik = $karyawan->nik_karyawan ?? 'N/A';
             
-            // A. Kirim Email (Gunakan Mailable baru)
-            try {
-                Mail::to($karyawan->email_karyawan)->queue(new SubmissionReminderMail($karyawan, $this->log->scheduled_date));
-                $emailSuccessCount++;
-            } catch (Exception $e) {
-                $failedRecipients[] = ['nik' => $karyawan->nik_karyawan, 'type' => 'Email', 'reason' => $e->getMessage()];
-            }
-
-            // B. Kirim FCM (Gunakan Notifikasi baru)
-            if ($karyawan->fcm_token) {
+            // --- 1. PROSES PENGIRIMAN EMAIL ---
+            if ($email) {
                 try {
-                    $karyawan->notify(new McuSubmissionNotification($karyawan, $this->log->scheduled_date));
-                    $fcmSuccessCount++;
-                } catch (Exception $e) {
-                    $failedRecipients[] = ['nik' => $karyawan->nik_karyawan, 'type' => 'FCM', 'reason' => $e->getMessage()];
+                    Mail::to($email)->send(new SubmissionReminderMail($karyawan, $this->notificationLog->scheduled_date));
+                    $successEmailCount++;
+                } catch (Throwable $e) {
+                    Log::warning("Gagal kirim EMAIL pengajuan MCU ke NIK {$nik}. Error: " . $e->getMessage());
+                    $failedRecipients[] = ['nik' => $nik, 'type' => 'Email', 'reason' => substr($e->getMessage(), 0, 100)];
                 }
             } else {
-                 $failedRecipients[] = ['nik' => $karyawan->nik_karyawan, 'type' => 'FCM', 'reason' => 'FCM Token tidak tersedia'];
+                $failedRecipients[] = ['nik' => $nik, 'type' => 'Email', 'reason' => 'Alamat email tidak tersedia.'];
+            }
+
+            // --- 2. PROSES PENGIRIMAN NOTIFIKASI APLIKASI (FCM) ---
+            if ($fcmToken) {
+                try {
+                    // Panggil notifikasi pada Model Karyawan
+                    $karyawan->notify(new McuSubmissionNotification($karyawan, $this->notificationLog->scheduled_date));
+                    $successAppCount++;
+                } catch (Throwable $e) {
+                    Log::warning("Gagal kirim FCM pengajuan MCU ke NIK {$nik}. Error: " . $e->getMessage());
+                    $failedRecipients[] = ['nik' => $nik, 'type' => 'FCM', 'reason' => substr($e->getMessage(), 0, 100)];
+                }
+            } else {
+                 $failedRecipients[] = ['nik' => $nik, 'type' => 'FCM', 'reason' => 'FCM Token tidak tersedia.'];
             }
         }
 
-        // C. Update Log
-        $this->log->update([
-            'email_success' => $emailSuccessCount,
-            'fcm_success' => $fcmSuccessCount,
-            'failed_recipients' => $failedRecipients,
-        ]);
+        // --- 3. PEMBARUAN LOG ---
+        try {
+            $this->notificationLog->update([
+                'email_success' => $successEmailCount,
+                'fcm_success' => $successAppCount,
+                'failed_recipients' => $failedRecipients,
+            ]);
+        } catch (Throwable $e) {
+            Log::error("Gagal memperbarui NotificationLog (ID: {$this->notificationLog->id}). Error: " . $e->getMessage());
+        }
+    }
+
+    public function failed(Throwable $exception)
+    {
+        Log::critical("Job ProcessSubmissionReminders GAGAL TOTAL. Log ID: {$this->notificationLog->id}. Error: " . $exception->getMessage());
     }
 }

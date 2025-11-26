@@ -52,7 +52,20 @@ class Karyawan extends Model
         'foto_profil',
         'tinggi_badan',
         'berat_badan',
+        'fcm_token',
     ];
+
+    // Accesor untuk mengambil email (Jika Job menggunakan $karyawan->email_karyawan)
+    public function getEmailKaryawanAttribute()
+    {
+        return $this->attributes['email']; // Mengambil dari kolom 'email'
+    }
+
+    // Accesor untuk mengambil FCM Token
+    public function getFcmTokenAttribute()
+    {
+        return $this->attributes['fcm_token'] ?? null;
+    }
 
     public function jadwalMcu()
     {

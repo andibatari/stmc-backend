@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable; // PENTING
 
 class PesertaMcu extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable; 
 
     protected $table = 'peserta_mcus'; // Pastikan nama tabelnya sudah benar
 
@@ -38,6 +39,7 @@ class PesertaMcu extends Model
         'unit_kerjas_id',
         'tinggi_badan',
         'berat_badan',
+        'fcm_token',
     ];
 
     /**
@@ -91,5 +93,16 @@ class PesertaMcu extends Model
     {
         return $this->hasMany(JadwalMcu::class, 'peserta_mcus_id');
     }
+    // Accessor untuk konsistensi di Job/Mailable
+    public function getEmailKaryawanAttribute()
+    {
+        return $this->attributes['email']; // Menggunakan kolom 'email'
+    }
+
+    public function getFcmTokenAttribute()
+    {
+        return $this->attributes['fcm_token'] ?? null;
+    }
+
 
 }

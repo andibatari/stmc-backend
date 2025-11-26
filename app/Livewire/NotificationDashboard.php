@@ -207,9 +207,6 @@ class NotificationDashboard extends Component
 
     public function render()
     {
-        // Tetap panggil loadJadwals di sini untuk memastikan data terbaru
-        $this->loadData();
-
         return view('livewire.notification-dashboard')
         ->layout('layouts.app');
     }
