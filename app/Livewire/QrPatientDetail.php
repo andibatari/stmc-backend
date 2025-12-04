@@ -50,6 +50,11 @@ class QrPatientDetail extends Component
         'resumeData.kesegaran' => 'nullable|string|max:255',
         'resumeData.temuan_lain' => 'nullable|string|max:255',
 
+        // --- RULES BARU UNTUK THORAX, TREADMILL, USG ---
+        'resumeData.thorax_photo' => 'nullable|string|max:255',
+        'resumeData.treadmill' => 'nullable|string|max:255',
+        'resumeData.usg' => 'nullable|string|max:255',
+
         'resumeSaran' => 'nullable|string|max:5000',
         'resumeKategori' => 'nullable|string|max:255',
     ];
@@ -62,7 +67,10 @@ class QrPatientDetail extends Component
         $this->jadwal = $jadwal;
 
         // Memuat data resume yang sudah ada (jika ada)
-        $this->resumeData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : $this->getDefaultResumeData(); // <-- UBAH
+        // Gunakan getDefaultResumeData() untuk memastikan semua field baru terisi null jika belum ada data.
+        $existingData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : [];
+        $this->resumeData = array_merge($this->getDefaultResumeData(), $existingData);
+
         $this->resumeSaran = $jadwal->resume_saran ?? '';
         $this->resumeKategori = $jadwal->resume_kategori ?? '';
     }
@@ -73,7 +81,8 @@ class QrPatientDetail extends Component
         return [
             'bmi' => null, 'laboratorium' => null, 'ecg' => null,
             'gigi' => null, 'mata' => null, 'spirometri' => null,
-            'audiometri' => null, 'kesegaran' => null, 'temuan_lain' => null,
+            'audiometri' => null, 'kesegaran' => null, 'temuan_lain' => null, 'thorax_photo' => null,
+            'treadmill' => null, 'usg' => null,
         ];
     }
 
@@ -197,7 +206,7 @@ class QrPatientDetail extends Component
     
     public function render()
     {
-        $this->jadwal->refresh()->load(['karyawan', 'pesertaMcu', 'paketMcu.poli', 'jadwalPoli.poli']);
+        $this->jadwal->refresh()->load(['karyawan', 'pesertaMcu', 'paketMcu.poli', 'jadwalPoli.poli','dokter']);
         $relatedPatient = $this->jadwal->karyawan ?? $this->jadwal->pesertaMcu;
         
         if ($relatedPatient) {

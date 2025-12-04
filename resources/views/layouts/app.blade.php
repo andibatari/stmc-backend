@@ -8,6 +8,8 @@
     <!-- Tailwind CSS -->
     {{-- untuk memuat Tailwind CSS ke dalam halaman web --}}
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -16,12 +18,13 @@
             background-color: #7f1d1d; /* bg-red-800 lighter */
         }
         .sub-menu {
-            display: none;
+            /* KRITIS: Hapus display: none; di sini agar JS bisa mengontrol style.display */
         }
         /* Menyesuaikan tinggi navigasi agar tidak menyebabkan scroll pada keseluruhan sidebar */
         .sidebar-nav-container {
             flex-grow: 1;
-            /* overflow-y: auto; */
+            overflow-y: auto; 
+            overflow-x: hidden;
             height: 0; /* Penting: Setel tinggi awal ke 0 agar flex-grow dapat bekerja dengan benar */
         }
 
@@ -43,7 +46,6 @@
             transform: translateX(0%);
         }
         
-
         /* Styling untuk header */
         .main-header {
             position: sticky;
@@ -124,9 +126,9 @@
                                     <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                     <span>Manajemen Pasien</span>
                                 </span>
-                                <svg class="h-4 w-4 transform {{ request()->routeIs('karyawan.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg id="arrowKaryawan" class="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <ul id="submenuKaryawan" class="sub-menu pl-8 mt-1 {{ request()->routeIs('karyawan.*') ? 'block' : '' }}">
+                            <ul id="submenuKaryawan" class="sub-menu pl-8 mt-1 {{ request()->routeIs('karyawan.*') ? 'block' : 'hidden' }}">
                                 <li class="my-1">
                                     <a href="{{ route('karyawan.index') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('karyawan.index') ? 'active bg-red-700' : '' }}">
                                         Daftar Pasien
@@ -141,7 +143,7 @@
                                     <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
                                     <span>Manajemen Jadwal</span>
                                 </span>
-                                <svg class="h-4 w-4 transform {{ request()->routeIs('jadwal.*') || request()->routeIs('scan.qr') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg id="arrowJadwal" class="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
 
                             <ul id="submenuJadwal" class="sub-menu pl-8 mt-1 {{ request()->routeIs('jadwal.*') || request()->routeIs('scan.qr') ? 'block' : 'hidden' }}">
@@ -157,16 +159,58 @@
                                 </li>
                             </ul>
                         </li>
+                        
+                        <li class="my-1">
+                            <button id="toggleLingkungan" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 {{ request()->routeIs('pemantauan.*') ? 'active bg-red-700' : '' }}">
+                                <span class="flex items-center">
+                                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-8-3z"/></svg>
+                                    <span>Manajemen Lingkungan</span>
+                                </span>
+                                <svg id="arrowLingkungan" class="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <ul id="submenuLingkungan" class="sub-menu pl-8 mt-1 {{ request()->routeIs('pemantauan.*') ? 'block' : 'hidden' }}">
+                                <li class="my-1">
+                                    <a href="{{ route('pemantauan.index') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('pemantauan.index') ? 'active bg-red-700' : '' }}">
+                                        Pemantauan Lingkungan
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        {{-- START - MENU BARU UNTUK MANAJEMEN NOTIFIKASI --}}
+                        <li class="my-1">
+                            <button id="toggleNotifikasi" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 
+                                {{ request()->routeIs('notifications.*') ? 'active bg-red-700' : '' }}">
+                                <span class="flex items-center">
+                                    {{-- Menggunakan ikon Bell untuk Notifikasi --}}
+                                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.38-1.12-2.5-2.5-2.5S8.5 2.62 8.5 4v.68C5.63 5.36 4 7.93 4 11v5l-2 2v1h20v-1l-2-2z"/></svg>
+                                    <span>Manajemen Notifikasi</span>
+                                </span>
+                                <svg id="arrowNotifikasi" class="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <ul id="submenuNotifikasi" class="sub-menu pl-8 mt-1 {{ request()->routeIs('notifications.*') ? 'block' : 'hidden' }}">
+                                <li class="my-1">
+                                    <a href="{{ route('notifications.dashboard') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.dashboard') ? 'active bg-red-700' : '' }}">
+                                        Dashboard Notif
+                                    </a>
+                                </li>
+                                <li class="my-1">
+                                    <a href="{{ route('notifications.history') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.history') ? 'active bg-red-700' : '' }}">
+                                        Riwayat Pengiriman
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         {{-- START - MENU BARU UNTUK MANAJEMEN ADMIN DAN DOKTER --}}
                         <li class="my-1">
-                            <button id="toggleAdmin" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200">
+                            <button id="toggleAdmin" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 {{ request()->routeIs('admin.create') || request()->routeIs('admin.tambah-dokter') || request()->routeIs('paket-poli') ? 'active bg-red-700' : '' }}">
                                 <span class="flex items-center">
                                     <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
                                     <span>Manajemen Layanan</span>
                                 </span>
-                                <svg class="h-4 w-4 transform rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                <svg id="arrowAdmin" class="h-4 w-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                             <ul id="submenuAdmin" class="sub-menu pl-8 mt-1 {{ request()->routeIs('admin.*') ? 'block' : '' }}">
+                            <ul id="submenuAdmin" class="sub-menu pl-8 mt-1 {{ request()->routeIs('admin.create') || request()->routeIs('admin.tambah-dokter') || request()->routeIs('paket-poli') ? 'block' : 'hidden' }}">
                                 <li class="my-1">
                                     <a href="{{ route('admin.create') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 
                                         {{ request()->routeIs('admin.create') ? 'active bg-red-700' : '' }}">
@@ -182,47 +226,6 @@
                                 <li class="my-1">
                                     <a href="{{ route('paket-poli') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('layanan.kelola') ? 'active bg-red-700' : '' }}">
                                         Kelola Paket & Poli
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li class="my-1">
-                            <button id="toggleLingkungan" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 {{ request()->routeIs('pemantauan.*') ? 'active bg-red-700' : '' }}">
-                                <span class="flex items-center">
-                                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L4 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-8-3z"/></svg>
-                                    <span>Manajemen Lingkungan</span>
-                                </span>
-                                <svg class="h-4 w-4 transform {{ request()->routeIs('pemantauan.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <ul id="submenuLingkungan" class="sub-menu pl-8 mt-1 {{ request()->routeIs('pemantauan.*') ? 'block' : 'hidden' }}">
-                                <li class="my-1">
-                                    <a href="{{ route('pemantauan.index') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('pemantauan.index') ? 'active bg-red-700' : '' }}">
-                                        Pemantauan Lingkungan
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        {{-- START - MENU BARU UNTUK MANAJEMEN NOTIFIKASI --}}
-                        <li class="my-1">
-                            <button id="toggleNotifikasi" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg mx-3 transition-colors duration-200 
-                                    {{ request()->routeIs('notifications.*') ? 'active bg-red-700' : '' }}">
-                                <span class="flex items-center">
-                                    {{-- Menggunakan ikon Bell untuk Notifikasi --}}
-                                    <svg class="h-5 w-5 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.38-1.12-2.5-2.5-2.5S8.5 2.62 8.5 4v.68C5.63 5.36 4 7.93 4 11v5l-2 2v1h20v-1l-2-2z"/></svg>
-                                    <span>Manajemen Notifikasi</span>
-                                </span>
-                                <svg class="h-4 w-4 transform {{ request()->routeIs('notifications.*') ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </button>
-                            <ul id="submenuNotifikasi" class="sub-menu pl-8 mt-1 {{ request()->routeIs('notifications.*') ? 'block' : 'hidden' }}">
-                                <li class="my-1">
-                                    <a href="{{ route('notifications.dashboard') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.dashboard') ? 'active bg-red-700' : '' }}">
-                                        Dashboard Notif
-                                    </a>
-                                </li>
-                                <li class="my-1">
-                                    <a href="{{ route('notifications.history') }}" class="sidebar-link block p-3 text-sm text-gray-300 hover:bg-red-700 rounded-lg mx-1 transition-colors duration-200 {{ request()->routeIs('notifications.history') ? 'active bg-red-700' : '' }}">
-                                        Riwayat Pengiriman
                                     </a>
                                 </li>
                             </ul>
@@ -264,7 +267,7 @@
                     {{-- DROPDOWN NOTIFIKASI TUNGGAL --}}
                     <div class="relative">
                         <button id="notificationDropdownButton" class="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors duration-150 relative focus:outline-none">
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 3 0 11-6 0v-1m6 0H9"></path></svg>
                             
                             {{-- Badge Notifikasi HANYA JIKA ADA UNREAD (ASUMSI LOGIKA LIVEWIRE/BACKEND SUDAH MENGAMBIL NILAI INI) --}}
                             @if (isset($unreadNotificationsCount) && $unreadNotificationsCount > 0)
@@ -405,6 +408,14 @@
             var notificationDropdownMenu = document.getElementById('notificationDropdownMenu');
             var profileDropdownButton = document.getElementById('profileDropdownButton');
             var profileDropdownMenu = document.getElementById('profileDropdownMenu');
+            
+            // KRITIS: Panah
+            var arrowKaryawan = document.getElementById('arrowKaryawan');
+            var arrowJadwal = document.getElementById('arrowJadwal');
+            var arrowAdmin = document.getElementById('arrowAdmin');
+            var arrowLingkungan = document.getElementById('arrowLingkungan');
+            var arrowNotifikasi = document.getElementById('arrowNotifikasi');
+
 
             /**
              * Fungsi untuk mengaktifkan/menonaktifkan dropdown.
@@ -423,6 +434,68 @@
                 // Toggle kelas 'hidden' pada menu yang dituju
                 menu.classList.toggle('hidden');
             }
+            
+            /**
+             * Fungsi untuk mengelola toggle submenu dan rotasi panah.
+             * @param {HTMLElement} submenu - Elemen UL submenu.
+             * @param {HTMLElement} arrow - Elemen SVG panah.
+             * @param {boolean} forceOpen - Memaksa menu terbuka saat inisialisasi.
+             */
+            function toggleSubmenu(submenu, arrow, forceOpen = false) {
+                // KRITIS: Periksa status display, bukan kelas 'hidden' dari Blade yang mungkin sudah dihilangkan.
+                const isCurrentlyOpen = submenu.style.display === 'block';
+
+                if (forceOpen || !isCurrentlyOpen) {
+                    submenu.style.display = 'block'; // Tampilkan
+                    arrow.classList.add('rotate-180');
+                } else {
+                    submenu.style.display = 'none'; // Sembunyikan
+                    arrow.classList.remove('rotate-180');
+                }
+            }
+            
+            /**
+             * Fungsi untuk mengelola klik menu utama (toggle)
+             * @param {HTMLElement} submenu - Elemen UL submenu.
+             * @param {HTMLElement} arrow - Elemen SVG panah.
+             */
+            function handleMenuClick(submenu, arrow) {
+                // Hapus kelas 'hidden' jika ada (ini diberikan oleh Blade saat tidak aktif)
+                // Ini memastikan JS mengambil alih kontrol display dari CSS/Blade
+                if (submenu.classList.contains('hidden')) {
+                    submenu.classList.remove('hidden');
+                    submenu.style.display = 'none'; // Set display ke none jika sebelumnya disembunyikan oleh Blade
+                }
+                
+                toggleSubmenu(submenu, arrow);
+            }
+            
+            // --- INICIALISASI STATUS MENU SAAT LOAD ---
+            // Kita tentukan menu mana yang harus terbuka saat halaman dimuat (berdasarkan route aktif)
+
+            const menuConfigs = [
+                { toggle: toggleKaryawan, submenu: submenuKaryawan, arrow: arrowKaryawan, routeActive: {{ request()->routeIs('karyawan.*') ? 'true' : 'false' }} },
+                { toggle: toggleJadwal, submenu: submenuJadwal, arrow: arrowJadwal, routeActive: {{ request()->routeIs('jadwal.*') || request()->routeIs('scan.qr') ? 'true' : 'false' }} },
+                { toggle: toggleAdmin, submenu: submenuAdmin, arrow: arrowAdmin, routeActive: {{ request()->routeIs('admin.create') || request()->routeIs('admin.tambah-dokter') || request()->routeIs('paket-poli') ? 'true' : 'false' }} },
+                { toggle: toggleLingkungan, submenu: submenuLingkungan, arrow: arrowLingkungan, routeActive: {{ request()->routeIs('pemantauan.*') ? 'true' : 'false' }} },
+                { toggle: toggleNotifikasi, submenu: submenuNotifikasi, arrow: arrowNotifikasi, routeActive: {{ request()->routeIs('notifications.*') ? 'true' : 'false' }} }
+            ];
+
+            menuConfigs.forEach(config => {
+                // 1. Inisialisasi: Hapus kelas 'hidden' dari Blade jika rute aktif, dan atur display ke 'block'
+                if (config.routeActive === 'true') {
+                    config.submenu.classList.remove('hidden');
+                    config.submenu.style.display = 'block';
+                    config.arrow.classList.add('rotate-180');
+                } else {
+                    // Jika tidak aktif, pastikan display tetap none
+                    config.submenu.style.display = 'none';
+                }
+                
+                // 2. Tambahkan event listener untuk toggle manual
+                config.toggle.addEventListener('click', () => handleMenuClick(config.submenu, config.arrow));
+            });
+
 
             // Tambahkan event listener untuk tombol dropdown
             notificationDropdownButton.addEventListener('click', function(event) {
@@ -455,32 +528,6 @@
                 }
             }
 
-            // toggle submenu karyawan
-            toggleKaryawan.addEventListener('click', function() {
-                submenuKaryawan.style.display = 
-                    submenuKaryawan.style.display === "block" ? "none" : "block";
-            });
-
-            // toggle submenu jadwal
-            toggleJadwal.addEventListener('click', function() {
-                submenuJadwal.style.display = 
-                    submenuJadwal.style.display === "block" ? "none" : "block";
-            });
-            
-            // Tambahkan event listener untuk menu Admin
-            toggleAdmin.addEventListener('click', function() {
-                submenuAdmin.style.display = 
-                    submenuAdmin.style.display === "block" ? "none" : "block";
-            });
-            toggleLingkungan.addEventListener('click', function() {
-                submenuLingkungan.style.display = submenuLingkungan.style.display === "block" ? "none" : "block";
-            });
-
-            // KRITIS: Tambahkan event listener untuk menu Notifikasi
-            toggleNotifikasi.addEventListener('click', function() {
-                submenuNotifikasi.style.display = submenuNotifikasi.style.display === "block" ? "none" : "block";
-            });
-
             // toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 sidebar.classList.toggle('sidebar-open');
@@ -503,7 +550,7 @@
         });
 
         // Di dalam <script> di layout Anda
-       document.addEventListener('livewire:initialized', () => {
+        document.addEventListener('livewire:initialized', () => {
     
             Livewire.on('view-merged-pdf', (event) => { 
                 // KRITIS: Ambil data payload dari array event[0]
@@ -531,7 +578,7 @@
             
             // ... listener lain
         });
-</script>
+    </script>
     @livewireScripts
     @stack('scripts') {{-- Pastikan baris ini ada --}}
 </body>

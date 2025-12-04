@@ -174,7 +174,7 @@
 
                             {{-- BAGIAN BARU: INPUT FIELD UNTUK BUTIR 1 SAMPAI 9 --}}
                             <div class="space-y-4 border p-4 rounded-lg bg-white">
-                                <h4 class="text-lg font-semibold text-gray-700">Hasil Pemeriksaan (Butir 1-9)</h4>
+                                <h4 class="text-lg font-semibold text-gray-700">Hasil Pemeriksaan</h4>
 
                                 @php
                                 $resumeFields = [
@@ -187,6 +187,9 @@
                                     'audiometri' => ['label' => '7. Hasil Pemeriksaan Audiometri', 'placeholder' => 'Contoh: Dalam Batas Normal'],
                                     'kesegaran' => ['label' => '8. Hasil Pemeriksaan Kesegaran Jasmani', 'placeholder' => 'Contoh: sangat kurang'],
                                     'temuan_lain' => ['label' => '9. Temuan lain', 'placeholder' => 'Contoh: Hipertensi'],
+                                    'thorax_photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Contoh: Cor, Pulmo dalam batas normal'],
+                                    'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Contoh: Negatif/Positif'],
+                                    'usg' => ['label' => '12. USG', 'placeholder' => 'Contoh: Fatty Liver/Normal'],
                                 ];
                                 @endphp
                                 

@@ -16,10 +16,26 @@ class McuPdfController extends Controller
      */
     protected function generateResumePdfObject(JadwalMcu $jadwal)
     {
+        // PENTING: Eager load relasi dokter
+        $jadwal->load(['dokter', 'paketMcu']);
+        
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
         if (!$patient) {
              // Handle jika pasien tidak ditemukan
              return null;
+        }
+        
+        // KRITIS: Mengambil data dokter
+        $doctor = $jadwal->dokter;
+
+        // Pengecekan keamanan: Pastikan $doctor adalah objek Model sebelum mengakses propertinya
+        $doctorName = 'Dokter Tidak Ditunjuk';
+        $doctorNip = 'NIP. N/A';
+
+        if ($doctor) {
+            // KRITIS: Coba ambil nama dari beberapa kemungkinan kolom di Model Dokter
+            $doctorName = $doctor->nama_lengkap ?? $doctor->name ?? $doctor->nama ?? 'Dokter Tidak Ditunjuk';
+            $doctorNip = $doctor->nip ?? 'NIP. XXXXXXXXXXXXX';
         }
 
         $data = [
@@ -30,9 +46,16 @@ class McuPdfController extends Controller
             'resume_body_raw' => $jadwal->resume_body,
             'resume_saran' => $jadwal->resume_saran,
             'resume_kategori' => $jadwal->resume_kategori,
+            'doctor_data' => [
+                'nama' => $doctorName,
+                'nip' => $doctorNip,
+            ],
             'patient_data' => [
                 'nama' => $patient->nama_lengkap ?? $patient->nama_karyawan,
                 'alamat' => $patient->alamat ?? 'N/A',
+                'tgl_lahir' => $patient->tanggal_lahir ?? $patient->tanggal_lahir,
+                'jenis_kelamin' => $patient->jenis_kelamin ?? ($patient->jenis_kelamin == 'M' ? 'Laki-laki' : 'Perempuan'),
+                'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A',
                 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
                 'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A',
                 'nab_suhu_kerja' => 28.0 
@@ -48,7 +71,7 @@ class McuPdfController extends Controller
      */
     public function downloadResume($jadwalId)
     {
-         $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu', 'paketMcu'])->findOrFail($jadwalId);
+         $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu', 'paketMcu','dokter'])->findOrFail($jadwalId);
          $resumePdf = $this->generateResumePdfObject($jadwal);
          
          $patientName = ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_lengkap ?? ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_karyawan ?? 'Pasien';

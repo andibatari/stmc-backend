@@ -48,7 +48,13 @@
         /* Data Pasien & Content */
         .data-pasien { margin-bottom: 5px; }
         .data-pasien table { width: 100%; border-collapse: collapse; }
-        .data-pasien td { padding: 2px 0; vertical-align: top; }
+        .data-pasien td { padding: 2px 0; vertical-align: top; font-size: 10pt; }
+
+        /* KRITIS: Lebar kolom untuk table data pasien */
+        .data-pasien .label-col { width: 15%; padding-right: 5px; }
+        .data-pasien .colon-col { width: 1%; }
+        .data-pasien .value-col { width: 37%; }
+
         .content-section { margin-top: 2px; }
         .pre-wrap { white-space: pre-wrap; }
         .saran-list { 
@@ -85,30 +91,40 @@
     <div class="data-pasien">
         <table>
             <tr>
-                <td style="width: 15%;">Kepada Yth.</td>
+                <td colspan="6">Kepada Yth.</td>
             </tr>
             <tr>
-                <td>Nama</td>
-                <td>:</td>
-                <td>{{ $patient_data['nama'] }}</td>
+                <td class="label-col">Nama</td>
+                <td class="colon-col">:</td>
+                <td class="value-col">{{ $patient_data['nama'] }}</td>
+                <td class="label-col">Tgl. Lahir</td>
+                <td class="colon-col">:</td>
+                <td class="value-col">{{ $patient_data['tgl_lahir'] }}</td>
             </tr>
-            {{-- ... (Data pasien lainnya) ... --}}
             <tr>
                 <td>Alamat</td>
                 <td>:</td>
                 <td>{{ $patient_data['alamat'] }}</td>
+                <td>Jenis Kelamin</td>
+                <td>:</td>
+                <td>{{ $patient_data['jenis_kelamin'] }}</td>
             </tr>
             <tr>
                 <td>NIK / SAP</td>
                 <td>:</td>
                 <td>{{ $patient_data['nik_sap'] }}</td>
+                <td>Paket MCU</td>
+                <td>:</td>
+                <td>{{ $patient_data['paket_mcu'] }}</td>
             </tr>
             <tr>
                 <td>Unit Kerja</td>
                 <td>:</td>
                 <td>{{ $patient_data['unit_kerja'] }}</td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
-        </table>
     </div>
 
     {{-- ... (Konten Hormat dan Hasil Pemeriksaan Tetap Sama) ... --}}
@@ -128,8 +144,8 @@
         $resumeMap = [
             'bmi' => 'BMI', 'laboratorium' => 'Hasil Laboratorium', 'ecg' => 'Hasil Pemeriksaan ECG / Rekam Jantung',
             'gigi' => 'Hasil Pemeriksaan Gigi', 'mata' => 'Hasil Pemeriksaan Mata', 'spirometri' => 'Hasil Pemeriksaan Spirometri',
-            'audiometri' => 'Hasil Pemeriksaan Audiometri', 'kesegaran' => 'Hasil Pemeriksaan Kesegaran Jasmani',
-            'temuan_lain' => 'Temuan lain',
+            'audiometri' => 'Hasil Pemeriksaan Audiometri', 'kesegaran' => 'Hasil Pemeriksaan Kesegaran Jasmani', 'thorax_photo' => 'Hasil Pemeriksaan Thorax Photo',
+            'treadmill' => 'Hasil Treadmill', 'usg' => 'Hasil USG','temuan_lain' => 'Temuan lain',
         ];
 
         $i = 1;
@@ -182,12 +198,15 @@
         <p style="font-weight: bold; font-size: 12pt;">{{ $resume_kategori ?? 'N/A' }}</p>
     </div>
     
-    <div style="margin-top: 15px; text-align: right;">
-        <p>Gowa, {{ $tanggal_cetak }}</p>
+    <div style="margin-top: 5px; text-align: right;">
+        <p>Pangkep, {{ $tanggal_cetak }}</p>
         <p style="margin-bottom: 70px;">Dokter Pemeriksa,</p>
-        <p style="font-weight: bold;">(Nama Dokter)</p>
-        <p>NIP. XXXXXXXXXXXXX</p>
-    </div>
+        @php
+            // Asumsi $doctor_data memiliki 'nama' dan 'nip' yang dimuat dari Livewire
+            $doctorName = $doctor_data['nama'] ?? '(Nama Dokter)';
+        @endphp
+        <p style="font-weight: bold;">({{ $doctor_data['nama'] ?? 'Dokter Tidak Ditunjuk' }})</p>
+        <p style="margin: 0;">{{ $doctor_data['nip'] ?? 'NIP. XXXXXXXXXXXXX' }}</p>    </div>
 
 </body>
 </html>
