@@ -32,7 +32,7 @@ use App\Models\FisikResult;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Rute untuk Otentikasi (Login & Logout)
