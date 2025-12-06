@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Jika lingkungan bukan lokal (i.e., di DigitalOcean) dan APP_URL menggunakan https,
+        // paksa Laravel untuk menghasilkan URL menggunakan https://
+        if ($this->app->environment('production') && config('app.url') === env('APP_URL')) {
+            URL::forceScheme('https');
+        }
     }
 }
