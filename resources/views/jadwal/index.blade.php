@@ -3,41 +3,41 @@
 @section('title', 'Manajemen Jadwal / Daftar Jadwal')
 
 @section('content')
-<div class="container mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Manajemen Jadwal MCU</h1>
+<div class="container mx-auto p-1 lg:p-4">
+    <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 lg:mb-6">Manajemen Jadwal MCU</h1>
 
-    <div class="bg-white rounded-xl shadow-lg p-8">
-        <div class="flex flex-col md:flex-row md:justify-between mb-6">
+    <div class="bg-white rounded-xl shadow-lg p-4 lg:p-8">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
             <div class="mb-4 md:mb-0">
-                <h2 class="text-xl font-semibold text-gray-700">Daftar Jadwal</h2>
+                <h2 class="text-lg font-semibold text-gray-700">Daftar Jadwal</h2>
             </div>
             <div>
-                <a href="{{ route('jadwal.create') }}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-150 ease-in-out">
+                <a href="{{ route('jadwal.create') }}" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-lg transition duration-150 ease-in-out text-sm">
                     + Tambah Jadwal
                 </a>
             </div>
         </div>
 
         <form method="GET" action="{{ route('jadwal.index') }}">
-            <div class="flex flex-col md:flex-row md:items-end md:justify-start gap-4 mb-6">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-start gap-3 mb-4 lg:gap-4 lg:mb-6">
 
-                <div class="flex-1 md:flex-none">
-                    <label for="tanggal_filter" class="block text-sm font-medium text-gray-700 mb-1">Filter Tanggal</label>
+                <div class="w-full md:w-auto">
+                    <label for="tanggal_filter" class="block text-xs font-medium text-gray-700 mb-1">Filter Tanggal</label>
                     <div class="flex items-center gap-2">
-                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
+                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
                         <button 
                             type="button" 
                             onclick="document.getElementById('tanggal_filter').value = ''; this.closest('form').submit();"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200 whitespace-nowrap"
+                            class="px-3 py-2 text-xs font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200 whitespace-nowrap"
                         >
                             Hapus
                         </button>
                     </div>
                 </div>
 
-                <div class="flex-1 md:flex-none">
-                    <label for="status_jadwal" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select id="status_jadwal" name="status" class="block w-full px-4 py-2 rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
+                <div class="w-full md:w-auto">
+                    <label for="status_jadwal" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                    <select id="status_jadwal" name="status" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
                         <option value="" @if(!$status) selected @endif>All</option>
                         <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Scheduled</option>
                         <option value="Waited" @if($status == 'Waited') selected @endif>Waited</option>
@@ -46,7 +46,7 @@
                     </select>
                 </div>
 
-                <div class="flex-1 md:flex-none md:self-end">
+                <div class="w-full md:w-auto md:self-end">
                     <button 
                         type="button" 
                         onclick="window.location.href = '{{ route('jadwal.index') }}';"
@@ -63,29 +63,39 @@
             <table class="min-w-full bg-white">
                 <thead class="bg-gray-50 sticky top-0">
                     <tr>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">No</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">No Antrean</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">No SAP</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Nama Pasien</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal Pendaftaran</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal MCU</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Dokter</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Paket</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Status</th>
-                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-center">Aksi</th>
+                        <th class="py-2 px-2 text-xs lg:text-sm font-semibold text-gray-600 text-left">No</th>
+                        
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left hidden sm:table-cell">No Antrean</th>
+                        
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left hidden md:table-cell">No SAP</th>
+                        
+                        <th class="py-2 px-2 text-xs lg:text-sm font-semibold text-gray-600 text-left">Nama Pasien</th>
+                        
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left hidden lg:table-cell">Tanggal Pendaftaran</th>
+                        
+                        <th class="py-2 px-2 text-xs lg:text-sm font-semibold text-gray-600 text-left">Tanggal MCU</th>
+                        
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left hidden sm:table-cell">Dokter</th>
+                        
+                        <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left hidden lg:table-cell">Paket</th>
+                        
+                        <th class="py-2 px-2 text-xs lg:text-sm font-semibold text-gray-600 text-left">Status</th>
+                        
+                        <th class="py-2 px-2 text-xs lg:text-sm font-semibold text-gray-600 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($jadwals as $jadwalMcu)
                         <tr>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ ($jadwals->currentPage() - 1) * $jadwals->perPage() + $loop->iteration }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ $jadwalMcu->no_antrean ?? '-' }}</td>
+                            <td class="py-2 px-2 text-xs lg:text-sm text-gray-700">{{ ($jadwals->currentPage() - 1) * $jadwals->perPage() + $loop->iteration }}</td>
                             
-                            <td class="py-3 px-4 text-sm text-gray-700">
+                            <td class="py-3 px-4 text-sm text-gray-700 hidden sm:table-cell">{{ $jadwalMcu->no_antrean ?? '-' }}</td>
+                            
+                            <td class="py-3 px-4 text-sm text-gray-700 hidden md:table-cell">
                                 {{ $jadwalMcu->no_sap ?? '-' }}
                             </td>
 
-                            <td class="py-3 px-4 text-sm text-gray-700">
+                            <td class="py-2 px-2 text-xs lg:text-sm text-gray-700 font-medium">
                                 @if ($jadwalMcu->karyawan_id)
                                     {{ $jadwalMcu->karyawan->nama_karyawan ?? '-' }}
                                 @elseif ($jadwalMcu->peserta_mcus_id)
@@ -95,14 +105,17 @@
                                 @endif
                             </td>
 
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_pendaftaran)->format('d-m-Y') }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d-m-Y') }}</td>
-                            <td class="py-3 px-4 text-sm text-gray-700">
+                            <td class="py-3 px-4 text-sm text-gray-700 hidden lg:table-cell whitespace-nowrap">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_pendaftaran)->format('d-m-Y') }}</td>
+                            
+                            <td class="py-2 px-2 text-xs lg:text-sm text-gray-700 whitespace-nowrap">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d-m-Y') }}</td>
+                            
+                            <td class="py-3 px-4 text-sm text-gray-700 hidden sm:table-cell">
                                 {{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}
                             </td>
-                            <td class="py-3 px-4 text-sm text-gray-700">{{ $jadwalMcu->paketMcu->nama_paket ?? '-' }}</td>
-                            {{-- <td class="py-3 px-4 text-sm text-gray-700">{{ strtoupper($jadwalMcu->tipe_pasien) }}</td> --}}
-                            <td class="py-3 px-4 text-sm text-gray-700">
+                            
+                            <td class="py-3 px-4 text-sm text-gray-700 hidden lg:table-cell">{{ $jadwalMcu->paketMcu->nama_paket ?? '-' }}</td>
+                            
+                            <td class="py-2 px-2 text-xs lg:text-sm text-gray-700">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if($jadwalMcu->status === 'Scheduled') bg-yellow-100 text-yellow-800 @endif
                                     @if($jadwalMcu->status === 'Finished') bg-green-100 text-green-800 @endif
@@ -110,11 +123,12 @@
                                     {{ $jadwalMcu->status }}
                                 </span>
                             </td>
-                            <td class="py-3 px-4 text-sm text-gray-700 text-center relative">
+                            
+                            <td class="py-2 px-2 text-xs lg:text-sm text-gray-700 text-center relative">
                                 <div x-data="{ open: false }" @click.outside="open = false" class="inline-block text-left">
                                     <div>
-                                        <button @click="open = !open; $dispatch('open-dropdown', { id: {{ $jadwalMcu->id }}, event: $event })" type="button" class="flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none" aria-expanded="true" aria-haspopup="true">
-                                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                                        <button @click="open = !open; $dispatch('open-dropdown', { id: {{ $jadwalMcu->id }}, event: $event })" type="button" class="flex items-center text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none p-1" aria-expanded="true" aria-haspopup="true">
+                                            <svg class="h-4 w-4 lg:h-5 lg:w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                                 <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
                                             </svg>
                                         </button>
