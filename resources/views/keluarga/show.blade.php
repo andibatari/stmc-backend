@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Pasien / Daftar Pasien / Detail Pasien')
+@section('title', 'Detail Pasien')
 
 @section('content')
-<div class="container mx-auto p-8">
+<div class="container mx-auto ">
     <livewire:peserta-mcu-detail-manager :pesertaMcu="$pesertaMcu" />
 </div>
 @endsection

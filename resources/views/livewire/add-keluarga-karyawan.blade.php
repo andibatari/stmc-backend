@@ -2,7 +2,7 @@
     
     <h3 class="text-base font-bold text-gray-800 mb-3 border-b pb-1 mt-4">👤 Informasi Dasar Pasien</h3>
 
-    {{-- Bagian 1: Informasi Identitas & Dasar (grid-cols-1 di mobile) --}}
+    {{-- Bagian 1: Informasi Identitas & Dasar --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         
         <div>
@@ -144,7 +144,9 @@
             <input wire:model="password" type="password" id="password" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-2 transition-colors duration-200">
             @error('password') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
-        <div>
+        
+        {{-- Input Konfirmasi Password --}}
+        <div> 
             <label for="password_confirmation" class="block text-xs font-semibold text-gray-700 mb-1">Konfirmasi Password</label>
             <input wire:model="password_confirmation" type="password" id="password_confirmation" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-2 transition-colors duration-200">
             @error('password_confirmation') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror

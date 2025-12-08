@@ -14,11 +14,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\PesertaMcuLogin;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 
 class AddKeluargaKaryawan extends Component
 {
-    // Properti untuk data
-    public ?Karyawan $karyawan = null; // Objek Karyawan jika menambahkan untuk karyawan tertentu
+    // Properti data (Dideklarasikan di awal)
+    public ?Karyawan $karyawan = null; 
     public $karyawan_id;
     public $tipe_anggota = '';
     public $no_sap;
@@ -35,21 +36,20 @@ class AddKeluargaKaryawan extends Component
     public $agama;
     public $no_hp;
     public $email;
-    public $alamat; // Diperbarui menjadi lebih spesifik
+    public $alamat;
     public $password;
     public $password_confirmation;
-    // Properti baru untuk tinggi dan berat badan
     public $tinggi_badan;
     public $berat_badan;
 
-    // Properti untuk dropdown
+    // Properti Dropdown (Dideklarasikan di awal)
     public $departemens_id;
     public $unit_kerjas_id;
     public $provinsi_id;
     public $kabupaten_id;
     public $kecamatan_id;
 
-    // Koleksi untuk data dropdown
+    // Koleksi Dropdown
     public $departemens = [];
     public $unitKerjas = [];
     public $provinsis = [];
@@ -58,38 +58,38 @@ class AddKeluargaKaryawan extends Component
 
     public bool $isNonKaryawan = false;
 
-    // Listener untuk update properti dari JavaScript
-    protected $listeners = ['updateUmur']; // Perbaikan: tidak perlu '=>'
+    protected $listeners = ['updateUmur'];
 
     public function mount($karyawan_id = null)
     {
         $this->karyawan_id = $karyawan_id;
         
-        // Perbaikan: Hanya cari karyawan jika ID diberikan
         if ($this->karyawan_id) {
             $this->karyawan = Karyawan::find($this->karyawan_id);
         }
         
-        $this->isNonKaryawan = is_null($this->karyawan); // Perbaikan: Gunakan properti karyawan
+        $this->isNonKaryawan = is_null($this->karyawan);
         
         $this->departemens = Departemen::orderBy('nama_departemen')->get();
         $this->provinsis = Provinsi::orderBy('nama_provinsi')->get();
 
-        // Perbaikan: Gunakan isNonKaryawan untuk menentukan tipe
         if ($this->isNonKaryawan) {
-            $this->tipe_anggota = 'Non-Karyawan'; // Atur default untuk non-karyawan
+            $this->tipe_anggota = 'Non-Karyawan';
         } else {
-            $this->tipe_anggota = 'Istri'; // Atur default untuk keluarga
+            $this->tipe_anggota = 'Istri'; 
         }
+
+        $this->updatedProvinsiId($this->provinsi_id);
+        $this->updatedDepartemensId($this->departemens_id);
     }
 
-    // Metode untuk validasi
     protected function rules()
     {
         $rules = [
             'tipe_anggota' => 'required|string',
             'no_sap' => 'nullable|string|max:255',
-            'nik_pasien' => 'required|string|max:255|unique:peserta_mcu_logins,nik_pasien',
+            // FIX: NIK unik, tapi hanya di tabel login (peserta_mcu_logins)
+            'nik_pasien' => 'required|string|max:255|unique:peserta_mcu_logins,nik_pasien', 
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => 'required|string',
             'tempat_lahir' => 'nullable|string|max:255',
@@ -98,7 +98,7 @@ class AddKeluargaKaryawan extends Component
             'golongan_darah' => 'nullable|string',
             'pendidikan' => 'nullable|string',
             'pekerjaan' => 'nullable|string|max:255',
-            'perusahaan_asal' => 'nullable|string|max:255',
+            'perusahaan_asal' => $this->tipe_anggota == 'Non-Karyawan' ? 'required|string|max:255' : 'nullable|string|max:255',
             'agama' => 'nullable|string',
             'no_hp' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
@@ -110,17 +110,16 @@ class AddKeluargaKaryawan extends Component
             'berat_badan' => 'nullable|numeric|min:1',
         ];
 
-        // Aturan validasi password & organisasi hanya jika diperlukan
-        if ($this->isNonKaryawan || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
+        if ($this->tipe_anggota == 'Non-Karyawan' || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
             $rules['password'] = 'required|string|min:6|confirmed';
-            $rules['departemens_id'] = 'nullable|exists:departemens,id';
-            $rules['unit_kerjas_id'] = 'nullable|exists:unit_kerjas,id';
+            $rules['password_confirmation'] = 'required|string|min:6';
+            $rules['departemens_id'] = 'nullable';
+            $rules['unit_kerjas_id'] = 'nullable';
         }
 
         return $rules;
     }
     
-    // Metode untuk mengupdate properti umur dari JavaScript
     public function updateUmur($age)
     {
         $this->umur = $age;
@@ -128,17 +127,15 @@ class AddKeluargaKaryawan extends Component
 
     public function updatedTipeAnggota($value)
     {
-        // Logika ini sudah benar, tidak perlu diubah
+        // ...
     }
     
-    // Metode yang akan dijalankan setiap kali properti $departemens_id diubah
     public function updatedDepartemensId($value)
     {
         $this->unit_kerjas_id = null;
         $this->unitKerjas = $value ? UnitKerja::where('departemens_id', $value)->orderBy('nama_unit_kerja')->get() : collect();
     }
 
-    // Metode yang akan dijalankan setiap kali properti $provinsi_id diubah
     public function updatedProvinsiId($value)
     {
         $this->kabupaten_id = null;
@@ -147,7 +144,6 @@ class AddKeluargaKaryawan extends Component
         $this->kecamatans = collect();
     }
 
-    // Metode yang akan dijalankan setiap kali properti $kabupaten_id diubah
     public function updatedKabupatenId($value)
     {
         $this->kecamatan_id = null;
@@ -156,54 +152,52 @@ class AddKeluargaKaryawan extends Component
 
     public function save()
     {
-        // Validasi
         $this->validate();
 
         try {
             DB::beginTransaction();
+            
+            // -----------------------------------------------------
+            // FIX: Gunakan array properti yang hanya berisi data model
+            // -----------------------------------------------------
+            $data = $this->only([
+                'no_sap', 'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 
+                'tanggal_lahir', 'umur', 'golongan_darah', 'pendidikan', 'pekerjaan', 
+                'perusahaan_asal', 'agama', 'no_hp', 'email', 'alamat', 'provinsi_id', 
+                'kabupaten_id', 'kecamatan_id', 'tinggi_badan', 'berat_badan', 
+                'departemens_id', 'unit_kerjas_id', 'tipe_anggota', 'karyawan_id'
+            ]);
+            
+            // Tambahkan kolom yang mungkin ada di tabel tapi tidak di form (optional)
+            $data['fcm_token'] = null;
+            $data['profile_photo_path'] = null;
+            // -----------------------------------------------------
 
-            $data = [
-                'no_sap' => $this->no_sap,
-                'nik_pasien' => $this->nik_pasien,
-                'nama_lengkap' => $this->nama_lengkap,
-                'jenis_kelamin' => $this->jenis_kelamin,
-                'tempat_lahir' => $this->tempat_lahir,
-                'tanggal_lahir' => $this->tanggal_lahir,
-                'umur' => $this->umur,
-                'golongan_darah' => $this->golongan_darah,
-                'pendidikan' => $this->pendidikan,
-                'pekerjaan' => $this->pekerjaan,
-                'perusahaan_asal' => $this->perusahaan_asal,
-                'agama' => $this->agama,
-                'no_hp' => $this->no_hp,
-                'email' => $this->email,
-                'alamat' => $this->alamat,
-                'provinsi_id' => $this->provinsi_id,
-                'kabupaten_id' => $this->kabupaten_id,
-                'kecamatan_id' => $this->kecamatan_id,
-                'departemens_id' => $this->departemens_id,
-                'unit_kerjas_id' => $this->unit_kerjas_id,
-                'tinggi_badan' => $this->tinggi_badan,
-                'berat_badan' => $this->berat_badan,
-            ];
 
-            // Tentukan status pasien: non-karyawan atau anggota keluarga
-            if ($this->isNonKaryawan) {
-                // Pasien non-karyawan. Tetapkan relasi ke null.
+            $isPasienUmum = $this->tipe_anggota == 'Non-Karyawan';
+
+            if ($isPasienUmum) {
+                // Pasien non-karyawan: Relasi & Organisasi disetel null
                 $data['karyawan_id'] = null;
                 $data['tipe_anggota'] = 'Non-Karyawan';
+                $data['departemens_id'] = null;
+                $data['unit_kerjas_id'] = null;
             } else {
-                // Anggota keluarga dari karyawan.
-                $karyawan = Karyawan::findOrFail($this->karyawan_id);
-                $data['karyawan_id'] = $karyawan->id;
+                // Anggota keluarga: Relasi diisi, Organisasi dipertahankan
+                $data['karyawan_id'] = $this->karyawan_id;
                 $data['tipe_anggota'] = $this->tipe_anggota;
+                // data['departemens_id'] & data['unit_kerjas_id'] sudah di-copy dari $this->only()
             }
+            
+            // Hapus key yang null atau tidak ada di properti Livewire untuk menghindari Mass Assignment
+            $data = array_filter($data, fn($value) => !is_null($value));
+
 
             // Simpan data ke tabel peserta_mcus
             $pesertaMcu = PesertaMcu::create($data); 
             
-            // Simpan data login hanya jika pasien adalah non-karyawan atau anggota keluarga
-            if ($this->isNonKaryawan || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
+            // Simpan data login (WAJIB ADA PASSWORD)
+            if ($isPasienUmum || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
                 PesertaMcuLogin::create([
                     'peserta_mcu_id' => $pesertaMcu->id, 
                     'nik_pasien' => $this->nik_pasien,
@@ -211,11 +205,9 @@ class AddKeluargaKaryawan extends Component
                 ]);
             }
             
-            // Arahkan kembali pengguna
             DB::commit();
-            $message = $this->isNonKaryawan ? 'Data pasien non-karyawan berhasil disimpan.' : 'Anggota keluarga berhasil disimpan.';
             
-            if ($this->isNonKaryawan) {
+            if ($isPasienUmum) {
                 $this->dispatch('pesertaSaved');
             } else {
                 $this->dispatch('karyawanSaved');
@@ -223,17 +215,24 @@ class AddKeluargaKaryawan extends Component
 
         } catch (ValidationException $e) {
             DB::rollBack();
+            Log::warning('VALIDATION FAILED (Add Keluarga): ' . json_encode($e->errors()));
             $this->dispatch('show-error-popup', ['message' => 'Gagal menyimpan data karena kesalahan validasi.']);
-            throw $e; // Re-throw the exception to show Livewire validation errors
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            report($e); // Log the exception
-            $this->dispatch('show-error-popup', ['message' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.']);
+            // Logging error EKSPLISIT: Ini menangkap Mass Assignment atau Query Error
+            Log::error('DB TRANSACTION FAILED: ' . $e->getMessage() . ' | Data Attempt: ' . json_encode($data));
+            $this->dispatch('show-error-popup', ['message' => 'Terjadi kesalahan serius saat menyimpan data. Pastikan semua kolom terdaftar di $fillable model PesertaMcu.']);
         }
     }
 
     public function render()
     {
+        // FIX 4: Pastikan $this->kabupatens dan $this->kecamatans dimuat saat render
+        // Ini mengatasi masalah ketika data hilang saat filter
+        $this->kabupatens = $this->provinsi_id ? Kabupaten::where('provinsi_id', $this->provinsi_id)->orderBy('nama_kabupaten')->get() : collect();
+        $this->kecamatans = $this->kabupaten_id ? Kecamatan::where('kabupaten_id', $this->kabupaten_id)->orderBy('nama_kecamatan')->get() : collect();
+        
         return view('livewire.add-keluarga-karyawan');
     }
 }
