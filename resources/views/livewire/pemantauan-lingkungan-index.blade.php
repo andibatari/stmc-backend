@@ -137,6 +137,12 @@
 </div>
 {{-- AKHIR BLOK FILTER DATA --}}
 
+{{-- KRITIS: NOTE UNTUK DETAIL TABEL DI MOBILE --}}
+<div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mt-4 text-sm font-bold" role="alert">
+    <span class="block sm:inline">⚠️ Catatan Penting: Untuk melihat detail data pengukuran (Cahaya, Bising, Debu, Suhu, dll.) secara lengkap, harap gunakan Desktop/Mode Desktop atau putar perangkat Anda ke posisi horizontal (landscape).</span>
+</div>
+{{-- AKHIR NOTE --}}
+
 {{-- Modal Tambah Lokasi Baru di Area Ini (Kontrol ukuran untuk modal) --}}
 @if ($isAddingNewLocation)
 <div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center z-50">
@@ -326,7 +332,7 @@
 
 {{-- Tampilan Tabel Index --}}
 @if ($pemantauanLingkunganGrouped->count() > 0)
-<div class="bg-white rounded-xl shadow-lg p-4 overflow-x-auto mt-4 lg:p-6 lg:mt-8"> <div class="overflow-x-auto">
+<div class="bg-white rounded-xl shadow-lg p-4 overflow-x-auto mt-4 lg:p-6 lg:mt-8"> <div class="overflow-x-auto"> 
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
