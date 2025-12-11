@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController as ApiAuthController; // Beri alias untuk menghindari konflik
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 
 // --- Rute API untuk Aplikasi Mobile Flutter ---
 
+// --- Rute Non-Autentikasi (Misalnya untuk Login) ---
+// Endpoint: /api/login
+Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+
 // Rute ini membutuhkan autentikasi standar (misalnya, Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     
@@ -24,6 +29,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+    
+    // Rute Logout
+    Route::post('/logout', [ApiAuthController::class, 'logout']);
 
     // 2. Rute Manajemen Karyawan (Pengguna Aplikasi)
     // Asumsi: Kita hanya butuh list data dan detail data untuk aplikasi mobile
@@ -60,6 +68,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/review', [App\Http\Controllers\ReviewController::class, 'store']);
 });
 
-// --- Rute Non-Autentikasi (Misalnya untuk Login) ---
-// Endpoint: /api/login
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);

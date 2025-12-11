@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller; // Wajib
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\EmployeeLogin;
+use App\Models\PesertaMcuLogin;
+use App\Models\Karyawan;
+use App\Models\PesertaMcu;
+
+class AuthController extends Controller // Nama file harus AuthController.php di folder Api
+{
+    /**
+     * Logika Login API (Aplikasi Flutter) - Multi-Identity.
+     * Endpoint: POST /api/login
+     */
+    public function login(Request $request) // Menggunakan nama 'login' untuk rute /api/login
+    {
+        // Validasi Input Dasar API (menggunakan identifier tunggal)
+        $identifier = $request->validate([
+            'identifier' => 'required|string', // no_sap, nik, atau email
+            'password' => 'required|string',
+        ]);
+        
+        $input = $identifier['identifier'];
+        $password = $identifier['password'];
+
+        // 1. Identifikasi Pengguna & Coba Otentikasi API
+        $loginUser = $this->findAndAuthenticateApiUser($input, $password);
+
+        if ($loginUser) {
+            
+            // Buat token Sanctum pada model login yang berhasil
+            $token = $loginUser->createToken('flutter-auth-token')->plainTextToken;
+            
+            // Ambil data Profil (Karyawan/Pasien)
+            $profile = $this->getProfileData($loginUser);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login API berhasil.',
+                'token' => $token,
+                'user_profile' => $profile
+            ], 200);
+        }
+
+        // Jika otentikasi API gagal
+        return response()->json([
+            'status' => 'error', 
+            'message' => 'Identitas (SAP/NIK/Email) atau password salah.'
+        ], 401);
+    }
+    
+    /**
+     * Logika Logout API (Menggunakan Token Sanctum).
+     * Endpoint: POST /api/logout
+     */
+    public function logout(Request $request)
+    {
+        // Hapus token Sanctum yang sedang digunakan
+        $request->user()->currentAccessToken()->delete(); 
+        
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Berhasil logout dari API.'
+        ], 200);
+    }
+    
+    // --- Metode Pembantu (Harus disertakan) ---
+    
+    protected function findAndAuthenticateApiUser(string $input, string $password)
+    {
+        // ... (Logika Otentikasi Manual yang telah kita buat)
+        // KARENA INI HANYA UNTUK API, kita bisa menghilangkan logika Web dan fokus pada pencarian model login.
+
+        $loginUser = null;
+        
+        // --- 1. Coba Karyawan (SAP/NIK/Email) ---
+        if (is_numeric($input)) {
+            $loginField = (strlen($input) <= 6) ? 'no_sap' : 'nik_karyawan'; 
+            $loginUser = EmployeeLogin::where($loginField, $input)->first();
+        } elseif (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            $loginUser = EmployeeLogin::whereHas('karyawan', function($q) use ($input) {
+                $q->where('email', $input);
+            })->first();
+        }
+        
+        // --- 2. Coba Pasien Non-Karyawan (NIK/Email) ---
+        if (!$loginUser) {
+            if (is_numeric($input)) {
+                $loginUser = PesertaMcuLogin::where('nik_pasien', $input)->first();
+            } elseif (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+                $loginUser = PesertaMcuLogin::whereHas('pasien', function($q) use ($input) {
+                    $q->where('email', $input);
+                })->first();
+            }
+        }
+        
+        // 3. Verifikasi Password dan Set User
+        if ($loginUser && Hash::check($password, $loginUser->password)) {
+            $guard = $loginUser instanceof EmployeeLogin ? 'karyawan_api' : 'peserta_api';
+            Auth::guard($guard)->setUser($loginUser);
+            return $loginUser;
+        }
+
+        return null;
+    }
+    
+    protected function getProfileData($loginUser)
+    {
+        // Ambil data profil dari relasi karyawan() atau pasien()
+        if ($loginUser instanceof EmployeeLogin) {
+             $karyawan = $loginUser->karyawan()->with('departemen')->first(); 
+             return [
+                 'type' => 'Karyawan',
+                 'id' => $karyawan->id,
+                 'nama' => $karyawan->nama_karyawan,
+                 'no_sap' => $karyawan->no_sap,
+                 'nik' => $karyawan->nik_karyawan,
+                 'departemen' => $karyawan->departemen->nama_departemen ?? null,
+                 'is_employee' => true
+             ];
+        } elseif ($loginUser instanceof PesertaMcuLogin) {
+             $pasien = $loginUser->pasien()->first();
+             return [
+                 'type' => 'Pasien',
+                 'id' => $pasien->id,
+                 'nama' => $pasien->nama_lengkap,
+                 'nik' => $pasien->nik_pasien,
+                 'email' => $pasien->email,
+                 'is_employee' => false
+             ];
+        }
+        return null;
+    }
+}

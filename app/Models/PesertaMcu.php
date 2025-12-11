@@ -89,10 +89,12 @@ class PesertaMcu extends Model
     {
         return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
     }
+
     public function jadwalMcu()
     {
         return $this->hasMany(JadwalMcu::class, 'peserta_mcus_id');
     }
+
     // Accessor untuk konsistensi di Job/Mailable
     public function getEmailKaryawanAttribute()
     {
@@ -104,5 +106,11 @@ class PesertaMcu extends Model
         return $this->attributes['fcm_token'] ?? null;
     }
 
+    // Relasi ke tabel login
+    public function pesertaMcuLogin()
+    {
+        // Asumsi: peserta_mcu_id ada di tabel peserta_mcu_logins
+        return $this->hasOne(PesertaMcuLogin::class, 'peserta_mcu_id', 'id');
+    }
 
 }

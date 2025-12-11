@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable; // Penting!
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Laravel\Sanctum\HasApiTokens; // Wajib untuk API/Flutter
 use App\Models\JadwalMcu;
 use App\Models\Notif; 
 use App\Models\UnitKerja;
@@ -17,8 +19,7 @@ use App\Models\PesertaMcu; // Pastikan model ini diimpor
 
 class Karyawan extends Model
 {
-    use Notifiable;
-    use HasFactory;
+    use Notifiable,HasFactory;
 
     protected $table = 'karyawans';
 
@@ -108,7 +109,7 @@ class Karyawan extends Model
     // Relasi tambahan
     public function employeeLogin()
     {
-        return $this->hasOne(EmployeeLogin::class);
+        return $this->hasOne(EmployeeLogin::class, 'karyawan_id', 'id');
     }
      public function pasangan()
     {

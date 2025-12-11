@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens; // Wajib ditambahkan
 
 class PesertaMcuLogin extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, HasApiTokens; // Gunakan HasApiTokens untuk Sanctum
 
     protected $table = 'peserta_mcu_logins';
 

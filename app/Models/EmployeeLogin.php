@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens; // Wajib ditambahkan
 
 class EmployeeLogin extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens; // Gunakan HasApiTokens untuk Sanctum
 
     /**
      * Nama tabel yang terkait dengan model.
@@ -46,6 +47,6 @@ class EmployeeLogin extends Authenticatable
      */
     public function karyawan()
     {
-        return $this->belongsTo(Karyawan::class);
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 }

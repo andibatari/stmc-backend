@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Karyawan; // Asumsi model Karyawan atau EmployeeLogin digunakan
+use App\Models\AdminUser;
 
 class AuthController extends Controller
 {
@@ -33,54 +34,18 @@ class AuthController extends Controller
             'password' => $credentials['password'],
         ];
 
-        // --- PENANGANAN API (Untuk Flutter) ---
-        if ($request->expectsJson()) {
-            
-            // Coba otentikasi menggunakan guard employee_logins (yang terhubung ke Karyawan)
-            if (Auth::guard('employee_logins')->attempt($customCredentials)) {
-                
-                // Ambil model User/EmployeeLogin yang berhasil login
-                $user = Auth::guard('employee_logins')->user();
-                
-                // Asumsi: Anda memiliki relasi atau data Karyawan yang terhubung ke EmployeeLogin
-                $karyawan = Karyawan::where('no_sap', $user->no_sap)->first();
-                
-                // Buat token Sanctum untuk aplikasi Flutter
-                $token = $user->createToken('flutter-auth-token')->plainTextToken;
-                
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Login API berhasil.',
-                    'token' => $token,
-                    'user_profile' => $karyawan // Kembalikan detail Karyawan untuk Flutter
-                ], 200);
-            }
-
-            // Jika otentikasi API gagal
-            return response()->json([
-                'status' => 'error', 
-                'message' => 'Nomor SAP atau password salah.'
-            ], 401);
-        }
-
         // --- PENANGANAN WEB (Lanjutan dari kode Anda) ---
         
         // Coba otentikasi sebagai Admin (WEB)
         if (Auth::guard('admin_users')->attempt($customCredentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/admin/dashboard');
+             $request->session()->regenerate();
+             return redirect()->intended('/admin/dashboard');
         } 
-
-        // Coba otentikasi sebagai Karyawan (WEB)
-        if (Auth::guard('employee_logins')->attempt($customCredentials)) {
-            $request->session()->regenerate();
-            return redirect()->intended('/karyawan/dashboard');
-        }
 
         // Jika otentikasi WEB gagal
         return back()->withErrors([
-            'no_sap' => 'No SAP atau password salah.',
-        ]) -> onlyInput('no_sap');
+             'no_sap' => 'Akses ditolak. Nomor SAP atau password salah (Hanya untuk Admin).',
+        ])->onlyInput('no_sap');
     }
 
     /**
@@ -88,22 +53,16 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        // --- PENANGANAN API (Untuk Flutter) ---
-        if ($request->expectsJson()) {
-            // Hapus token Sanctum yang sedang digunakan
-            $request->user()->currentAccessToken()->delete();
-            
-            return response()->json([
-                'status' => 'success', 
-                'message' => 'Berhasil logout dari API.'
-            ], 200);
-        }
 
         // --- PENANGANAN WEB ---
+        Auth::guard('admin_users')->logout();
         Auth::logout();
+        
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return redirect('/login')->with('message', 'Anda telah berhasil logout.');
     }
+
+    
 }
