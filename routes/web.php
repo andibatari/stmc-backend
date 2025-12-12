@@ -47,7 +47,7 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
     // Rute untuk memproses pembaruan data (membutuhkan method PUT)
     // Pastikan baris ini ada, menggunakan Route::put
-    Route::put('/admin/profile/update', [AdminProfileController::class, 'update'])->name('admin.profile.update');    
+    Route::put('/profile/update', [AdminProfileController::class, 'update'])->name('admin.profile.update');    
     // Tambahkan rute ini untuk dipanggil oleh AJAX
     Route::get('/admin/dashboard/lingkungan-data', [DashboardController::class, 'getLingkunganDataJson'])->name('dashboard.data_lingkungan');
     // Dashboard Admin
