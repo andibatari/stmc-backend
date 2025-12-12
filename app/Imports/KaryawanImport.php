@@ -52,8 +52,8 @@ class KaryawanImport implements ToModel, WithHeadingRow
             'departemens_id'        => $row['departemens_id'] ?? null,
             'unit_kerjas_id'        => $row['unit_kerjas_id'] ?? null,
             'provinsi_id'           => $row['provinsi_id'] ?? null,
-            'kabupaten_id'          => $row['kabupaten_id'] ?? null,
-            'kecamatan_id'          => $row['kecamatan_id'] ?? null,
+            'nama_kabupaten'        => $row['nama_kabupaten'] ?? null,
+            'nama_kecamatan'        => $row['nama_kecamatan'] ?? null,
             'password'              => bcrypt($row['password'] ?? 'password'),
         ]);
 

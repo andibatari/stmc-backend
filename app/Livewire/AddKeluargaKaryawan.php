@@ -6,8 +6,6 @@ use Livewire\Component;
 use App\Models\Departemen;
 use App\Models\UnitKerja;
 use App\Models\Provinsi;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
 use App\Models\Karyawan;
 use App\Models\PesertaMcu;
 use Illuminate\Support\Facades\DB;
@@ -46,15 +44,15 @@ class AddKeluargaKaryawan extends Component
     public $departemens_id;
     public $unit_kerjas_id;
     public $provinsi_id;
-    public $kabupaten_id;
-    public $kecamatan_id;
+    public $nama_kabupaten;
+    public $nama_kecamatan;
 
     // Koleksi Dropdown
     public $departemens = [];
     public $unitKerjas = [];
     public $provinsis = [];
-    public $kabupatens = [];
-    public $kecamatans = [];
+    // public $kabupatens = [];
+    // public $kecamatans = [];
 
     public bool $isNonKaryawan = false;
 
@@ -79,7 +77,6 @@ class AddKeluargaKaryawan extends Component
             $this->tipe_anggota = 'Istri'; 
         }
 
-        $this->updatedProvinsiId($this->provinsi_id);
         $this->updatedDepartemensId($this->departemens_id);
     }
 
@@ -104,8 +101,8 @@ class AddKeluargaKaryawan extends Component
             'email' => 'nullable|email|max:255',
             'alamat' => 'nullable|string',
             'provinsi_id' => 'nullable|exists:provinsis,id',
-            'kabupaten_id' => 'nullable|exists:kabupatens,id',
-            'kecamatan_id' => 'nullable|exists:kecamatans,id',
+            'nama_kabupaten' => 'nullable|string|max:255',
+            'nama_kecamatan' => 'nullable|string|max:255',
             'tinggi_badan' => 'nullable|numeric|min:1',
             'berat_badan' => 'nullable|numeric|min:1',
         ];
@@ -138,16 +135,8 @@ class AddKeluargaKaryawan extends Component
 
     public function updatedProvinsiId($value)
     {
-        $this->kabupaten_id = null;
-        $this->kecamatan_id = null;
-        $this->kabupatens = $value ? Kabupaten::where('provinsi_id', $value)->orderBy('nama_kabupaten')->get() : collect();
-        $this->kecamatans = collect();
-    }
-
-    public function updatedKabupatenId($value)
-    {
-        $this->kecamatan_id = null;
-        $this->kecamatans = $value ? Kecamatan::where('kabupaten_id', $value)->orderBy('nama_kecamatan')->get() : collect();
+        $this->nama_kabupaten = null; // Reset input teks Kabupaten
+        $this->nama_kecamatan = null; // Reset input teks Kecamatan
     }
 
     public function save()
@@ -164,7 +153,7 @@ class AddKeluargaKaryawan extends Component
                 'no_sap', 'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 
                 'tanggal_lahir', 'umur', 'golongan_darah', 'pendidikan', 'pekerjaan', 
                 'perusahaan_asal', 'agama', 'no_hp', 'email', 'alamat', 'provinsi_id', 
-                'kabupaten_id', 'kecamatan_id', 'tinggi_badan', 'berat_badan', 
+                'nama_kabupaten', 'nama_kecamatan', 'tinggi_badan', 'berat_badan', 
                 'departemens_id', 'unit_kerjas_id', 'tipe_anggota', 'karyawan_id'
             ]);
             
@@ -228,11 +217,6 @@ class AddKeluargaKaryawan extends Component
 
     public function render()
     {
-        // FIX 4: Pastikan $this->kabupatens dan $this->kecamatans dimuat saat render
-        // Ini mengatasi masalah ketika data hilang saat filter
-        $this->kabupatens = $this->provinsi_id ? Kabupaten::where('provinsi_id', $this->provinsi_id)->orderBy('nama_kabupaten')->get() : collect();
-        $this->kecamatans = $this->kabupaten_id ? Kecamatan::where('kabupaten_id', $this->kabupaten_id)->orderBy('nama_kecamatan')->get() : collect();
-        
         return view('livewire.add-keluarga-karyawan');
     }
 }

@@ -14,36 +14,44 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('kabupatens', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('provinsi_id')->constrained()->onDelete('cascade');
-            $table->string('nama_kabupaten');
-            $table->timestamps();
-        });
-
-        Schema::create('kecamatans', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('kabupaten_id')->constrained()->onDelete('cascade');
-            $table->string('nama_kecamatan');
-            $table->timestamps();
-        });
-
         Schema::table('karyawans', function (Blueprint $table) {
+            // Safety Drop untuk kolom lama/percobaan sebelumnya
+            if (Schema::hasColumn('karyawans', 'provinsi_id')) {
+                try { $table->dropForeign(['provinsi_id']); } catch (\Exception $e) {}
+                $table->dropColumn('provinsi_id');
+            }
+            if (Schema::hasColumn('karyawans', 'kabupaten_id')) { // Cek nama kolom lama
+                try { $table->dropForeign(['kabupaten_id']); } catch (\Exception $e) {}
+                $table->dropColumn('kabupaten_id');
+            }
+            if (Schema::hasColumn('karyawans', 'kecamatan_id')) { // Cek nama kolom lama
+                try { $table->dropForeign(['kecamatan_id']); } catch (\Exception $e) {}
+                $table->dropColumn('kecamatan_id');
+            }
+            
+            // Tambahkan kembali kolom lokasi
+            
+            // Provinsi: Tetap Foreign ID ke tabel provinsis
             $table->foreignId('provinsi_id')->nullable()->after('unit_kerjas_id')->constrained()->onDelete('set null');
-            $table->foreignId('kabupaten_id')->nullable()->after('provinsi_id')->constrained()->onDelete('set null');
-            $table->foreignId('kecamatan_id')->nullable()->after('kabupaten_id')->constrained()->onDelete('set null');
+            
+            // PERUBAHAN NAMA KOLOM UTAMA: Kabupaten dan Kecamatan menjadi String Nama
+            $table->string('nama_kabupaten', 255)->nullable()->after('provinsi_id'); 
+            $table->string('nama_kecamatan', 255)->nullable()->after('nama_kabupaten');
         });
     }
 
     public function down(): void
     {
         Schema::table('karyawans', function (Blueprint $table) {
-            $table->dropForeign(['kecamatan_id']);
-            $table->dropColumn('kecamatan_id');
+            // Drop Foreign Key Provinsi
+            $table->dropForeign(['provinsi_id']);
+            $table->dropColumn('provinsi_id');
+            
+            // Drop kolom string yang baru
+            $table->dropColumn('nama_kabupaten');
+            $table->dropColumn('nama_kecamatan');
         });
 
         Schema::dropIfExists('provinsis');
-        Schema::dropIfExists('kabupatens');
-        Schema::dropIfExists('kecamatans');
     }
 };

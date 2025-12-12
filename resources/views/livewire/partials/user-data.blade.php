@@ -28,7 +28,6 @@
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Berat Badan (kg)</label>
         <p class="text-base font-medium text-gray-900">{{ $user->berat_badan ?? 'N/A' }}</p>
     </div>
-    
     <div class="bg-white p-4 rounded-lg border border-gray-200">
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pendidikan</label>
         <p class="text-base font-medium text-gray-900">{{ $user->pendidikan ?? 'N/A' }}</p>
@@ -87,15 +86,18 @@
     </div>
     <div class="bg-white p-4 rounded-lg border border-gray-200">
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Provinsi</label>
-        <p class="text-base font-medium text-gray-900">{{ $user->kecamatan->kabupaten->provinsi->nama_provinsi ?? 'N/A' }}</p>
+        <p class="text-base font-medium text-gray-900">{{ $user->provinsi->nama_provinsi ?? 'N/A' }}</p> 
+        {{-- DIUBAH: Mengakses relasi Provinsi --}}
     </div>
     <div class="bg-white p-4 rounded-lg border border-gray-200">
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kabupaten</label>
-        <p class="text-base font-medium text-gray-900">{{ $user->kecamatan->kabupaten->nama_kabupaten ?? 'N/A' }}</p>
+        <p class="text-base font-medium text-gray-900">{{ $user->nama_kabupaten ?? 'N/A' }}</p> 
+        {{-- PERBAIKAN: Mengakses kolom string baru --}}
     </div>
     <div class="bg-white p-4 rounded-lg border border-gray-200">
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kecamatan</label>
-        <p class="text-base font-medium text-gray-900">{{ $user->kecamatan->nama_kecamatan ?? 'N/A' }}</p>
+        <p class="text-base font-medium text-gray-900">{{ $user->nama_kecamatan ?? 'N/A' }}</p> 
+        {{-- PERBAIKAN: Mengakses kolom string baru --}}
     </div>
     <div class="bg-white p-4 rounded-lg border border-gray-200">
         <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Alamat Lengkap</label>

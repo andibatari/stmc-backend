@@ -35,14 +35,11 @@ return new class extends Migration
             $table->string('foto_profil')->nullable();
             $table->string('fcm_token', 255)->nullable();
 
-            $table->unsignedBigInteger('provinsi_id')->nullable();
-            $table->unsignedBigInteger('kabupaten_id')->nullable();
-            $table->unsignedBigInteger('kecamatan_id')->nullable();
-            
-            $table->foreign('provinsi_id')->references('id')->on('provinsis')->onDelete('set null');
-            $table->foreign('kabupaten_id')->references('id')->on('kabupatens')->onDelete('set null');
-            $table->foreign('kecamatan_id')->references('id')->on('kecamatans')->onDelete('set null');
-            
+            // PERUBAHAN UTAMA: Provinsi tetap ID, Kabupaten/Kecamatan menjadi STRING
+            $table->foreignId('provinsi_id')->nullable()->references('id')->on('provinsis')->onDelete('set null'); 
+            $table->string('nama_kabupaten', 255)->nullable(); // Menggunakan nama kolom baru: nama_kabupaten
+            $table->string('nama_kecamatan', 255)->nullable(); // Menggunakan nama kolom baru: nama_kecamatan
+
             $table->foreign('karyawan_id')->references('id')->on('karyawans')->onDelete('cascade');
             $table->timestamps();
         });

@@ -169,24 +169,14 @@
             @error('provinsi_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
         <div>
-            <label for="kabupaten_id" class="block text-xs font-medium text-gray-700 mb-1">Kabupaten</label>
-            <select wire:model.live="kabupaten_id" id="kabupaten_id" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
-                <option value="">Pilih Kabupaten</option>
-                @foreach($kabupatens as $kabupaten)
-                <option value="{{ $kabupaten->id }}">{{ $kabupaten->nama_kabupaten }}</option>
-                @endforeach
-            </select>
-            @error('kabupaten_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            <label for="nama_kabupaten" class="block text-xs font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
+            <input wire:model.live="nama_kabupaten" type="text" id="nama_kabupaten" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" placeholder="Contoh: Jakarta Pusat">
+            @error('nama_kabupaten') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
         <div>
-            <label for="kecamatan_id" class="block text-xs font-medium text-gray-700 mb-1">Kecamatan</label>
-            <select wire:model.live="kecamatan_id" id="kecamatan_id" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
-                <option value="">Pilih Kecamatan</option>
-                @foreach($kecamatans as $kecamatan)
-                <option value="{{ $kecamatan->id }}">{{ $kecamatan->nama_kecamatan }}</option>
-                @endforeach
-            </select>
-            @error('kecamatan_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            <label for="nama_kecamatan" class="block text-xs font-medium text-gray-700 mb-1">Kecamatan</label>
+            <input wire:model.live="nama_kecamatan" type="text" id="nama_kecamatan" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" placeholder="Contoh: Tanah Abang">
+            @error('nama_kecamatan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
         <div class="col-span-1 lg:col-span-4">
             <label for="alamat" class="block text-xs font-semibold text-gray-700 mb-1">Alamat Lengkap</label>

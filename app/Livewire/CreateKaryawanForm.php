@@ -7,8 +7,8 @@ use App\Models\Karyawan;
 use App\Models\EmployeeLogin;
 use App\Models\Departemen;
 use App\Models\UnitKerja;
-use App\Models\Kecamatan;
-use App\Models\Kabupaten;
+// use App\Models\Kecamatan;
+// use App\Models\Kabupaten;
 use App\Models\Provinsi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +21,7 @@ class CreateKaryawanForm extends Component
     public $jenis_kelamin, $golongan_darah, $agama, $hubungan;
     public $status_pernikahan, $kebangsaan, $jabatan, $eselon;
     public $pendidikan, $unit_kerjas_id, $departemens_id;
-    public $provinsi_id, $kabupaten_id, $kecamatan_id;
+    public $provinsi_id, $nama_kabupaten, $nama_kecamatan;
     public $email, $password, $suami_istri, $pekerjaan_suami_istri;
     public $alamat, $no_hp;
 
@@ -31,9 +31,6 @@ class CreateKaryawanForm extends Component
     protected $listeners = [
         'departemenUpdated',
         'unitKerjaUpdated',
-        'provinsiUpdated' => 'setProvinsiId', 
-        'kabupatenUpdated' => 'setKabupatenId',
-        'kecamatanUpdated',
     ];
 
     // Update event dropdown Departemen
@@ -49,22 +46,6 @@ class CreateKaryawanForm extends Component
         $this->unit_kerjas_id = $payload['id'] ?? null;
     }
 
-    // Update event lokasi berjenjang
-    public function setProvinsiId($payload)
-    {
-        $this->provinsi_id = $payload['id'] ?? null;
-    }
-
-    public function setKabupatenId($payload)
-    {
-        $this->kabupaten_id = $payload['id'] ?? null;
-    }
-
-    public function kecamatanUpdated($payload)
-    {
-        $this->kecamatan_id = $payload['id'] ?? null;
-    }
-
     // Hitung umur otomatis
     public function updatedTanggalLahir($value)
     {
@@ -74,21 +55,6 @@ class CreateKaryawanForm extends Component
         } else {
             $this->umur = null;
         }
-    }
-
-    // Hook kalau provinsi berubah
-    public function updatedProvinsiId($value)
-    {
-        $this->kabupaten_id = null;
-        $this->kecamatan_id = null;
-        $this->dispatch('provinsiSelected', ['id' => $value]);
-    }
-
-    // Hook kalau kabupaten berubah
-    public function updatedKabupatenId($value)
-    {
-        $this->kecamatan_id = null;
-        $this->dispatch('kabupatenSelected', ['id' => $value]);
     }
 
     // Aturan validasi
@@ -117,8 +83,9 @@ class CreateKaryawanForm extends Component
         'suami_istri' => 'nullable|string',
         'pekerjaan_suami_istri' => 'nullable|string',
         'provinsi_id' => 'nullable|integer|exists:provinsis,id',
-        'kabupaten_id' => 'nullable|integer|exists:kabupatens,id',
-        'kecamatan_id' => 'nullable|integer|exists:kecamatans,id',
+        'nama_kabupaten' => 'nullable|string|max:255', // PERUBAHAN: String, bukan ID
+        'nama_kecamatan' => 'nullable|string|max:255', // PERUBAHAN: String, bukan ID
+        'umur' => 'nullable|integer|min:0',
         // Tambahkan aturan validasi untuk tinggi dan berat badan
         'tinggi_badan' => 'nullable|numeric|min:1',
         'berat_badan' => 'nullable|numeric|min:1',
@@ -156,8 +123,8 @@ class CreateKaryawanForm extends Component
             'email' => $this->email,
             'no_hp' => $this->no_hp,
             'provinsi_id' => $this->provinsi_id,
-            'kabupaten_id' => $this->kabupaten_id,
-            'kecamatan_id' => $this->kecamatan_id,
+            'nama_kabupaten' => $this->nama_kabupaten, // PERUBAHAN: Simpan string nama
+            'nama_kecamatan' => $this->nama_kecamatan, // PERUBAHAN: Simpan string nama
         ]);
 
         EmployeeLogin::create([
@@ -175,12 +142,18 @@ class CreateKaryawanForm extends Component
             'hubungan', 'jabatan', 'eselon', 'suami_istri',
             'pekerjaan_suami_istri', 'unit_kerjas_id', 'departemens_id',
             'tanggal_lahir', 'alamat', 'email', 'no_hp', 'password',
-            'provinsi_id', 'kabupaten_id', 'kecamatan_id'
+            'provinsi_id', 'nama_kabupaten', 'nama_kecamatan'
         ]);
     }
 
     public function render()
     {
-        return view('livewire.create-karyawan-form');
+        // Ambil semua provinsi untuk dropdown Provinsi
+        $provinsis = Provinsi::all();
+
+        // Mengirim data provinsi ke view
+        return view('livewire.create-karyawan-form', [
+            'provinsis' => $provinsis,
+        ]);
     }
 }

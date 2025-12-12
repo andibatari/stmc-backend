@@ -177,11 +177,34 @@
 
             <div class="col-span-1">
                 <label class="block text-xs font-medium text-gray-700 mb-2">Alamat Domisili (Provinsi, Kab/Kota, Kec.)</label>
-                {{-- Livewire component di sini akan mengambil ruang penuh --}}
-                @livewire('chained-location', ['provinsi_id' => $provinsi_id, 'kabupaten_id' => $kabupaten_id, 'kecamatan_id' => $kecamatan_id])
-                @error('provinsi_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                @error('kabupaten_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                @error('kecamatan_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+                <div class="grid grid-cols-3 gap-3">
+                    {{-- Input Provinsi (Dropdown Biasa) --}}
+                    <div>
+                        <label for="provinsi_id" class="block text-xs font-medium text-gray-700 mb-1">Provinsi</label>
+                        <select wire:model.live="provinsi_id" id="provinsi_id" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" >
+                            <option value="">Pilih Provinsi</option>
+                            @foreach($provinsis as $provinsi)
+                                <option value="{{ $provinsi->id }}">{{ $provinsi->nama_provinsi }}</option>
+                            @endforeach
+                        </select>
+                        @error('provinsi_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                    
+                    {{-- Input Kabupaten (Text Biasa) - PERUBAHAN wire:model --}}
+                    <div>
+                        <label for="nama_kabupaten" class="block text-xs font-medium text-gray-700 mb-1">Kabupaten/Kota</label>
+                        <input type="text" wire:model.live="nama_kabupaten" id="nama_kabupaten" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" placeholder="Contoh: Jakarta Pusat">
+                        @error('nama_kabupaten') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    {{-- Input Kecamatan (Text Biasa) - PERUBAHAN wire:model --}}
+                    <div>
+                        <label for="nama_kecamatan" class="block text-xs font-medium text-gray-700 mb-1">Kecamatan</label>
+                        <input type="text" wire:model.live="nama_kecamatan" id="nama_kecamatan" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" placeholder="Contoh: Tanah Abang">
+                        @error('nama_kecamatan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
             </div>
         </div>
         

@@ -47,8 +47,8 @@ class PesertaMcuExport implements FromCollection, WithHeadings, WithMapping
             $pesertaMcu->no_hp,
             $pesertaMcu->email,
             $pesertaMcu->provinsi->nama_provinsi ?? 'N/A',
-            $pesertaMcu->kabupaten->nama_kabupaten ?? 'N/A',
-            $pesertaMcu->kecamatan->nama_kecamatan ?? 'N/A',
+            $pesertaMcu->nama_kabupaten ?? 'N/A', 
+            $pesertaMcu->nama_kecamatan ?? 'N/A',
         ];
     }
     

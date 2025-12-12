@@ -7,9 +7,7 @@ use App\Models\Karyawan;
 use App\Models\EmployeeLogin;
 use App\Models\Departemen;
 use App\Models\UnitKerja;
-use App\Models\Kecamatan;
 use App\Models\Provinsi;
-use App\Models\Kabupaten;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -50,15 +48,15 @@ class EditKaryawanForm extends Component
     public $departemens = [];
     public $unitKerjas = [];
     public $provinsis = [];
-    public $kabupatens = [];
-    public $kecamatans = [];
     
     // Properti yang terikat dengan dropdown
     public $departemens_id = null;
     public $unit_kerjas_id = null;
     public $provinsi_id = null;
-    public $kabupaten_id = null;
-    public $kecamatan_id = null;
+
+    // START PERUBAHAN UTAMA UNTUK LOKASI (Ganti ID dengan String/Nama)
+    public $nama_kabupaten = ''; // Baru: untuk input teks (string nama kabupaten)
+    public $nama_kecamatan = ''; // Baru: untuk input teks (string nama kecamatan)
 
     /**
      * Metode mount akan dijalankan saat komponen diinisialisasi.
@@ -79,13 +77,22 @@ class EditKaryawanForm extends Component
         // Memuat ID dari relasi
         $this->departemens_id = $karyawan->departemens_id;
         $this->unit_kerjas_id = $karyawan->unit_kerjas_id;
-        $this->kecamatan_id = $karyawan->kecamatan_id;
         
-        // Memuat ID untuk chained location jika relasi ada
-        if ($karyawan->kecamatan) {
-            $this->provinsi_id = $karyawan->kecamatan->kabupaten->provinsi_id ?? null;
-            $this->kabupaten_id = $karyawan->kecamatan->kabupaten_id ?? null;
-        }
+        
+        // START PERUBAHAN UNTUK LOKASI
+        // Jika data lama tersimpan sebagai ID, kita harus memuat nama provinsi
+        // Dan memuat string nama kabupaten/kecamatan dari kolom ID yang lama (dengan asumsi tipe kolom di DB sudah diganti ke STRING)
+        
+        // Memuat ID Provinsi (asumsi Provinsi tetap dropdown)
+        $this->provinsi_id = $karyawan->provinsi_id ?? null; // Ambil dari kolom provinsi_id
+
+        // Memuat Nama Kabupaten/Kecamatan dari kolom yang dulunya ID (Diasumsikan sekarang berisi String Nama)
+        // **CATATAN PENTING**: Jika kolom `kabupaten_id` dan `kecamatan_id` di DB masih bertipe Integer ID, 
+        // Anda harus mengubahnya menjadi VARCHAR/String. Jika tidak, baris ini akan menyimpan ID 
+        // di properti string dan akan *crash* jika ID tersebut bukan nama yang valid.
+        $this->nama_kabupaten = $karyawan->nama_kabupaten; 
+        $this->nama_kecamatan = $karyawan->nama_kecamatan;
+        // END PERUBAHAN UNTUK LOKASI
 
         // Memuat data awal untuk semua dropdown
         $this->loadDropdowns();
@@ -102,16 +109,6 @@ class EditKaryawanForm extends Component
         // Muat unit kerja jika departemen sudah dipilih
         if ($this->departemens_id) {
             $this->unitKerjas = UnitKerja::where('departemens_id', $this->departemens_id)->get();
-        }
-
-        // Muat kabupaten jika provinsi sudah dipilih
-        if ($this->provinsi_id) {
-            $this->kabupatens = Kabupaten::where('provinsi_id', $this->provinsi_id)->get();
-        }
-
-        // Muat kecamatan jika kabupaten sudah dipilih
-        if ($this->kabupaten_id) {
-            $this->kecamatans = Kecamatan::where('kabupaten_id', $this->kabupaten_id)->get();
         }
     }
 
@@ -141,21 +138,19 @@ class EditKaryawanForm extends Component
      */
     public function updatedProvinsiId($value)
     {
-        $this->kabupaten_id = null;
-        $this->kecamatan_id = null;
-        $this->kabupatens = Kabupaten::where('provinsi_id', $value)->get();
-        $this->kecamatans = collect(); // Kosongkan kecamatan
+        $this->nama_kabupaten = null; // Reset input teks Kabupaten/Kota
+        $this->nama_kecamatan = null; // Reset input teks Kecamatan
     }
     
-    /**
-     * Logika dropdown berantai untuk Lokasi (Kabupaten -> Kecamatan)
-     * Dijalankan saat kabupaten_id diubah.
-     */
-    public function updatedKabupatenId($value)
-    {
-        $this->kecamatan_id = null;
-        $this->kecamatans = Kecamatan::where('kabupaten_id', $value)->get();
-    }
+    // /**
+    //  * Logika dropdown berantai untuk Lokasi (Kabupaten -> Kecamatan)
+    //  * Dijalankan saat kabupaten_id diubah.
+    //  */
+    // public function updatedKabupatenId($value)
+    // {
+    //     $this->kecamatan_id = null;
+    //     $this->kecamatans = Kecamatan::where('kabupaten_id', $value)->get();
+    // }
 
     /**
      * Aturan validasi untuk form.

@@ -254,30 +254,19 @@
                     @error('provinsi_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
                 
-                {{-- Kabupaten (Select) --}}
+                {{-- Kabupaten (Input Teks) - PERUBAHAN wire:model --}}
                 <div class="space-y-1">
-                    <label for="kabupaten_id" class="block text-xs font-medium text-gray-700">Kabupaten</label>
-                    <select wire:model.live="kabupaten_id" id="kabupaten_id" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" >
-                        <option value="">Pilih Kabupaten</option>
-                        @foreach($kabupatens as $kabupaten)
-                            <option value="{{ $kabupaten->id }}">{{ $kabupaten->nama_kabupaten }}</option>
-                        @endforeach
-                    </select>
-                    @error('kabupaten_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <label for="nama_kabupaten" class="block text-xs font-medium text-gray-700">Kabupaten/Kota</label>
+                    <input type="text" wire:model.live="nama_kabupaten" id="nama_kabupaten" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    @error('nama_kabupaten') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                
-                {{-- Kecamatan (Select) --}}
+
+                {{-- Kecamatan (Input Teks) - PERUBAHAN wire:model --}}
                 <div class="space-y-1">
-                    <label for="kecamatan_id" class="block text-xs font-medium text-gray-700">Kecamatan</label>
-                    <select wire:model.live="kecamatan_id" id="kecamatan_id" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" >
-                        <option value="">Pilih Kecamatan</option>
-                        @foreach($kecamatans as $kecamatan)
-                            <option value="{{ $kecamatan->id }}">{{ $kecamatan->nama_kecamatan }}</option>
-                        @endforeach
-                    </select>
-                    @error('kecamatan_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                </div>
-                
+                    <label for="nama_kecamatan" class="block text-xs font-medium text-gray-700">Kecamatan</label>
+                    <input type="text" wire:model.live="nama_kecamatan" id="nama_kecamatan" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
+                    @error('nama_kecamatan') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>    
             </div>
 
             <hr class="my-4">

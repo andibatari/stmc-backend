@@ -43,8 +43,8 @@ class PesertaMcuImport implements ToModel, WithHeadingRow, WithChunkReading
             'no_hp'             => $row['no_hp'] ?? null,
             'email'             => $row['email'] ?? null,
             'provinsi_id'       => $row['provinsi_id'] ?? null,
-            'kabupaten_id'      => $row['kabupaten_id'] ?? null,
-            'kecamatan_id'      => $row['kecamatan_id'] ?? null,
+            'nama_kabupaten'      => $row['nama_kabupaten'] ?? null,
+            'nama_kecamatan'      => $row['nama_kecamatan'] ?? null,
         ]);
     }
     

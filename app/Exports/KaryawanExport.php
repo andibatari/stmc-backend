@@ -53,8 +53,8 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
             $karyawan->departemen->nama_departemen ?? 'N/A',
             $karyawan->unitKerja->nama_unit_kerja ?? 'N/A',
             $karyawan->provinsi->nama_provinsi ?? 'N/A',
-            $karyawan->kabupaten->nama_kabupaten ?? 'N/A',
-            $karyawan->kecamatan->nama_kecamatan ?? 'N/A',
+            $karyawan->nama_kabupaten ?? 'N/A', 
+            $karyawan->nama_kecamatan ?? 'N/A',
         ];
     }
     

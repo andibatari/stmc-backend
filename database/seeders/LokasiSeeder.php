@@ -20,8 +20,6 @@ class LokasiSeeder extends Seeder
 
         // Mengosongkan tabel sebelum seeding
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('kecamatans')->truncate();
-        DB::table('kabupatens')->truncate();
         DB::table('provinsis')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -44,44 +42,5 @@ class LokasiSeeder extends Seeder
             Log::error('Terjadi kesalahan saat seeding provinsi: ' . $e->getMessage());
         }
 
-
-        // --- Logika untuk Kabupaten ---
-        Log::info('Seeding kabupaten...');
-        try {
-            $kabupatenJson = File::get(database_path('data/kabupatens.json'));
-            $kabupatens = json_decode($kabupatenJson, true);
-            
-            if (is_array($kabupatens) && !empty($kabupatens)) {
-                // Perbaikan: Memecah data menjadi potongan 100 baris
-                foreach (array_chunk($kabupatens, 100) as $chunk) {
-                    DB::table('kabupatens')->insert($chunk);
-                }
-                Log::info('Kabupaten berhasil di-seed.');
-            } else {
-                Log::error('Gagal memproses data kabupaten dari file JSON atau file kosong.');
-            }
-        } catch (\Exception $e) {
-            Log::error('Terjadi kesalahan saat seeding kabupaten: ' . $e->getMessage());
-        }
-
-
-        // --- Logika untuk Kecamatan ---
-        Log::info('Seeding kecamatan...');
-        try {
-            $kecamatanJson = File::get(database_path('data/kecamatans.json'));
-            $kecamatans = json_decode($kecamatanJson, true);
-
-            if (is_array($kecamatans) && !empty($kecamatans)) {
-                // Perbaikan: Memecah data menjadi potongan 100 baris
-                foreach (array_chunk($kecamatans, 100) as $chunk) {
-                    DB::table('kecamatans')->insert($chunk);
-                }
-                Log::info('Kecamatan berhasil di-seed.');
-            } else {
-                Log::error('Gagal memproses data kecamatan dari file JSON atau file kosong.');
-            }
-        } catch (\Exception $e) {
-            Log::error('Terjadi kesalahan saat seeding kecamatan: ' . $e->getMessage());
-        }
     }
 }
