@@ -41,15 +41,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Grup Rute untuk Admin (membutuhkan otentikasi guard 'admin_users')
-Route::middleware(['auth:admin_users'])->prefix('admin')->group(function () {
+Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(function () {
     
      // KRITIS: Rute Manajemen Profil Admin
-        Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
     // Rute untuk memproses pembaruan data (membutuhkan method PUT)
     // Pastikan baris ini ada, menggunakan Route::put
     Route::put('/admin/profile/update', [AdminProfileController::class, 'update'])->name('admin.profile.update');    
     // Tambahkan rute ini untuk dipanggil oleh AJAX
-Route::get('/admin/dashboard/lingkungan-data', [DashboardController::class, 'getLingkunganDataJson'])->name('dashboard.data_lingkungan');
+    Route::get('/admin/dashboard/lingkungan-data', [DashboardController::class, 'getLingkunganDataJson'])->name('dashboard.data_lingkungan');
     // Dashboard Admin
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 

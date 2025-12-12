@@ -87,55 +87,42 @@ class AdminProfileController extends Controller
     public function update(Request $request)
     {
         $admin = Auth::guard('admin_users')->user();
-        
-        // 1. Validasi data
-        $request->validate([
+
+        // 1. Validasi Input
+        $rules = [
             'nama_lengkap' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                // Pastikan email unik, kecuali email admin saat ini
-                Rule::unique('admin_users', 'email')->ignore($admin->id),
-            ],
+            'email' => 'required|email|max:255|unique:admin_users,email,' . $admin->id,
+            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Maks 2MB
             'password' => 'nullable|string|min:6|confirmed',
-            // KRITIS: Validasi untuk foto_profil (nullable karena tidak wajib diubah)
-            'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Maks 2MB
-        ]);
-        
-        // 2. Inisialisasi data untuk update
-        $dataToUpdate = [
-            'nama_lengkap' => $request->nama_lengkap,
-            'email' => $request->email,
         ];
 
-        // 3. Tangani Upload Foto Profil
+        $request->validate($rules);
+
+        // 2. Persiapan Data Update
+        $data = $request->only('nama_lengkap', 'email');
+        
+        // 3. LOGIKA UPLOAD FOTO PROFIL
         if ($request->hasFile('foto_profil')) {
-            $file = $request->file('foto_profil');
             
-            // Hapus foto lama JIKA path-nya ada di database DAN file-nya ada di storage
-            if ($admin->foto_profil && Storage::exists($admin->foto_profil)) {
+            // Hapus foto lama jika ada
+            if ($admin->foto_profil) {
                 Storage::delete($admin->foto_profil);
             }
             
-            // Simpan file di folder 'public/profile_photos'
-            // Metode store() menyimpan file ke disk default (biasanya 'local') di bawah 'storage/app/public/'
-            $path = $file->store('public/profile_photos'); 
-            
-            // Simpan path relatif ke database
-            $dataToUpdate['foto_profil'] = $path;
+            // Simpan file baru ke folder 'public/admin_photos'
+            // Metode store() otomatis membuat nama file unik
+            $path = $request->file('foto_profil')->store('public/admin_photos');
+            $data['foto_profil'] = $path;
         }
 
-        // 4. Tangani Update Password
+        // 4. LOGIKA UPDATE PASSWORD
         if ($request->filled('password')) {
-            // Gunakan Hash::make() atau bcrypt()
-            $dataToUpdate['password'] = Hash::make($request->password);
+            $data['password'] = Hash::make($request->input('password'));
         }
+        
+        // 5. Simpan ke Database
+        $admin->update($data);
 
-        // 5. Update Model
-        $admin->update($dataToUpdate);
-
-        return redirect()->route('admin.profile.edit')
-                             ->with('success', 'Profil berhasil diperbarui!');
+        return redirect()->route('admin.profile.edit')->with('success', 'Profil berhasil diperbarui!');
     }
 }
