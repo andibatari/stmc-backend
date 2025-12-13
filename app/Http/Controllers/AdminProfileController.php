@@ -105,19 +105,20 @@ class AdminProfileController extends Controller
         
         // 3. LOGIKA UPLOAD FOTO PROFIL
         if ($request->hasFile('foto_profil')) {
-            
-            // Hapus foto lama jika ada dan pastikan path tidak kosong
+        
+            // Hapus foto lama jika ada (JANGAN ubah kode penghapusan, biarkan Storage::exists() menangani path lama)
             if ($admin->foto_profil && Storage::exists($admin->foto_profil)) {
                 Storage::delete($admin->foto_profil);
             }
             
-            $filename = $request->file('foto_profil')->hashName();
-            $path = $request->file('foto_profil')->storeAs('public/admin_photos', $filename);
-
-            // Simpan path yang lebih bersih ke database: 'admin_photos/nama_file.jpg'
-            // Hapus awalan 'public/' yang tidak relevan di sini
-            $data['foto_profil'] = 'admin_photos/' . $filename;
-
+            // --- PERUBAHAN KRITIS: Hapus awalan 'public/' dari path yang disimpan di DB ---
+            // 1. Simpan file baru ke sub-folder 'admin_photos' di DISK 'public'
+            $filename = $request->file('foto_profil')->hashName(); // Dapatkan nama hash file
+            $path = $request->file('foto_profil')->storeAs('public/admin_photos', $filename); 
+            
+            // 2. Path yang tersimpan di DB hanya: admin_photos/namafile.jpg
+            // Pastikan kita HANYA menyimpan path relatif yang bersih
+            $data['foto_profil'] = 'admin_photos/' . $filename; 
         }
 
         // 4. LOGIKA UPDATE PASSWORD

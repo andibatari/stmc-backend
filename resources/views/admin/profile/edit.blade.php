@@ -42,11 +42,12 @@
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
                         <div class="mb-4">
                             @php
+                                use Illuminate\Support\Facades\Storage; 
+
+                                // Cek apakah ada foto profil yang tersimpan di DB
                                 $rawPath = $admin->foto_profil;
 
                                 $imageUrl = $rawPath
-                                    // Gunakan asset() dan tambahkan awalan 'storage/' secara manual
-                                    // Contoh: asset('storage/admin_photos/nama_file.jpg')
                                     ? asset('storage/' . $rawPath) . '?t=' . now()->timestamp 
                                     : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
                             @endphp
