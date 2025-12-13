@@ -29,7 +29,7 @@
     {{-- Card Profil --}}
     <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         {{-- KRITIS: Tambahkan method PUT dan enctype untuk file upload --}}
-        <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('admin.profile.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             
@@ -42,17 +42,17 @@
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
                         <div class="mb-4">
                             @php
-                                // Bersihkan path dari "public/" atau "public\"
-                                $cleanedPath = $admin->foto_profil 
-                                    ? ltrim(str_replace('public/', '', $admin->foto_profil), '/') 
-                                    : null;
-                                
-                                $profileImage = $cleanedPath
-                                    ? asset('storage/' . $cleanedPath) . '?t=' . now()->timestamp // Tambah cache busting
+                                use Illuminate\Support\Facades\Storage; // Tambahkan ini di sini atau di bagian atas file
+
+                                // Tentukan URL foto profil
+                                $imageUrl = $admin->foto_profil
+                                    // Menggunakan Storage::url() yang menangani awalan 'public/' secara otomatis
+                                    ? Storage::url($admin->foto_profil) . '?t=' . now()->timestamp // Tambah cache busting
+                                    // Fallback ke UI Avatar jika tidak ada foto
                                     : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
                             @endphp
                             
-                            <img src="{{ $profileImage }}" 
+                            <img src="{{ $imageUrl }}" 
                                 alt="Foto Profil" 
                                 id="profileImagePreview"
                                 class="h-32 w-32 object-cover rounded-full border-4 border-red-200 shadow-md">

@@ -21,7 +21,7 @@ class AdminUser extends Authenticatable
         'role', // Tambahkan
         'dokter_id', // Tambahkan
         'karyawan_id', // Tambahkan
-        'foto_profil'
+        'foto_profil',
     ];
 
     protected $hidden = [

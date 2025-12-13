@@ -34,7 +34,7 @@ class AdminProfileController extends Controller
             $profile = Karyawan::with([
                 'departemen', 
                 'unitKerja', 
-                'kecamatan.kabupaten.provinsi',
+                'provinsi',
                 'keluargas', // Relasi keluarga
                 'pasangan'   // Relasi pasangan
             ])
@@ -91,32 +91,38 @@ class AdminProfileController extends Controller
         // 1. Validasi Input
         $rules = [
             'nama_lengkap' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:admin_users,email,' . $admin->id,
+            'email' => ['required', 'email', 'max:255', Rule::unique('admin_users', 'email')->ignore($admin->id)],
             'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Maks 2MB
             'password' => 'nullable|string|min:6|confirmed',
         ];
 
-        $request->validate($rules);
+        // Jalankan validasi
+        $validatedData = $request->validate($rules); // Menggunakan variabel untuk menyimpan data yang sudah divalidasi
 
-        // 2. Persiapan Data Update
+        // 2. Persiapan Data Update (mengambil data yang sudah divalidasi)
+        // Kita hanya mengambil 'nama_lengkap' dan 'email' dari request
         $data = $request->only('nama_lengkap', 'email');
         
         // 3. LOGIKA UPLOAD FOTO PROFIL
         if ($request->hasFile('foto_profil')) {
             
-            // Hapus foto lama jika ada
-            if ($admin->foto_profil) {
+            // Hapus foto lama jika ada dan pastikan path tidak kosong
+            if ($admin->foto_profil && Storage::exists($admin->foto_profil)) {
                 Storage::delete($admin->foto_profil);
             }
             
-            // Simpan file baru ke folder 'public/admin_photos'
-            // Metode store() otomatis membuat nama file unik
-            $path = $request->file('foto_profil')->store('public/admin_photos');
-            $data['foto_profil'] = $path;
+            // Simpan file baru ke sub-folder 'admin_photos' di DISK 'public'
+            $path = $request->file('foto_profil')->store('admin_photos', 'public'); 
+            
+            // Path yang tersimpan di DB akan menjadi: admin_photos/namafile.jpg
+            $data['foto_profil'] = 'public/' . $path; // <-- Tambahkan awalan 'public/' agar kompatibel dengan Storage::url() lama
+
         }
 
         // 4. LOGIKA UPDATE PASSWORD
+        // Menggunakan $request->filled() memastikan field ada DAN tidak kosong
         if ($request->filled('password')) {
+            // Kita menggunakan Hash::make() untuk mengenkripsi password
             $data['password'] = Hash::make($request->input('password'));
         }
         
