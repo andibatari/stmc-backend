@@ -114,7 +114,7 @@ class AdminProfileController extends Controller
             // --- PERUBAHAN KRITIS: Hapus awalan 'public/' dari path yang disimpan di DB ---
             // 1. Simpan file baru ke sub-folder 'admin_photos' di DISK 'public'
             $filename = $request->file('foto_profil')->hashName(); // Dapatkan nama hash file
-            $path = $request->file('foto_profil')->storeAs('public/admin_photos', $filename); 
+            $request->file('foto_profil')->storeAs('admin_photos', $filename, 'public'); 
             
             // 2. Path yang tersimpan di DB hanya: admin_photos/namafile.jpg
             // Pastikan kita HANYA menyimpan path relatif yang bersih
