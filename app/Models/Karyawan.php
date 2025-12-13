@@ -12,8 +12,6 @@ use App\Models\JadwalMcu;
 use App\Models\Notif; 
 use App\Models\UnitKerja;
 use App\Models\Departemen;
-use App\Models\Kecamatan;
-use App\Models\Kabupaten;
 use App\Models\Provinsi;
 use App\Models\PesertaMcu; // Pastikan model ini diimpor
 
@@ -43,8 +41,8 @@ class Karyawan extends Model
         'departemens_id',
         'unit_kerjas_id',
         'provinsi_id',
-        'kabupaten_id',
-        'kecamatan_id',
+        'nama_kabupaten',
+        'nama_kecamatan',
         'email',
         'suami_istri',
         'pekerjaan_suami_istri',
@@ -86,16 +84,6 @@ class Karyawan extends Model
     public function departemen()
     {
         return $this->belongsTo(Departemen::class, 'departemens_id');
-    }
-    
-    public function   kecamatan()
-    {
-        return $this->belongsTo(Kecamatan::class);
-    }
-
-    public function kabupaten()
-    {
-        return $this->belongsTo(Kabupaten::class);
     }
     
     public function provinsi()

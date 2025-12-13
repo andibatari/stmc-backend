@@ -33,8 +33,8 @@ class PesertaMcu extends Model
         'email',
         'foto_profil',
         'provinsi_id',
-        'kabupaten_id',
-        'kecamatan_id',
+        'nama_kabupaten',
+        'nama_kecamatan',
         'departemens_id',
         'unit_kerjas_id',
         'tinggi_badan',
@@ -72,22 +72,6 @@ class PesertaMcu extends Model
     public function provinsi()
     {
         return $this->belongsTo(Provinsi::class, 'provinsi_id');
-    }
-
-    /**
-     * Relasi ke model Kabupaten.
-     */
-    public function kabupaten()
-    {
-        return $this->belongsTo(Kabupaten::class, 'kabupaten_id');
-    }
-
-    /**
-     * Relasi ke model Kecamatan.
-     */
-    public function kecamatan()
-    {
-        return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
     }
 
     public function jadwalMcu()
