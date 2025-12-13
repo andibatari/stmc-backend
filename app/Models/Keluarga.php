@@ -44,8 +44,8 @@ class Keluarga extends Model
         'email',
         'foto_profil',
         'provinsi_id',
-        'kabupaten_id',
-        'kecamatan_id',
+        'nama_kabupaten',
+        'nama_kecamatan',
         'departemens_id',
         'unit_kerjas_id',
     ];
@@ -65,21 +65,5 @@ class Keluarga extends Model
     public function provinsi()
     {
         return $this->belongsTo(Provinsi::class);
-    }
-    
-    /**
-     * Tentukan relasi 'belongs to' dengan model Kabupaten.
-     */
-    public function kabupaten()
-    {
-        return $this->belongsTo(Kabupaten::class);
-    }
-
-    /**
-     * Tentukan relasi 'belongs to' dengan model Kecamatan.
-     */
-    public function kecamatan()
-    {
-        return $this->belongsTo(Kecamatan::class);
     }
 }

@@ -9,8 +9,6 @@ use App\Models\Karyawan;
 use App\Models\Departemen;
 use App\Models\UnitKerja;
 use App\Models\Provinsi;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
 use Illuminate\Http\Request;
 use App\Imports\KaryawanImport;
 use App\Imports\KaryawanExport;
@@ -171,8 +169,8 @@ class KaryawanController extends Controller
             // Ambil detail lengkap dengan semua relasi yang mungkin dibutuhkan (Lokasi, Kerja, Keluarga)
             $karyawan = Karyawan::with([
                 'departemen', 
-                'unitKerja', 
-                'kecamatan.kabupaten.provinsi', // Menggunakan nested relasi lokasi
+                'unitKerja',
+                'provinsi',
                 'keluargas', // Relasi ke PesertaMcu/Keluarga
                 'pasangan' // Relasi ke pasangan
             ])->findOrFail($id);
