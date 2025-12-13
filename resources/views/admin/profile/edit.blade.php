@@ -42,13 +42,21 @@
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
                         <div class="mb-4">
                             @php
-                                use Illuminate\Support\Facades\Storage; // Tambahkan ini di sini atau di bagian atas file
+                                // use Illuminate\Support\Facades\Storage; // Tambahkan ini di sini atau di bagian atas file
 
-                                // Tentukan URL foto profil
-                                $imageUrl = $admin->foto_profil
-                                    // Menggunakan Storage::url() yang menangani awalan 'public/' secara otomatis
-                                    ? Storage::url($admin->foto_profil) . '?t=' . now()->timestamp // Tambah cache busting
-                                    // Fallback ke UI Avatar jika tidak ada foto
+                                // // Tentukan URL foto profil
+                                // $imageUrl = $admin->foto_profil
+                                //     // Menggunakan Storage::url() yang menangani awalan 'public/' secara otomatis
+                                //     ? Storage::url($admin->foto_profil) . '?t=' . now()->timestamp // Tambah cache busting
+                                //     // Fallback ke UI Avatar jika tidak ada foto
+                                //     : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
+
+                                $rawPath = $admin->foto_profil;
+
+                                $imageUrl = $rawPath
+                                    // Gunakan asset() dan tambahkan awalan 'storage/' secara manual
+                                    // Contoh: asset('storage/admin_photos/nama_file.jpg')
+                                    ? asset('storage/' . $rawPath) . '?t=' . now()->timestamp 
                                     : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
                             @endphp
                             
