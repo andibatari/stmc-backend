@@ -48,8 +48,7 @@
 
                                 $imageUrl = $rawPath
                                     // Gunakan asset() untuk mengakses symlink public/storage
-                                    // Contoh URL: /storage/admin_photos/namafile.jpg
-                                    ? Storage::url($rawPath) . '?t=' . now()->timestamp 
+                                    ? asset('storage/' . $rawPath) . '?t=' . now()->timestamp 
                                     // Fallback
                                     : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
                             @endphp
