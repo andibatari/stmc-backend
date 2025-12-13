@@ -5,8 +5,6 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Keluarga; 
 use App\Models\Provinsi;
-use App\Models\Kabupaten;
-use App\Models\Kecamatan;
 use App\Models\Departemen;
 use App\Models\UnitKerja;
 use Carbon\Carbon;
@@ -19,8 +17,8 @@ class KeluargaEdit extends Component
     public $nik_pasien, $nama_lengkap, $jenis_kelamin, $tempat_lahir, $tanggal_lahir, $umur, $golongan_darah;
     public $pendidikan, $pekerjaan, $agama, $alamat, $no_hp, $email, $perusahaan_asal;
     public $provinsi_id = null;
-    public $kabupaten_id = null;
-    public $kecamatan_id = null;
+    public $nama_kabupaten = '';
+    public $nama_kecamatan = '';
     public $departemens_id = null;
     public $unit_kerjas_id = null;
     
@@ -53,8 +51,8 @@ class KeluargaEdit extends Component
             'no_hp' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'provinsi_id' => 'nullable|exists:provinsis,id',
-            'kabupaten_id' => 'nullable|exists:kabupatens,id',
-            'kecamatan_id' => 'nullable|exists:kecamatans,id',
+            'nama_kabupaten' => 'nullable|string|max:255',
+            'nama_kecamatan' => 'nullable|string|max:255',
             'departemens_id' => 'nullable|exists:departemens,id',
             'unit_kerjas_id' => 'nullable|exists:unit_kerjas,id',
             'perusahaan_asal' => 'nullable|string|max:255',
@@ -99,12 +97,6 @@ class KeluargaEdit extends Component
         $this->kecamatan_id = null;
     }
 
-    public function updatedKabupatenId($value)
-    {
-        $this->kecamatans = $value ? Kecamatan::where('kabupaten_id', $value)->orderBy('nama_kecamatan')->get() : collect();
-        $this->kecamatan_id = null;
-    }
-
     public function updatedDepartemensId($value)
     {
         $this->unitKerjas = $value ? UnitKerja::where('departemens_id', $value)->orderBy('nama_unit_kerja')->get() : collect();
@@ -118,7 +110,7 @@ class KeluargaEdit extends Component
         $validatedData = $this->only([
             'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 
             'golongan_darah', 'pendidikan', 'pekerjaan', 'agama', 'alamat', 'no_hp', 
-            'email', 'provinsi_id', 'kabupaten_id', 'kecamatan_id', 
+            'email', 'provinsi_id', 'nama_kabupaten', 'nama_kecamatan', 
             'departemens_id', 'unit_kerjas_id', 'perusahaan_asal'
         ]);
         
