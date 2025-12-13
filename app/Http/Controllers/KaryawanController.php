@@ -24,7 +24,7 @@ class KaryawanController extends Controller
     public function index()
     {
         // dan nested relation untuk lokasi
-        $karyawans = Karyawan::with(['departemen', 'unitKerja', 'kecamatan.kabupaten.provinsi'])->get();
+        $karyawans = Karyawan::with(['departemen', 'unitKerja', 'provinsi'])->get();
         return view('karyawan.index', compact('karyawans'));
     }
 
@@ -50,8 +50,6 @@ class KaryawanController extends Controller
         return view('karyawan.show', compact('karyawan'));
     }
 
-    
-    
     /**
      * Hapus data karyawan dari database.
      */
