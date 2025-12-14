@@ -35,8 +35,6 @@ class PesertaMcu extends Model
         'provinsi_id',
         'nama_kabupaten',
         'nama_kecamatan',
-        'departemens_id',
-        'unit_kerjas_id',
         'tinggi_badan',
         'berat_badan',
         'fcm_token',
