@@ -111,13 +111,12 @@ class AdminProfileController extends Controller
                 Storage::delete($admin->foto_profil);
             }
             
-            // --- PERUBAHAN KRITIS: Hapus awalan 'public/' dari path yang disimpan di DB ---
-            // 1. Simpan file baru ke sub-folder 'admin_photos' di DISK 'public'
-            $filename = $request->file('foto_profil')->hashName(); // Dapatkan nama hash file
-            $request->file('foto_profil')->storeAs('admin_photos', $filename, 'public'); 
-            
-            // 2. Path yang tersimpan di DB hanya: admin_photos/namafile.jpg
-            // Pastikan kita HANYA menyimpan path relatif yang bersih
+            $file = $request->file('foto_profil');
+
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $file->move(public_path('admin_photos'), $filename);
+
             $data['foto_profil'] = 'admin_photos/' . $filename; 
         }
 
