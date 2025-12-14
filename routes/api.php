@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\AuthController as ApiAuthController; // Beri alias 
 
 // --- Rute Non-Autentikasi (Misalnya untuk Login) ---
 // Endpoint: /api/login
-Route::post('/login', [App\Http\Controllers\AuthController::class, 'login']);
+Route::post('/login', [ApiAuthController::class, 'login']);
 
 // Rute ini membutuhkan autentikasi standar (misalnya, Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
