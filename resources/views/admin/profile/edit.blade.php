@@ -42,14 +42,11 @@
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
                         <div class="mb-4">
                             @php
-
-                                $rawPath = $admin->foto_profil; // Path yang disimpan di DB: admin_photos/namafile.jpg
-
-                                $imageUrl = $rawPath
-                                    // Gunakan asset() untuk mengakses symlink public/storage
-                                    ? asset($rawPath) . '?t=' . now()->timestamp 
-                                    // Fallback
-                                    : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=128';
+                                use Illuminate\Support\Facades\Storage;
+                                
+                                $imageUrl = $admin->foto_profil
+                                    ? Storage::url($admin->foto_profil) . '?t=' . now()->timestamp
+                                    : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin');
                             @endphp
                             
                             <img src="{{ $imageUrl }}" 
