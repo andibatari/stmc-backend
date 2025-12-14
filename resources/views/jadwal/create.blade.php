@@ -6,7 +6,7 @@
 <div class="max-w-full mx-auto py-4 lg:py-8 px-4 lg:px-0">
     <a href="{{ route('jadwal.index') }}" class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors duration-200 mb-4 lg:mb-8">
         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-        Kembali ke Daftar
+        Kembali
     </a>
 
     <div class="bg-white rounded-xl shadow-lg p-4 md:p-8 border border-gray-100">

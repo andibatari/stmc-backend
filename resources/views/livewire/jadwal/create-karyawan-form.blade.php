@@ -143,10 +143,12 @@
         </div>
 
         {{-- Tombol Simpan --}}
-        <div class="flex justify-center mt-4"> {{-- 🎯 Tombol rata tengah di mobile --}}
+        <div class="flex justify-center mt-4"> 
             <button type="submit" class="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-md shadow-lg transition duration-150 ease-in-out text-base" wire:loading.attr="disabled">
-                <span wire:loading.remove>Simpan Jadwal</span>
-                <span wire:loading>Menyimpan...</span>
+                <span wire:loading.remove>
+                    {{ $isEditMode ? 'Update Jadwal' : 'Simpan Jadwal' }} {{-- KODE YANG DIMODIFIKASI --}}
+                </span>
+                 <span wire:loading>Menyimpan...</span>
             </button>
         </div>
     </div>

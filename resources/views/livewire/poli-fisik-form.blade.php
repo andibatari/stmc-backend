@@ -34,7 +34,7 @@
         {{-- 1. TANDA VITAL DAN BMI --}}
         <div class="p-4 border rounded-lg bg-white shadow-sm">
             <h3 class="text-lg font-bold text-gray-900 mb-4">1. TANDA VITAL & ANTROPOMETRI</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-4 md:grid-cols-4 gap-4">
                 
                 {{-- Tinggi Badan --}}
                 <div>

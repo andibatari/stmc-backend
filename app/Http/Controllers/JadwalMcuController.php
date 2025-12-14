@@ -138,6 +138,7 @@ class JadwalMcuController extends Controller
         
         return back()->with('success', 'Schedule status successfully updated!');
     }
+
     public function destroy(JadwalMcu $jadwal)
     {
         try {
@@ -145,6 +146,62 @@ class JadwalMcuController extends Controller
             return back()->with('success', 'Jadwal berhasil dihapus!');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus jadwal: ' . $e->getMessage());
+        }
+    }
+    
+    public function edit(JadwalMcu $jadwal)
+    {
+        // Untuk form edit, kita arahkan ke view yang sama dengan create, 
+        // namun dengan membawa data $jadwal untuk di-bind ke Livewire atau di-isi di form.
+        // Asumsikan Livewire component yang menangani form dapat menerima $jadwal sebagai parameter.
+        return view('jadwal.edit', compact('jadwal'));
+    }
+
+    /**
+     * Memperbarui jadwal MCU di database.
+     */
+    public function update(Request $request, JadwalMcu $jadwal)
+    {
+        DB::beginTransaction();
+
+        try {
+            // Logika validasi data
+            // Gunakan validasi yang sama seperti di store, disesuaikan untuk update
+            $validatedData = [];
+            $updateData = [
+                'tanggal_mcu' => $request->tanggal_mcu,
+                'dokter_id' => $request->dokter_id,
+                'paket_mcus_id' => $request->paket_mcus_id,
+            ];
+            
+            // Tambahkan validasi untuk form saat ini (Livewire)
+            $validatedData = $request->validate([
+                // Pastikan pasien sudah terpilih
+                'karyawan_id' => 'nullable|exists:karyawans,id', // Di Livewire ini akan diisi jika tipe ptst
+                'peserta_mcus_id' => 'nullable|exists:peserta_mcus,id', // Di Livewire ini akan diisi jika tipe non-ptst
+                'tanggal_mcu' => 'required|date',
+                'dokter_id' => 'required|exists:dokters,id',
+                'paket_mcus_id' => 'required|exists:paket_mcus,id',
+            ]);
+            
+            // Update data dasar jadwal
+            $jadwal->update([
+                'tanggal_mcu' => $validatedData['tanggal_mcu'],
+                'dokter_id' => $validatedData['dokter_id'],
+                'paket_mcus_id' => $validatedData['paket_mcus_id'],
+                // Pastikan karyawan_id atau peserta_mcus_id juga di update jika ada perubahan pasien di form edit
+                'karyawan_id' => $validatedData['karyawan_id'] ?? null,
+                'peserta_mcus_id' => $validatedData['peserta_mcus_id'] ?? null,
+                // Kolom lain (no_antrean, status) biasanya tidak diupdate di sini
+            ]);
+
+
+            DB::commit();
+            return redirect()->route('jadwal.index')->with('success', 'Jadwal Medical Check up berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat memperbarui jadwal: ' . $e->getMessage())->withInput();
         }
     }
 

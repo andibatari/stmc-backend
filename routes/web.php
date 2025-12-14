@@ -78,6 +78,8 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::get('/jadwal-mcu/create', [JadwalMcuController::class, 'create'])->name('jadwal.create');
     Route::delete('/jadwal/{jadwal}', [JadwalMcuController::class, 'destroy'])->name('jadwal.destroy');
     Route::get('/jadwal/{jadwal}/detail', \App\Livewire\QrPatientDetail::class)->name('qr-patient-detail');
+    Route::get('/jadwal/{jadwal}/edit', [JadwalMcuController::class, 'edit'])->name('jadwal.edit');
+Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
 
     Route::post('jadwal/{jadwal}/update-status', [JadwalMcuController::class, 'updateStatus'])->name('jadwal.update-status');
     Route::get('/scan-qr', QrScanner::class)->name('scan.qr');
