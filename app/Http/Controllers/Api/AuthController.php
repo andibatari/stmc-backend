@@ -115,23 +115,55 @@ class AuthController extends Controller // Nama file harus AuthController.php di
         if ($loginUser instanceof EmployeeLogin) {
              $karyawan = $loginUser->karyawan()->with('departemen')->first(); 
              return [
-                 'type' => 'Karyawan',
-                 'id' => $karyawan->id,
-                 'nama' => $karyawan->nama_karyawan,
-                 'no_sap' => $karyawan->no_sap,
-                 'nik' => $karyawan->nik_karyawan,
-                 'departemen' => $karyawan->departemen->nama_departemen ?? null,
-                 'is_employee' => true
+                'type' => 'Karyawan',
+                'id' => $karyawan->id,
+                'nama' => $karyawan->nama_karyawan,
+                'no_sap' => $karyawan->no_sap,
+                'nik' => $karyawan->nik_karyawan,
+                'departemen' => $karyawan->departemen->nama_departemen ?? null,
+                'unit_kerja' => $karyawan->unit_kerja->nama_unit_kerja ?? null,
+                'email' => $karyawan->email,
+                'no_hp' => $karyawan->no_hp,
+                'foto' => $karyawan->foto ? asset('storage/' . $karyawan->foto) : null,
+                'jabatan' => $karyawan->jabatan,
+                'tanggal_lahir' => $karyawan->tanggal_lahir,
+                'umur' => $karyawan->umur,
+                'jenis_kelamin' => $karyawan->jenis_kelamin,
+                'agama' => $karyawan->agama,
+                'alamat' => $karyawan->alamat,
+                'provinsi' => $karyawan->provinsi_id,
+                'kabupaten' => $karyawan->kabupaten,
+                'kecamatan' => $karyawan->kecamatan,
+                'tinggi_badan' => $karyawan->tinggi_badan,
+                'berat_badan' => $karyawan->berat_badan,
+                'golongan_darah' => $karyawan->golongan_darah,
+                'is_employee' => true
              ];
         } elseif ($loginUser instanceof PesertaMcuLogin) {
              $pasien = $loginUser->pasien()->first();
              return [
-                 'type' => 'Pasien',
-                 'id' => $pasien->id,
-                 'nama' => $pasien->nama_lengkap,
-                 'nik' => $pasien->nik_pasien,
-                 'email' => $pasien->email,
-                 'is_employee' => false
+                'type' => 'Pasien',
+                'id' => $pasien->id,
+                'nama' => $pasien->nama_lengkap,
+                'nik' => $pasien->nik_pasien,
+                'email' => $pasien->email,
+                'no_hp' => $pasien->no_hp,
+                'foto' => $pasien->foto ? asset('storage/' . $pasien->foto) : null,
+                'tanggal_lahir' => $pasien->tanggal_lahir,
+                'umur' => $pasien->umur,
+                'jenis_kelamin' => $pasien->jenis_kelamin,
+                'agama' => $pasien->agama,
+                'alamat' => $pasien->alamat,
+                'provinsi' => $pasien->provinsi_id,
+                'kabupaten' => $pasien->kabupaten,
+                'kecamatan' => $pasien->kecamatan,
+                'tinggi_badan' => $pasien->tinggi_badan,
+                'berat_badan' => $pasien->berat_badan,
+                'golongan_darah' => $pasien->golongan_darah,
+                'pendidikan' => $pasien->pendidikan,
+                'pekerjaan' => $pasien->pekerjaan,
+                'perusahaan' => $pasien->perusahaan_asal,
+                'is_employee' => false
              ];
         }
         return null;
