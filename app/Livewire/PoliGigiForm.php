@@ -262,11 +262,12 @@ class PoliGigiForm extends Component
         $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
         $safeIdentifier = str_replace(' ', '_', $safeIdentifier);
         $safeIdentifier = substr($safeIdentifier, 0, 50); 
-        $fileName = 'Hasil Pemeriksaan Poli Gigi ' . $safeIdentifier . ' Jadwal ' . $this->poliGigiResult->jadwal_poli_id . '.pdf';
+
+        $fileName = 'Hasil Pemeriksaan Poli Gigi ' . $safeIdentifier . ' Jadwal ' . $this->poliGigiResult->jadwal_poli_id .' '. time(). '.pdf';
         
-        // PERHATIAN: Kita tidak menggunakan Browsershot (terlalu lambat)
-        // Kita menggunakan Dompdf (asumsi sudah terinstal)
-        $storagePath = 'pdf_reports/' . $fileName;
+        // Path penyimpanan di dalam disk 'public'
+        $folderPath = 'pdf_reports';
+        $storagePath = $folderPath . '/' . $fileName; // pdf_reports/nama_file.pdf
 
         try {
             Log::info("Mencoba membuat PDF Poli Gigi dengan Dompdf. Target Path: " . $storagePath);
@@ -292,12 +293,12 @@ class PoliGigiForm extends Component
             Storage::disk('public')->put($storagePath, $pdf->output());
             
             // 3. SIMPAN PATH FILE KE DATABASE POLI_GIGI_RESULTS
-            $this->poliGigiResult->file_path = 'public/' . $storagePath;
+            $this->poliGigiResult->file_path = $fileName;
             $this->poliGigiResult->save(); // Simpan hasil pemeriksaan dan path file ke tabel poli_gigi_results
 
             // 4. KRITIS: SIMPAN PATH FILE KE TABEL JADWAL_POLIS (sesuai permintaan user)
-            $this->poliData->file_path = 'public/' . $storagePath;
-            $this->poliData->save(); 
+            $this->poliData->file_path = $fileName;
+            $this->poliData->save();
             
             session()->flash('success', 'Hasil pemeriksaan gigi dan laporan PDF berhasil disimpan!');
             
@@ -310,6 +311,8 @@ class PoliGigiForm extends Component
         // Setelah semua tersimpan (baik PDF berhasil atau gagal), update status jadwal
         $this->poliData->status = 'Done';
         $this->poliData->save();
+
+        $this->dispatch('status-updated', ['message' => 'Poli Gigi Selesai.']);
     }
 
     /**

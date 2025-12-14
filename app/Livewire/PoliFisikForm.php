@@ -313,8 +313,9 @@ class PoliFisikForm extends Component
             // --- Pembuatan PDF dengan Dompdf ---
             $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
             $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
-            $fileName = 'Hasil Pemeriksaan Poli Fisik ' . $safeIdentifier . ' Jadwal ' . $this->poliData->id . '.pdf';
-            $storagePath = 'pdf_reports/' . $fileName;
+            $fileName = 'Hasil Pemeriksaan Poli Fisik ' . $safeIdentifier . ' Jadwal ' . $this->poliData->id . ' '. time(). '.pdf';
+            $folderPath = 'pdf_reports';
+            $storagePath = $folderPath . '/' . $fileName; // pdf_reports/nama_file.pdf
 
             // KRITIS: Tambahkan data pajanan ke reportData
             $reportData = [
@@ -329,10 +330,10 @@ class PoliFisikForm extends Component
             Storage::disk('public')->put($storagePath, $pdf->output());
 
             // Update file_path di kedua model setelah PDF berhasil dibuat
-            $this->fisikResult->file_path = 'public/' . $storagePath;
+            $this->fisikResult->file_path = $fileName; // Hanya nama file
             $this->fisikResult->save();
 
-            $this->poliData->file_path = 'public/' . $storagePath;
+            $this->poliData->file_path = $fileName;
             $this->poliData->status = 'Done';
             $this->poliData->save();
 

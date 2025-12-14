@@ -125,9 +125,12 @@ class McuPdfController extends Controller
                 
                 if (file_exists($fullPath)) {
                     $pdfFilesToMerge[] = $fullPath;
+                    \Log::info("PDF Ditemukan: " . $fullPath);
                 } else {
                     \Log::warning("File PDF Poli tidak ditemukan di storage: " . $fullPath);
                 }
+            } else {
+                \Log::info("Poli " . ($jp->poli->nama_poli ?? 'N/A') . " tidak memiliki file path."); // <-- Tambahkan ini
             }
         }
 

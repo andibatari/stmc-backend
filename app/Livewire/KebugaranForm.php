@@ -146,8 +146,9 @@ class KebugaranForm extends Component
         // --- LOGIKA PEMBUATAN PDF DENGAN DOMPDF ---
         $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
         $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
-        $fileName = 'Hasil Pemeriksaan Kebugaran ' . $safeIdentifier . ' JadwalPoli ' . $this->jadwalPoliId . '.pdf';
-        $storagePath = 'pdf_reports/' . $fileName; 
+        $fileName = 'Hasil Pemeriksaan Kebugaran ' . $safeIdentifier . ' JadwalPoli ' . $this->jadwalPoliId . ' '. time(). '.pdf';
+        $folderPath = 'pdf_reports';
+        $storagePath = $folderPath . '/' . $fileName; // pdf_reports/nama_file.pdf 
 
         try {
             $reportData = [
@@ -162,11 +163,11 @@ class KebugaranForm extends Component
             Storage::disk('public')->put($storagePath, $pdf->output());
             
             // SIMPAN PATH FILE KE KEBUGARANRESULT
-            $kebugaran->file_path = 'public/' . $storagePath; 
+            $kebugaran->file_path = $fileName;
             $kebugaran->save();
             
             // 🔥 KRITIS: SALIN PATH KE TABEL JADWAL_POLI 🔥
-            $this->poliData->file_path = $kebugaran->file_path; // Ambil path dari KebugaranResult
+            $this->poliData->file_path = $fileName; // Ambil path dari KebugaranResult
             
             // Update status poli
             $this->poliData->status = 'Done';
