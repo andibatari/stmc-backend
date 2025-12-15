@@ -38,8 +38,12 @@ class JadwalMcuApiController extends Controller
             ], 422);
         }
 
-        // 2. Cek Ketersediaan Slot & Duplikasi (Logika ini tetap benar)
-        if (JadwalMcu::where('user_id', $user->id)->where('status', 'Scheduled')->exists()) {
+        // --- PENENTUAN KOLOM PENCARIAN BERDASARKAN JENIS USER ---
+        $isKaryawan = $user instanceof \App\Models\Karyawan;
+        $checkColumn = $isKaryawan ? 'karyawan_id' : 'peserta_mcus_id';
+
+        // 2. Cek Ketersediaan Slot & Duplikasi
+        if (JadwalMcu::where($checkColumn, $user->id)->where('status', 'Scheduled')->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda sudah memiliki jadwal MCU yang aktif. Batalkan jadwal yang ada terlebih dahulu.'
@@ -48,39 +52,57 @@ class JadwalMcuApiController extends Controller
 
         // 3. Simpan Pengajuan
         try {
-            // --- LOGIKA PENENTUAN DOKTER PIKET DARI DATABASE ---
+            // A. Penentuan Dokter Piket (Logika ini tetap di sisi server)
             $dokterPiket = Dokter::inRandomOrder()->first();
 
             if (!$dokterPiket) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Gagal menentukan jadwal. Tidak ada data dokter yang tersedia.'
-                ], 500); // 500 Internal Server Error jika tabel Dokter kosong
+                ], 500);
             }
 
-            // Mendapatkan no_antrean (Simulasi: hitung total jadwal hari ini + 1)
+            // B. Penentuan Antrean & Data Dasar
             $tanggalMcu = Carbon::parse($request->tanggal_mcu)->toDateString();
             $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggalMcu)->count() + 1;
+            $userId = $user->id;
 
-            JadwalMcu::create([
-                // Data Karyawan (ASUMSI $user memiliki kolom ini atau Anda dapat mengambilnya dari $user)
-                'peserta_mcus_id' => $user->id, // Asumsi ini adalah ID User/Karyawan
-                'karyawan_id' => $user->id, // Asumsi ID Karyawan sama dengan User ID
-                'no_sap' => $user->no_sap ?? $user->nik, // Asumsi kolom ini ada di Model $user
-                'nama_pasien' => $user->nama ?? $user->name, // Asumsi kolom ini ada di Model $user
-                'nik_pasien' => $user->nik,
-                'perusahaan_asal' => $user->perusahaan ?? 'PT. STMC', // Asumsi
-
-                // Data Pengajuan
+            // C. Persiapan Data untuk CREATE
+            $dataToCreate = [
+                // Data Pengajuan dari Request
                 'tanggal_mcu' => $tanggalMcu,
-                'paket_mcus_id' => $request->paket_mcu, // Jika Anda menyimpan ID Paket
-                // Jika kolom di DB adalah 'paket_mcu' (string), ganti menjadi: 'paket_mcu' => $request->paket_mcu,
+                'paket_mcus_id' => $request->paket_mcu, // Menggunakan nilai dari request
                 
                 // Data Penetapan Backend
-                'dokter_id' => $dokterPiket->id, // <--- ID DOKTER DARI DB DOKTER
-                'no_antrean' => $noAntrean, // Nomor antrean otomatis
+                'dokter_id' => $dokterPiket->id, 
+                'no_antrean' => $noAntrean,
                 'status' => 'Scheduled',
-            ]);
+            ];
+
+            // D. Pengisian Data Karyawan/Peserta MCU (Disesuaikan dengan provider guard)
+            if ($isKaryawan) {
+                // Jika User adalah Karyawan
+                $dataToCreate['karyawan_id'] = $userId;
+                $dataToCreate['peserta_mcus_id'] = null;
+                
+                // Asumsi kolom ada di Model Karyawan:
+                $dataToCreate['no_sap'] = $user->no_sap ?? $user->nik; 
+                $dataToCreate['nama_pasien'] = $user->nama ?? $user->name;
+                $dataToCreate['nik_pasien'] = $user->nik;
+                $dataToCreate['perusahaan_asal'] = $user->perusahaan ?? 'PT. STMC';
+            } else {
+                // Jika User adalah Peserta MCU (Non-Karyawan)
+                $dataToCreate['peserta_mcus_id'] = $userId;
+                $dataToCreate['karyawan_id'] = null;
+                
+                // Asumsi kolom ada di Model PesertaMcu:
+                $dataToCreate['no_sap'] = null; 
+                $dataToCreate['nama_pasien'] = $user->nama ?? $user->name;
+                $dataToCreate['nik_pasien'] = $user->nik;
+                $dataToCreate['perusahaan_asal'] = $user->perusahaan ?? 'Pribadi';
+            }
+            
+            JadwalMcu::create($dataToCreate);
 
             return response()->json([
                 'success' => true,
@@ -88,6 +110,11 @@ class JadwalMcuApiController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
+            // Jika Anda masih mendapatkan 500, tambahkan $e->getMessage() untuk debugging:
+            // return response()->json([
+            //     'success' => false,
+            //     'message' => 'Gagal menyimpan pengajuan jadwal. Error: ' . $e->getMessage(),
+            // ], 500);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan pengajuan jadwal.'
@@ -104,21 +131,30 @@ class JadwalMcuApiController extends Controller
         try {
             $user = $request->user();
 
-            // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
-            // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
-            $riwayat = JadwalMcu::where(function ($query) use ($user) {
-                // Jika user adalah instance dari Model Karyawan
-                if ($user instanceof \App\Models\Karyawan) {
-                    $query->where('karyawan_id', $user->id); 
-                } 
-                // Jika user adalah instance dari Model PesertaMcu (Non-Karyawan)
-                elseif ($user instanceof \App\Models\PesertaMcu) {
-                    $query->where('peserta_mcus_id', $user->id); // Asumsi ini FK untuk non-karyawan
-                }
-            })
-            ->with('dokter') 
-            ->orderBy('tanggal_mcu', 'desc')
-            ->get();
+            // 1. Tentukan kolom ID yang akan digunakan
+            $column = null;
+            $userId = null;
+            
+            if ($user instanceof Karyawan) {
+                $column = 'karyawan_id';
+                $userId = $user->id;
+            } elseif ($user instanceof PesertaMcu) {
+                $column = 'peserta_mcus_id';
+                $userId = $user->id;
+            } else {
+                // Jika user terautentikasi tetapi bukan Karyawan atau PesertaMcu 
+                // (misal: Guard baru yang belum ditangani), kembalikan 403 atau data kosong.
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tipe pengguna tidak dikenali untuk mengakses riwayat ini.'
+                ], 403);
+            }
+
+            // 2. Query data riwayat menggunakan kolom yang ditentukan
+            $riwayat = JadwalMcu::where($column, $userId)
+                                ->with('dokter') // Memastikan relasi dokter ada
+                                ->orderBy('tanggal_mcu', 'desc')
+                                ->get();
 
             $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
             $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
@@ -132,7 +168,7 @@ class JadwalMcuApiController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal mengambil riwayat jadwal MCU.'
+                'message' => 'Gagal mengambil riwayat jadwal MCU. Cek log server untuk detail exception.'
             ], 500);
         }
     }
