@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB; // Jika perlu query raw
 use Illuminate\Validation\ValidationException;
 // Import Model yang dibutuhkan (misal: JadwalMcu, User/Karyawan)
 use App\Models\JadwalMcu; // Ganti dengan nama Model Jadwal MCU Anda
+use App\Models\Karyawan;
+use App\Models\Dokter; // Asumsi ada model Dokter untuk relasi
 use App\Http\Resources\JadwalMcuResource; // Asumsi Anda menggunakan Resource untuk format output
 use Carbon\Carbon;
 
@@ -45,19 +47,37 @@ class JadwalMcuApiController extends Controller
 
         // 3. Simpan Pengajuan
         try {
-            // [KOREKSI LOGIKA]: Tentukan Dokter ID Berdasarkan Tanggal (Simulasi Shift)
-            $tanggal = Carbon::parse($request->tanggal_mcu);
-            $hari = $tanggal->day;
-            
-            // Asumsi: Dokter dengan ID 1 untuk hari genap, ID 2 untuk hari ganjil.
-            // Anda harus mengganti ini dengan logika bisnis shift Anda yang sebenarnya.
-            $dokterIdUntukJadwal = ($hari % 2 == 0) ? 1 : 2; 
+            // --- LOGIKA PENENTUAN DOKTER PIKET DARI DATABASE ---
+            $dokterPiket = Dokter::inRandomOrder()->first();
+
+            if (!$dokterPiket) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menentukan jadwal. Tidak ada data dokter yang tersedia.'
+                ], 500); // 500 Internal Server Error jika tabel Dokter kosong
+            }
+
+            // Mendapatkan no_antrean (Simulasi: hitung total jadwal hari ini + 1)
+            $tanggalMcu = Carbon::parse($request->tanggal_mcu)->toDateString();
+            $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggalMcu)->count() + 1;
 
             JadwalMcu::create([
-                'user_id' => $user->id,
-                'tanggal_jadwal' => $request->tanggal_mcu,
-                'paket_mcu' => $request->paket_mcu,
-                'dokter_id' => $dokterIdUntukJadwal, // <--- MENGGUNAKAN ID DARI DATABASE
+                // Data Karyawan (ASUMSI $user memiliki kolom ini atau Anda dapat mengambilnya dari $user)
+                'peserta_mcus_id' => $user->id, // Asumsi ini adalah ID User/Karyawan
+                'karyawan_id' => $user->id, // Asumsi ID Karyawan sama dengan User ID
+                'no_sap' => $user->no_sap ?? $user->nik, // Asumsi kolom ini ada di Model $user
+                'nama_pasien' => $user->nama ?? $user->name, // Asumsi kolom ini ada di Model $user
+                'nik_pasien' => $user->nik,
+                'perusahaan_asal' => $user->perusahaan ?? 'PT. STMC', // Asumsi
+
+                // Data Pengajuan
+                'tanggal_mcu' => $tanggalMcu,
+                'paket_mcus_id' => $request->paket_mcu, // Jika Anda menyimpan ID Paket
+                // Jika kolom di DB adalah 'paket_mcu' (string), ganti menjadi: 'paket_mcu' => $request->paket_mcu,
+                
+                // Data Penetapan Backend
+                'dokter_id' => $dokterPiket->id, // <--- ID DOKTER DARI DB DOKTER
+                'no_antrean' => $noAntrean, // Nomor antrean otomatis
                 'status' => 'Scheduled',
             ]);
 
@@ -84,9 +104,9 @@ class JadwalMcuApiController extends Controller
 
         // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
         // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
-        $riwayat = JadwalMcu::where('user_id', $user->id)
-                            ->with('dokter') // <--- EAGER LOADING DOKTER
-                            ->orderBy('tanggal_jadwal', 'desc')
+        $riwayat = JadwalMcu::where('karyawan_id', $user->id) // Menggunakan karyawan_id jika itu foreign key
+                            ->with('dokter') 
+                            ->orderBy('tanggal_mcu', 'desc')
                             ->get();
 
         $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
