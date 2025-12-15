@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController as ApiAuthController; // Beri alias untuk menghindari konflik
+use App\Http\Controllers\Api\JadwalMcuApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,14 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('jadwal-mcu')->group(function () {
         
         // [BARU] Endpoint: /api/jadwal-mcu/ajukan (Pengajuan jadwal)
-        Route::post('/ajukan', [App\Http\Controllers\Api\JadwalMcuApiController::class, 'store']); // <--- BARU
+        Route::post('/ajukan', [JadwalMcuApiController::class, 'store']); // <--- BARU
 
         // [BARU] Endpoint: /api/jadwal-mcu/riwayat (Mengambil riwayat jadwal per user)
-        Route::get('/riwayat', [App\Http\Controllers\Api\JadwalMcuApiController::class, 'getRiwayatByUser']); // <--- BARU
-
-        // Endpoint: /api/jadwal-mcu
-        // Route::get('/', [App\Http\Controllers\JadwalMcuController::class, 'apiIndex']); // Hapus/Ganti dengan riwayat
-        // Route::get('/{id}', [App\Http\Controllers\JadwalMcuController::class, 'apiShow']); // Hapus/Ganti dengan detail
+        Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']); // <--- BARU
     });
 
     // // 4. Rute Data Keluarga (Jika diperlukan untuk ditampilkan di profil)
