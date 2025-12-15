@@ -34,38 +34,36 @@ class JadwalMcuApiController extends Controller
             ], 422);
         }
 
-        // 2. Cek Ketersediaan Slot & Duplikasi
-        // Logika bisnis: Cek apakah user sudah mengajukan jadwal aktif atau jadwal penuh
-        // Di sini kita hanya cek apakah sudah ada jadwal 'Scheduled'
-        $existingJadwal = JadwalMcu::where('user_id', $user->id) // Asumsi Model punya foreign key user_id
-                                    ->where('status', 'Scheduled')
-                                    ->exists();
-        
-        if ($existingJadwal) {
+        // 2. Cek Ketersediaan Slot & Duplikasi (Logika ini tetap benar)
+        if (JadwalMcu::where('user_id', $user->id)->where('status', 'Scheduled')->exists()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda sudah memiliki jadwal MCU yang aktif. Batalkan jadwal yang ada terlebih dahulu.'
-            ], 409); // 409 Conflict
+            ], 409);
         }
 
         // 3. Simpan Pengajuan
         try {
-            // Asumsi: Kita tentukan dokter piket berdasarkan hari atau sistem internal
-            $dokterPiket = 'dr. ' . ($request->tanggal_mcu % 2 == 0 ? 'Nurul' : 'Iwan');
+            // [KOREKSI LOGIKA]: Tentukan Dokter ID Berdasarkan Tanggal (Simulasi Shift)
+            $tanggal = Carbon::parse($request->tanggal_mcu);
+            $hari = $tanggal->day;
+            
+            // Asumsi: Dokter dengan ID 1 untuk hari genap, ID 2 untuk hari ganjil.
+            // Anda harus mengganti ini dengan logika bisnis shift Anda yang sebenarnya.
+            $dokterIdUntukJadwal = ($hari % 2 == 0) ? 1 : 2; 
 
-            $jadwal = JadwalMcu::create([
+            JadwalMcu::create([
                 'user_id' => $user->id,
                 'tanggal_jadwal' => $request->tanggal_mcu,
                 'paket_mcu' => $request->paket_mcu,
-                'dokter_piket' => $dokterPiket, // Data ditentukan di backend
+                'dokter_id' => $dokterIdUntukJadwal, // <--- MENGGUNAKAN ID DARI DATABASE
                 'status' => 'Scheduled',
-                // 'keterangan_lain' => null,
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pengajuan jadwal MCU berhasil. Mohon tunggu konfirmasi.'
-            ], 201); // 201 Created
+            ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -83,18 +81,20 @@ class JadwalMcuApiController extends Controller
     {
         $user = $request->user();
 
-        // Ambil semua jadwal, diurutkan dari yang terbaru (tanggal paling depan)
+        // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
+        // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
         $riwayat = JadwalMcu::where('user_id', $user->id)
+                            ->with('dokter') // <--- EAGER LOADING DOKTER
                             ->orderBy('tanggal_jadwal', 'desc')
                             ->get();
 
-        // Kelompokkan menjadi Aktif (Scheduled/Present) dan Selesai (Finished/Canceled)
         $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
         $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
 
         return response()->json([
             'success' => true,
-            'data_aktif' => JadwalMcuResource::collection($aktif), // Gunakan Resource
+            // Data dikirim ke Resource, yang harusnya menampilkan NAMA DOKTER
+            'data_aktif' => JadwalMcuResource::collection($aktif), 
             'data_selesai' => JadwalMcuResource::collection($selesai),
         ], 200);
     }
