@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 // Import Model yang dibutuhkan (misal: JadwalMcu, User/Karyawan)
 use App\Models\JadwalMcu; // Ganti dengan nama Model Jadwal MCU Anda
 use App\Models\Karyawan;
+use App\Models\PesertaMcu;
 use App\Models\Dokter; // Asumsi ada model Dokter untuk relasi
 use App\Http\Resources\JadwalMcuResource; // Asumsi Anda menggunakan Resource untuk format output
 use Carbon\Carbon;
