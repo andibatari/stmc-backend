@@ -28,29 +28,13 @@ Route::post('/login', [ApiAuthController::class, 'login']);
 
 // Rute ini membutuhkan autentikasi standar (misalnya, Token Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
-    
-    // 1. Rute Profil Admin/Pengguna
-    // Endpoint: /api/user
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-    
+
     // Rute Logout
     Route::post('/logout', [ApiAuthController::class, 'logout']);
 
     // --- Rute Baru: Mengubah Kata Sandi ---
     // Endpoint: /api/change-password
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
-
-    // 2. Rute Jadwal MCU (Medical Check Up)
-    Route::prefix('jadwal-mcu')->group(function () {
-        
-        // [BARU] Endpoint: /api/jadwal-mcu/ajukan (Pengajuan jadwal)
-        Route::post('/ajukan', [JadwalMcuApiController::class, 'store']); // <--- BARU
-
-        // [BARU] Endpoint: /api/jadwal-mcu/riwayat (Mengambil riwayat jadwal per user)
-        Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']); // <--- BARU
-    });
 
     // // 4. Rute Data Keluarga (Jika diperlukan untuk ditampilkan di profil)
     // Route::prefix('keluarga')->group(function () {
@@ -64,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/review', [App\Http\Controllers\ReviewController::class, 'store']);
 });
 
-Route::middleware('auth:karyawan_api,pesert_api')->group(function () {
+Route::middleware('auth:karyawan_api,peserta_api')->group(function () {
     // 1. Rute Profil Admin/Pengguna
     // Endpoint: /api/user
     Route::get('/user', function (Request $request) {
