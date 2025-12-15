@@ -64,3 +64,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/review', [App\Http\Controllers\ReviewController::class, 'store']);
 });
 
+Route::middleware('auth:karyawan_api,pesert_api')->group(function () {
+    // 1. Rute Profil Admin/Pengguna
+    // Endpoint: /api/user
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // 2. Rute Jadwal MCU (Medical Check Up)
+    Route::prefix('jadwal-mcu')->group(function () {
+        
+        // [BARU] Endpoint: /api/jadwal-mcu/ajukan (Pengajuan jadwal)
+        Route::post('/ajukan', [JadwalMcuApiController::class, 'store']); // <--- BARU
+
+        // [BARU] Endpoint: /api/jadwal-mcu/riwayat (Mengambil riwayat jadwal per user)
+        Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']); // <--- BARU
+    });
+
+});
+

@@ -105,10 +105,19 @@ class JadwalMcuApiController extends Controller
 
             // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
             // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
-            $riwayat = JadwalMcu::where('karyawan_id', $user->id) // Menggunakan karyawan_id jika itu foreign key
-                                ->with('dokter') 
-                                ->orderBy('tanggal_mcu', 'desc')
-                                ->get();
+            $riwayat = JadwalMcu::where(function ($query) use ($user) {
+                // Jika user adalah instance dari Model Karyawan
+                if ($user instanceof \App\Models\Karyawan) {
+                    $query->where('karyawan_id', $user->id); 
+                } 
+                // Jika user adalah instance dari Model PesertaMcu (Non-Karyawan)
+                elseif ($user instanceof \App\Models\PesertaMcu) {
+                    $query->where('peserta_mcus_id', $user->id); // Asumsi ini FK untuk non-karyawan
+                }
+            })
+            ->with('dokter') 
+            ->orderBy('tanggal_mcu', 'desc')
+            ->get();
 
             $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
             $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
