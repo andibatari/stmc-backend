@@ -41,35 +41,26 @@ Route::middleware('auth:sanctum')->group(function () {
     // Endpoint: /api/change-password
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
 
-    // 2. Rute Manajemen Karyawan (Pengguna Aplikasi)
-    // Asumsi: Kita hanya butuh list data dan detail data untuk aplikasi mobile
-    Route::prefix('karyawan')->group(function () {
-        // Endpoint: /api/karyawan
-        // Mengambil daftar semua karyawan
-        Route::get('/', [App\Http\Controllers\KaryawanController::class, 'apiIndex']);
-
-        // Endpoint: /api/karyawan/{id}
-        // Mengambil detail karyawan tertentu
-        Route::get('/{id}', [App\Http\Controllers\KaryawanController::class, 'apiShow']);
-    });
-    
-    // 3. Rute Jadwal MCU (Medical Check Up)
+    // 2. Rute Jadwal MCU (Medical Check Up)
     Route::prefix('jadwal-mcu')->group(function () {
+        
+        // [BARU] Endpoint: /api/jadwal-mcu/ajukan (Pengajuan jadwal)
+        Route::post('/ajukan', [App\Http\Controllers\Api\JadwalMcuApiController::class, 'store']); // <--- BARU
+
+        // [BARU] Endpoint: /api/jadwal-mcu/riwayat (Mengambil riwayat jadwal per user)
+        Route::get('/riwayat', [App\Http\Controllers\Api\JadwalMcuApiController::class, 'getRiwayatByUser']); // <--- BARU
+
         // Endpoint: /api/jadwal-mcu
-        // Mengambil daftar jadwal MCU yang akan datang
-        Route::get('/', [App\Http\Controllers\JadwalMcuController::class, 'apiIndex']);
-
-        // Endpoint: /api/jadwal-mcu/{id}
-        // Mengambil detail jadwal MCU tertentu
-        Route::get('/{id}', [App\Http\Controllers\JadwalMcuController::class, 'apiShow']);
+        // Route::get('/', [App\Http\Controllers\JadwalMcuController::class, 'apiIndex']); // Hapus/Ganti dengan riwayat
+        // Route::get('/{id}', [App\Http\Controllers\JadwalMcuController::class, 'apiShow']); // Hapus/Ganti dengan detail
     });
 
-    // 4. Rute Data Keluarga (Jika diperlukan untuk ditampilkan di profil)
-    Route::prefix('keluarga')->group(function () {
-        // Endpoint: /api/keluarga/user
-        // Mengambil data keluarga yang terkait dengan pengguna yang sedang login
-        Route::get('/user', [App\Http\Controllers\KeluargaController::class, 'apiShowByUser']);
-    });
+    // // 4. Rute Data Keluarga (Jika diperlukan untuk ditampilkan di profil)
+    // Route::prefix('keluarga')->group(function () {
+    //     // Endpoint: /api/keluarga/user
+    //     // Mengambil data keluarga yang terkait dengan pengguna yang sedang login
+    //     Route::get('/user', [App\Http\Controllers\KeluargaController::class, 'apiShowByUser']);
+    // });
 
     // 5. Rute untuk Review (Asumsi endpoint dikirim ke controller)
     // Endpoint: /api/review
