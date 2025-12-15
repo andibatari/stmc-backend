@@ -100,23 +100,30 @@ class JadwalMcuApiController extends Controller
      */
     public function getRiwayatByUser(Request $request)
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
-        // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
-        $riwayat = JadwalMcu::where('karyawan_id', $user->id) // Menggunakan karyawan_id jika itu foreign key
-                            ->with('dokter') 
-                            ->orderBy('tanggal_mcu', 'desc')
-                            ->get();
+            // [KOREKSI PENTING]: Eager load relasi Dokter untuk mendapatkan nama dokter
+            // Asumsi: Model JadwalMcu memiliki relasi belongsTo ke Model Dokter bernama 'dokter'
+            $riwayat = JadwalMcu::where('karyawan_id', $user->id) // Menggunakan karyawan_id jika itu foreign key
+                                ->with('dokter') 
+                                ->orderBy('tanggal_mcu', 'desc')
+                                ->get();
 
-        $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
-        $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
+            $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
+            $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
 
-        return response()->json([
-            'success' => true,
-            // Data dikirim ke Resource, yang harusnya menampilkan NAMA DOKTER
-            'data_aktif' => JadwalMcuResource::collection($aktif), 
-            'data_selesai' => JadwalMcuResource::collection($selesai),
-        ], 200);
+            return response()->json([
+                'success' => true,
+                // Data dikirim ke Resource, yang harusnya menampilkan NAMA DOKTER
+                'data_aktif' => JadwalMcuResource::collection($aktif), 
+                'data_selesai' => JadwalMcuResource::collection($selesai),
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil riwayat jadwal MCU.'
+            ], 500);
+        }
     }
 }
