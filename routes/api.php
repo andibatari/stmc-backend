@@ -37,6 +37,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rute Logout
     Route::post('/logout', [ApiAuthController::class, 'logout']);
 
+    // --- Rute Baru: Mengubah Kata Sandi ---
+    // Endpoint: /api/change-password
+    Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
+
     // 2. Rute Manajemen Karyawan (Pengguna Aplikasi)
     // Asumsi: Kita hanya butuh list data dan detail data untuk aplikasi mobile
     Route::prefix('karyawan')->group(function () {

@@ -68,6 +68,57 @@ class AuthController extends Controller // Nama file harus AuthController.php di
             'message' => 'Berhasil logout dari API.'
         ], 200);
     }
+
+    public function changePassword(Request $request)
+    {
+        // 1. Validasi Input
+        try {
+            $request->validate([
+                'current_password' => 'required|string',
+                'new_password' => 'required|string|min:6|confirmed', // 'confirmed' mencari field 'new_password_confirmation'
+            ], [
+                'new_password.min' => 'Kata sandi baru minimal 6 karakter.',
+                'new_password.confirmed' => 'Konfirmasi kata sandi baru tidak cocok.',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $user = $request->user(); // Mendapatkan user yang sedang login via Sanctum
+
+        // 2. Verifikasi Password Lama
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kata sandi lama salah.',
+            ], 401);
+        }
+
+        // 3. Update Password
+        try {
+            $user->fill([
+                'password' => Hash::make($request->new_password)
+            ])->save();
+
+            // Opsional: Batalkan semua token sesi lama setelah password diubah
+            // $user->tokens()->where('name', 'app-token')->delete(); 
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Kata sandi berhasil diubah.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah kata sandi di database.'
+            ], 500);
+        }
+    }
     
     // --- Metode Pembantu (Harus disertakan) ---
     
