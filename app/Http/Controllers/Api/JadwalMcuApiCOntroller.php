@@ -100,12 +100,37 @@ class JadwalMcuApiController extends Controller
     {
         $loginUser = auth()->user();
 
+        if (!$loginUser) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
         if ($loginUser instanceof EmployeeLogin) {
+            if (!$loginUser->karyawan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Relasi karyawan tidak ditemukan'
+                ], 404);
+            }
+
             $column = 'karyawan_id';
             $userId = $loginUser->karyawan->id;
-        } else {
+
+        } elseif ($loginUser instanceof PesertaMcuLogin) {
+            if (!$loginUser->pasien) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Relasi peserta MCU tidak ditemukan'
+                ], 404);
+            }
+
             $column = 'peserta_mcus_id';
             $userId = $loginUser->pasien->id;
+
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tipe user tidak dikenali'
+            ], 403);
         }
 
         $data = JadwalMcu::where($column, $userId)
