@@ -4,28 +4,25 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Jika perlu query raw
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str; // <-- Tambahkan ini di bagian atas file
-// Import Model yang dibutuhkan (misal: JadwalMcu, User/Karyawan)
-use App\Models\JadwalMcu; // Ganti dengan nama Model Jadwal MCU Anda
-use App\Models\Karyawan;
-use App\Models\PesertaMcu;
-use App\Models\Dokter; // Asumsi ada model Dokter untuk relasi
-use App\Http\Resources\JadwalMcuResource; // Asumsi Anda menggunakan Resource untuk format output
+use Illuminate\Support\Str;
+use App\Models\JadwalMcu;
+use App\Models\EmployeeLogin;
+use App\Models\PesertaMcuLogin;
+use App\Models\Dokter;
+use App\Http\Resources\JadwalMcuResource;
 use Carbon\Carbon;
 
 class JadwalMcuApiController extends Controller
 {
-    /**
-     * Menyimpan pengajuan jadwal MCU dari pengguna.
-     * Endpoint: POST /api/jadwal-mcu/ajukan
-     */
     public function store(Request $request)
     {
-        $user = $request->user(); // Karyawan yang sedang login
+        $loginUser = auth()->user(); // ⬅️ LOGIN MODEL (EmployeeLogin / PesertaMcuLogin)
 
-        // 1. Validasi Input
+        if (!$loginUser) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
         try {
             $request->validate([
                 'tanggal_mcu' => 'required|date|after_or_equal:today',
@@ -34,145 +31,96 @@ class JadwalMcuApiController extends Controller
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal: Cek format tanggal atau paket MCU.',
-                'errors' => $e->errors(),
+                'errors' => $e->errors()
             ], 422);
         }
 
-        // --- PENENTUAN KOLOM PENCARIAN BERDASARKAN JENIS USER ---
-        $isKaryawan = $user instanceof \App\Models\Karyawan;
-        $checkColumn = $isKaryawan ? 'karyawan_id' : 'peserta_mcus_id';
+        /** ===============================
+         *  TENTUKAN USER ASLI
+         *  =============================== */
+        if ($loginUser instanceof EmployeeLogin) {
+            $user = $loginUser->karyawan;
+            $checkColumn = 'karyawan_id';
+        } else {
+            $user = $loginUser->pasien;
+            $checkColumn = 'peserta_mcus_id';
+        }
 
-        // 2. Cek Ketersediaan Slot & Duplikasi
-        if (JadwalMcu::where($checkColumn, $user->id)->where('status', 'Scheduled')->exists()) {
+        if (!$user) {
+            return response()->json(['message' => 'Profil tidak ditemukan'], 404);
+        }
+
+        if (
+            JadwalMcu::where($checkColumn, $user->id)
+                ->where('status', 'Scheduled')
+                ->exists()
+        ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah memiliki jadwal MCU yang aktif. Batalkan jadwal yang ada terlebih dahulu.'
+                'message' => 'Anda sudah memiliki jadwal MCU aktif.'
             ], 409);
         }
 
-        // 3. Simpan Pengajuan
         try {
-            // A. Penentuan Dokter Piket (Logika ini tetap di sisi server)
-            $dokterPiket = Dokter::inRandomOrder()->first();
+            $dokter = Dokter::inRandomOrder()->firstOrFail();
 
-            if (!$dokterPiket) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menentukan jadwal. Tidak ada data dokter yang tersedia.'
-                ], 500);
-            }
-
-            // B. Penentuan Antrean & Data Dasar
             $tanggalMcu = Carbon::parse($request->tanggal_mcu)->toDateString();
             $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggalMcu)->count() + 1;
-            $userId = $user->id;
 
-            // C. Persiapan Data untuk CREATE
-            $dataToCreate = [
-                // Data Pengajuan dari Request
+            $data = [
                 'qr_code_id' => (string) Str::uuid(),
                 'tanggal_mcu' => $tanggalMcu,
-                'paket_mcus_id' => $request->paket_mcu, // Menggunakan nilai dari request
-                
-                // Data Penetapan Backend
-                'dokter_id' => $dokterPiket->id, 
+                'paket_mcus_id' => $request->paket_mcu,
+                'dokter_id' => $dokter->id,
                 'no_antrean' => $noAntrean,
                 'status' => 'Scheduled',
+                'nama_pasien' => $user->nama ?? $user->nama_lengkap,
+                'nik_pasien' => $user->nik ?? $user->nik_pasien,
+                'perusahaan_asal' => $user->perusahaan ?? 'Pribadi',
+                'karyawan_id' => $loginUser instanceof EmployeeLogin ? $user->id : null,
+                'peserta_mcus_id' => $loginUser instanceof PesertaMcuLogin ? $user->id : null,
             ];
 
-            // D. Pengisian Data Karyawan/Peserta MCU (Disesuaikan dengan provider guard)
-            if ($isKaryawan) {
-                // Jika User adalah Karyawan
-                $dataToCreate['karyawan_id'] = $userId;
-                $dataToCreate['peserta_mcus_id'] = null;
-                
-                // Asumsi kolom ada di Model Karyawan:
-                $dataToCreate['no_sap'] = $user->no_sap ?? $user->nik; 
-                $dataToCreate['nama_pasien'] = $user->nama ?? $user->name;
-                $dataToCreate['nik_pasien'] = $user->nik;
-                $dataToCreate['perusahaan_asal'] = $user->perusahaan ?? 'PT. STMC';
-            } else {
-                // Jika User adalah Peserta MCU (Non-Karyawan)
-                $dataToCreate['peserta_mcus_id'] = $userId;
-                $dataToCreate['karyawan_id'] = null;
-                
-                // Asumsi kolom ada di Model PesertaMcu:
-                $dataToCreate['no_sap'] = null; 
-                $dataToCreate['nama_pasien'] = $user->nama ?? $user->name;
-                $dataToCreate['nik_pasien'] = $user->nik;
-                $dataToCreate['perusahaan_asal'] = $user->perusahaan ?? 'Pribadi';
-            }
-            
-            $newJadwal = JadwalMcu::create($dataToCreate);
+            $jadwal = JadwalMcu::create($data);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengajuan jadwal MCU berhasil. QR Code ID tersedia.',
-                'qr_code_id' => $newJadwal->qr_code_id
+                'qr_code_id' => $jadwal->qr_code_id
             ], 201);
 
         } catch (\Exception $e) {
-            // Jika Anda masih mendapatkan 500, tambahkan $e->getMessage() untuk debugging:
-            // return response()->json([
-            //     'success' => false,
-            //     'message' => 'Gagal menyimpan pengajuan jadwal. Error: ' . $e->getMessage(),
-            // ], 500);
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan pengajuan jadwal.'
+                'message' => 'Gagal menyimpan jadwal'
             ], 500);
         }
     }
 
-    /**
-     * Mengambil semua riwayat jadwal MCU untuk pengguna yang sedang login.
-     * Endpoint: GET /api/jadwal-mcu/riwayat
-     */
-    public function getRiwayatByUser(Request $request)
+    public function getRiwayatByUser()
     {
-        try {
-            $user = $request->user();
+        $loginUser = auth()->user();
 
-            // 1. Tentukan kolom ID yang akan digunakan
-            $column = null;
-            $userId = null;
-            
-            if ($user instanceof Karyawan) {
-                $column = 'karyawan_id';
-                $userId = $user->id;
-            } elseif ($user instanceof PesertaMcu) {
-                $column = 'peserta_mcus_id';
-                $userId = $user->id;
-            } else {
-                // Jika user terautentikasi tetapi bukan Karyawan atau PesertaMcu 
-                // (misal: Guard baru yang belum ditangani), kembalikan 403 atau data kosong.
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tipe pengguna tidak dikenali untuk mengakses riwayat ini.'
-                ], 403);
-            }
-
-            // 2. Query data riwayat menggunakan kolom yang ditentukan
-            $riwayat = JadwalMcu::where($column, $userId)
-                                ->with('dokter', 'paketMcu') // Memastikan relasi dokter ada
-                                ->orderBy('tanggal_mcu', 'desc')
-                                ->get();
-
-            $aktif = $riwayat->filter(fn($j) => in_array($j->status, ['Scheduled', 'Present']));
-            $selesai = $riwayat->filter(fn($j) => in_array($j->status, ['Finished', 'Canceled']));
-
-            return response()->json([
-                'success' => true,
-                // Data dikirim ke Resource, yang harusnya menampilkan NAMA DOKTER
-                'data_aktif' => JadwalMcuResource::collection($aktif), 
-                'data_selesai' => JadwalMcuResource::collection($selesai),
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal mengambil riwayat jadwal MCU. Cek log server untuk detail exception.'
-            ], 500);
+        if ($loginUser instanceof EmployeeLogin) {
+            $column = 'karyawan_id';
+            $userId = $loginUser->karyawan->id;
+        } else {
+            $column = 'peserta_mcus_id';
+            $userId = $loginUser->pasien->id;
         }
+
+        $data = JadwalMcu::where($column, $userId)
+            ->with(['dokter', 'paketMcu'])
+            ->orderByDesc('tanggal_mcu')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data_aktif' => JadwalMcuResource::collection(
+                $data->whereIn('status', ['Scheduled', 'Present'])
+            ),
+            'data_selesai' => JadwalMcuResource::collection(
+                $data->whereIn('status', ['Finished', 'Canceled'])
+            ),
+        ]);
     }
 }

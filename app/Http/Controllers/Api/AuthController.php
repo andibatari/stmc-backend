@@ -17,41 +17,27 @@ class AuthController extends Controller // Nama file harus AuthController.php di
      * Logika Login API (Aplikasi Flutter) - Multi-Identity.
      * Endpoint: POST /api/login
      */
-    public function login(Request $request) // Menggunakan nama 'login' untuk rute /api/login
+    public function login(Request $request)
     {
-        // Validasi Input Dasar API (menggunakan identifier tunggal)
-        $identifier = $request->validate([
-            'identifier' => 'required|string', // no_sap, nik, atau email
+        $request->validate([
+            'identifier' => 'required|string',
             'password' => 'required|string',
         ]);
-        
-        $input = $identifier['identifier'];
-        $password = $identifier['password'];
 
-        // 1. Identifikasi Pengguna & Coba Otentikasi API
-        $loginUser = $this->findAndAuthenticateApiUser($input, $password);
+        $input = $request->identifier;
 
-        if ($loginUser) {
-            
-            // Buat token Sanctum pada model login yang berhasil
-            $token = $loginUser->createToken('flutter-auth-token')->plainTextToken;
-            
-            // Ambil data Profil (Karyawan/Pasien)
-            $profile = $this->getProfileData($loginUser);
-            
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Login API berhasil.',
-                'token' => $token,
-                'user_profile' => $profile
-            ], 200);
+        $user =
+            EmployeeLogin::where('email', $input)->first()
+            ?? PesertaMcuLogin::where('email', $input)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Login gagal'], 401);
         }
 
-        // Jika otentikasi API gagal
         return response()->json([
-            'status' => 'error', 
-            'message' => 'Identitas (SAP/NIK/Email) atau password salah.'
-        ], 401);
+            'token' => $user->createToken('flutter')->plainTextToken,
+            'type' => $user instanceof EmployeeLogin ? 'karyawan' : 'peserta'
+        ]);
     }
     
     /**
@@ -60,13 +46,16 @@ class AuthController extends Controller // Nama file harus AuthController.php di
      */
     public function logout(Request $request)
     {
-        // Hapus token Sanctum yang sedang digunakan
-        $request->user()->currentAccessToken()->delete(); 
-        
+        $user = $request->user(); // EmployeeLogin / PesertaMcuLogin
+
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
         return response()->json([
-            'status' => 'success', 
-            'message' => 'Berhasil logout dari API.'
-        ], 200);
+            'success' => true,
+            'message' => 'Logout berhasil'
+        ]);
     }
 
     public function changePassword(Request $request)
