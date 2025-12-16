@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Jika perlu query raw
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str; // <-- Tambahkan ini di bagian atas file
 // Import Model yang dibutuhkan (misal: JadwalMcu, User/Karyawan)
 use App\Models\JadwalMcu; // Ganti dengan nama Model Jadwal MCU Anda
 use App\Models\Karyawan;
@@ -70,6 +71,7 @@ class JadwalMcuApiController extends Controller
             // C. Persiapan Data untuk CREATE
             $dataToCreate = [
                 // Data Pengajuan dari Request
+                'qr_code_id' => (string) Str::uuid(),
                 'tanggal_mcu' => $tanggalMcu,
                 'paket_mcus_id' => $request->paket_mcu, // Menggunakan nilai dari request
                 
@@ -102,11 +104,12 @@ class JadwalMcuApiController extends Controller
                 $dataToCreate['perusahaan_asal'] = $user->perusahaan ?? 'Pribadi';
             }
             
-            JadwalMcu::create($dataToCreate);
+            $newJadwal = JadwalMcu::create($dataToCreate);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengajuan jadwal MCU berhasil. Mohon tunggu konfirmasi.'
+                'message' => 'Pengajuan jadwal MCU berhasil. QR Code ID tersedia.',
+                'qr_code_id' => $newJadwal->qr_code_id
             ], 201);
 
         } catch (\Exception $e) {
@@ -152,7 +155,7 @@ class JadwalMcuApiController extends Controller
 
             // 2. Query data riwayat menggunakan kolom yang ditentukan
             $riwayat = JadwalMcu::where($column, $userId)
-                                ->with('dokter') // Memastikan relasi dokter ada
+                                ->with('dokter', 'paketMcu') // Memastikan relasi dokter ada
                                 ->orderBy('tanggal_mcu', 'desc')
                                 ->get();
 
