@@ -11,24 +11,16 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-        
 
+        'api' => [
+            'driver' => 'sanctum',
+            'provider' => null, // Sanctum handle otomatis
+        ],
+        
         // Guard untuk Admin
         'admin_users' => [
             'driver' => 'session',
             'provider' => 'admin_users', // Gunakan provider 'admin_users'
-        ],
-
-        // Guard API Karyawan
-        'karyawan_api' => [ 
-            'driver' => 'sanctum',
-            'provider' => 'employee_logins', // <-- DIUBAH
-        ],
-        
-        // Guard API Peserta MCU
-        'peserta_api' => [ 
-            'driver' => 'sanctum',
-            'provider' => 'peserta_mcu_logins', // <-- DIUBAH
         ],
     ],
 
@@ -36,16 +28,6 @@ return [
         'admin_users' => [
             'driver' => 'eloquent',
             'model' => App\Models\AdminUser::class,
-        ],
-        // Karyawan provider sekarang menunjuk ke tabel login mereka
-        'employee_logins' => [ 
-            'driver' => 'eloquent',
-            'model' => App\Models\EmployeeLogin::class, // <-- DIUBAH
-        ],
-        // Peserta MCU provider sekarang menunjuk ke tabel login mereka
-        'peserta_mcu_logins' => [ 
-            'driver' => 'eloquent',
-            'model' => App\Models\PesertaMcuLogin::class, // <-- DIUBAH
         ],
         'users' => [
             'driver' => 'eloquent',
