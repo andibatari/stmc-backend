@@ -47,6 +47,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\PesertaMcuLogin::class, // <-- DIUBAH
         ],
+        'users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\User::class,
+        ],
     ],
 
     /*
