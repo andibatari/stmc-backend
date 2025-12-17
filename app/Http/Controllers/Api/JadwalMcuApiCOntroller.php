@@ -74,6 +74,10 @@ class JadwalMcuApiController extends Controller
 
     public function getRiwayatByUser()
     {
+        // Cek apakah data mentah bisa ditarik tanpa Resource & tanpa Relasi
+        $data = \DB::table('jadwal_mcus')->get();
+        return response()->json($data);
+    
         try {
             $loginUser = auth('sanctum')->user();
             if (!$loginUser) return response()->json(['message' => 'Unauthenticated'], 401);

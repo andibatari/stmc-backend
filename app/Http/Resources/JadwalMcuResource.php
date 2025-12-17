@@ -18,7 +18,7 @@ class JadwalMcuResource extends JsonResource
                 : '-',            
             'dokter' => $this->dokter ? $this->dokter->nama : 'Menunggu Verifikasi Admin',
             'status' => $this->status,
-            'paket_mcu' => $this->paketMcu ? $this->paketMcu->nama_paket : '-',
+            'paket_mcu' => $this->paketMcu->nama_paket ?? '-',
             
             // Mengambil data hasil checkup dari resume_body
             'resume' => [
