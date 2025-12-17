@@ -99,7 +99,13 @@ class JadwalMcuApiController extends Controller
                 'data_selesai' => JadwalMcuResource::collection($riwayat->whereIn('status', ['Finished', 'Canceled'])),
             ]);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Server Error'], 500);
+            // GANTI INI UNTUK DEBUGGING:
+            return response()->json([
+                'success' => false, 
+                'message' => $e->getMessage(), // Akan memunculkan error asli di Postman
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
         }
     }
 

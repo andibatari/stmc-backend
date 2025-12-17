@@ -25,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production') && config('app.url') === env('APP_URL')) {
             URL::forceScheme('https');
         }
+        \Carbon\Carbon::setLocale('id'); // Tambahkan ini
     }
 }
