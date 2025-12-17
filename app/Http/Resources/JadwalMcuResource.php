@@ -14,7 +14,7 @@ class JadwalMcuResource extends JsonResource
             'qr_code_id' => $this->qr_code_id,
             'check_up_number' => $this->no_antrean,
             'tanggal_jadwal' => Carbon::parse($this->tanggal_mcu)->translatedFormat('l, d F Y'),
-            'dokter' => $this->dokter ? $this->dokter->nama : 'Belum Ditentukan',
+            'dokter' => $this->dokter ? $this->dokter->nama : 'Menunggu Verifikasi Admin',
             'status' => $this->status,
             'paket_mcu' => $this->paketMcu ? $this->paketMcu->nama_paket : '-',
             

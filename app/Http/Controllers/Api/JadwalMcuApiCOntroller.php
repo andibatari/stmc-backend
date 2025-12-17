@@ -38,21 +38,12 @@ class JadwalMcuApiController extends Controller
             } elseif ($loginUser instanceof PesertaMcuLogin) {
                 $user = $loginUser->pasien;
                 $column = 'peserta_mcus_id';
-            } else {
-                return response()->json(['success' => false, 'message' => 'User tidak dikenali'], 403);
-            }
-
-            if (!$user) {
-                return response()->json(['success' => false, 'message' => 'Profil tidak ditemukan'], 404);
-            }
+            } 
 
             // Cek Jadwal Aktif
             if (JadwalMcu::where($column, $user->id)->whereIn('status', ['Scheduled', 'Present'])->exists()) {
                 return response()->json(['success' => false, 'message' => 'Anda sudah memiliki jadwal MCU aktif.'], 409);
             }
-
-            $dokter = Dokter::inRandomOrder()->first();
-            if (!$dokter) throw new Exception("Data dokter tidak tersedia.");
 
             $tanggal = Carbon::parse($request->tanggal_mcu)->toDateString();
             $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggal)->count() + 1;
@@ -62,7 +53,7 @@ class JadwalMcuApiController extends Controller
                 'tanggal_mcu'      => $tanggal,
                 'tanggal_pendaftaran' => now()->toDateString(),
                 'paket_mcus_id'    => $request->paket_mcu,
-                'dokter_id'        => $dokter->id,
+                'dokter_id'        => null,
                 'no_antrean'       => 'A' . str_pad($noAntrean, 3, '0', STR_PAD_LEFT),
                 'status'           => 'Scheduled',
                 'nama_pasien'      => $user->nama ?? $user->nama_lengkap,

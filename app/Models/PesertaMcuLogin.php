@@ -14,7 +14,7 @@ class PesertaMcuLogin extends Authenticatable
     protected $table = 'peserta_mcu_logins';
 
     protected $fillable = [
-        'peserta_mcu_id',
+        'peserta_mcus_id',
         'nik_pasien',
         'password',
     ];
@@ -28,6 +28,6 @@ class PesertaMcuLogin extends Authenticatable
      */
     public function pasien()
     {
-        return $this->belongsTo(PesertaMcu::class, 'peserta_mcu_id');
+        return $this->belongsTo(PesertaMcu::class, 'peserta_mcus_id');
     }
 }
