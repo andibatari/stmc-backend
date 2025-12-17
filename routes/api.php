@@ -24,8 +24,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
-    Route::post('/jadwal-mcu/ajukan', [JadwalMcuApiController::class, 'store']);
-    Route::get('/jadwal-mcu/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
+    // Rute Jadwal MCU
+    Route::prefix('jadwal-mcu')->group(function () {
+        Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);
+        Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
+        
+        // Rute Baru untuk Download PDF Gabungan
+        Route::get('/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan']);
+    });
 });
 
 // /**

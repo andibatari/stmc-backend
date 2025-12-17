@@ -3,54 +3,32 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Carbon\Carbon;
 
 class JadwalMcuResource extends JsonResource
 {
     public function toArray($request)
     {
-        // AMAN: patient bisa NULL
-        $patient = $this->patient ?? null;
-
         return [
             'id' => $this->id,
-            'tanggal_mcu' => $this->tanggal_mcu,
+            'qr_code_id' => $this->qr_code_id,
+            'check_up_number' => $this->no_antrean,
+            'tanggal_jadwal' => Carbon::parse($this->tanggal_mcu)->translatedFormat('l, d F Y'),
+            'dokter' => $this->dokter ? $this->dokter->nama : 'Belum Ditentukan',
             'status' => $this->status,
-            'no_antrean' => $this->no_antrean,
-
-            // ======================
-            // HASIL MCU (INI YANG HILANG)
-            // ======================
+            'paket_mcu' => $this->paketMcu ? $this->paketMcu->nama_paket : '-',
+            
+            // Mengambil data hasil checkup dari resume_body
             'resume' => [
-                'body' => $this->resume_body
-                    ? json_decode($this->resume_body, true)
-                    : null,
+                'hasil' => json_decode($this->resume_body), // Menjadi Object di Flutter
                 'saran' => $this->resume_saran,
                 'kategori' => $this->resume_kategori,
             ],
 
-            'dokter' => $this->dokter ? [
-                'id' => $this->dokter->id,
-                'nama' => $this->dokter->nama_dokter,
-            ] : null,
-
-            'paket_mcu' => $this->paketMcu ? [
-                'id' => $this->paketMcu->id,
-                'nama_paket' => $this->paketMcu->nama_paket,
-            ] : null,
-
-            // ======================
-            // PASIEN (NULL SAFE)
-            // ======================
-            'pasien' => [
-                'nama' => $patient->nama_lengkap
-                    ?? $patient->nama_karyawan
-                    ?? $this->nama_pasien
-                    ?? '-',
-                'nik' => $patient->nik_karyawan
-                    ?? $patient->nik_pasien
-                    ?? $this->nik_pasien
-                    ?? '-',
-            ],
+            // URL Unduhan untuk Flutter
+            'url_unduh_laporan' => $this->status == 'Finished' 
+                ? url("/api/jadwal-mcu/download-laporan-gabungan/{$this->id}") 
+                : null,
         ];
     }
 }

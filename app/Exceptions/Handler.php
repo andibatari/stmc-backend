@@ -60,4 +60,14 @@ class Handler extends ExceptionHandler
 
         return redirect()->guest(route('login'));
     }
+
+    public function render($request, Throwable $e)
+    {
+        if ($request->is('api/*')) {
+            return response()->json([
+                'message' => $e->getMessage() ?: 'Server Error'
+            ], 500);
+        }
+        return parent::render($request, $e);
+    }
 }
