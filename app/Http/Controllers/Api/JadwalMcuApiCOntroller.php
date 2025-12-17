@@ -17,7 +17,7 @@ class JadwalMcuApiController extends Controller
 {
     public function store(Request $request)
     {
-        $loginUser = auth()->user(); // ⬅️ LOGIN MODEL (EmployeeLogin / PesertaMcuLogin)
+        $loginUser = auth('sanctum')->user(); // ⬅️ LOGIN MODEL (EmployeeLogin / PesertaMcuLogin)
 
         if (!$loginUser) {
             return response()->json(['message' => 'Unauthenticated'], 401);
@@ -26,7 +26,7 @@ class JadwalMcuApiController extends Controller
         try {
             $request->validate([
                 'tanggal_mcu' => 'required|date|after_or_equal:today',
-                'paket_mcu' => 'required|string',
+                'paket_mcu'   => 'required|exists:paket_mcus,id',
             ]);
         } catch (ValidationException $e) {
             return response()->json([
@@ -40,10 +40,12 @@ class JadwalMcuApiController extends Controller
          *  =============================== */
         if ($loginUser instanceof EmployeeLogin) {
             $user = $loginUser->karyawan;
-            $checkColumn = 'karyawan_id';
-        } else {
+            $column = 'karyawan_id';
+        } elseif ($loginUser instanceof PesertaMcuLogin) {
             $user = $loginUser->pasien;
-            $checkColumn = 'peserta_mcus_id';
+            $column = 'peserta_mcus_id';
+        } else {
+            return response()->json(['message' => 'User tidak dikenali'], 403);
         }
 
         if (!$user) {
@@ -51,8 +53,8 @@ class JadwalMcuApiController extends Controller
         }
 
         if (
-            JadwalMcu::where($checkColumn, $user->id)
-                ->where('status', 'Scheduled')
+            JadwalMcu::where($column, $user->id)
+                ->whereIn('status', ['Scheduled', 'Present'])
                 ->exists()
         ) {
             return response()->json([
@@ -61,80 +63,83 @@ class JadwalMcuApiController extends Controller
             ], 409);
         }
 
-        try {
-            $dokter = Dokter::inRandomOrder()->firstOrFail();
+        // try {
+        //     $dokter = Dokter::inRandomOrder()->firstOrFail();
 
-            $tanggalMcu = Carbon::parse($request->tanggal_mcu)->toDateString();
-            $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggalMcu)->count() + 1;
+        //     $tanggalMcu = Carbon::parse($request->tanggal_mcu)->toDateString();
+        //     $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggalMcu)->count() + 1;
 
-            $data = [
-                'qr_code_id' => (string) Str::uuid(),
-                'tanggal_mcu' => $tanggalMcu,
-                'paket_mcus_id' => $request->paket_mcu,
-                'dokter_id' => $dokter->id,
-                'no_antrean' => $noAntrean,
-                'status' => 'Scheduled',
-                'nama_pasien' => $user->nama ?? $user->nama_lengkap,
-                'nik_pasien' => $user->nik ?? $user->nik_pasien,
-                'perusahaan_asal' => $user->perusahaan ?? 'Pribadi',
-                'karyawan_id' => $loginUser instanceof EmployeeLogin ? $user->id : null,
-                'peserta_mcus_id' => $loginUser instanceof PesertaMcuLogin ? $user->id : null,
-            ];
+        //     $data = [
+        //         'qr_code_id' => (string) Str::uuid(),
+        //         'tanggal_mcu' => $tanggalMcu,
+        //         'paket_mcus_id' => $request->paket_mcu,
+        //         'dokter_id' => $dokter->id,
+        //         'no_antrean' => $noAntrean,
+        //         'status' => 'Scheduled',
+        //         'nama_pasien' => $user->nama ?? $user->nama_lengkap,
+        //         'nik_pasien' => $user->nik ?? $user->nik_pasien,
+        //         'perusahaan_asal' => $user->perusahaan ?? 'Pribadi',
+        //         'karyawan_id' => $loginUser instanceof EmployeeLogin ? $user->id : null,
+        //         'peserta_mcus_id' => $loginUser instanceof PesertaMcuLogin ? $user->id : null,
+        //     ];
 
-            $jadwal = JadwalMcu::create($data);
+        //     $jadwal = JadwalMcu::create($data);
 
-            return response()->json([
-                'success' => true,
-                'qr_code_id' => $jadwal->qr_code_id
-            ], 201);
+        //     return response()->json([
+        //         'success' => true,
+        //         'qr_code_id' => $jadwal->qr_code_id
+        //     ], 201);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal menyimpan jadwal'
-            ], 500);
-        }
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Gagal menyimpan jadwal'
+        //     ], 500);
+        // }
+        $dokter = Dokter::inRandomOrder()->firstOrFail();
+        $tanggal = Carbon::parse($request->tanggal_mcu)->toDateString();
+        $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggal)->count() + 1;
+
+        $jadwal = JadwalMcu::create([
+            'qr_code_id'       => Str::uuid(),
+            'tanggal_mcu'      => $tanggal,
+            'paket_mcus_id'    => $request->paket_mcu,
+            'dokter_id'        => $dokter->id,
+            'no_antrean'       => $noAntrean,
+            'status'           => 'Scheduled',
+            'nama_pasien'      => $user->nama ?? $user->nama_lengkap,
+            'nik_pasien'       => $user->nik ?? $user->nik_pasien,
+            'perusahaan_asal'  => $user->perusahaan ?? 'Pribadi',
+            'karyawan_id'      => $loginUser instanceof EmployeeLogin ? $user->id : null,
+            'peserta_mcus_id'  => $loginUser instanceof PesertaMcuLogin ? $user->id : null,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'qr_code_id' => $jadwal->qr_code_id
+        ], 201);
     }
 
     public function getRiwayatByUser()
     {
-        $loginUser = auth()->user();
+        $loginUser = auth('sanctum')->user();
 
         if (!$loginUser) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
         if ($loginUser instanceof EmployeeLogin) {
-            if (!$loginUser->karyawan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Relasi karyawan tidak ditemukan'
-                ], 404);
-            }
-
             $column = 'karyawan_id';
-            $userId = $loginUser->karyawan->id;
-
+            $userId = optional($loginUser->karyawan)->id;
         } elseif ($loginUser instanceof PesertaMcuLogin) {
-            if (!$loginUser->pasien) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Relasi peserta MCU tidak ditemukan'
-                ], 404);
-            }
-
             $column = 'peserta_mcus_id';
-            $userId = $loginUser->pasien->id;
-
+            $userId = optional($loginUser->pasien)->id;
         } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Tipe user tidak dikenali'
-            ], 403);
+            return response()->json(['message' => 'User tidak dikenali'], 403);
         }
 
         $data = JadwalMcu::where($column, $userId)
-            ->with(['dokter', 'paketMcu'])
+            ->with(['dokter', 'paketMcu', 'karyawan', 'pesertaMcu'])
             ->orderByDesc('tanggal_mcu')
             ->get();
 

@@ -37,7 +37,7 @@ class AuthController extends Controller
 
             // 🔑 BUAT TOKEN SANCTUM
             $token = $loginUser
-                ->createToken('flutter-auth-token')
+                ->createToken('api-token')
                 ->plainTextToken;
 
             return response()->json([
@@ -62,7 +62,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $user = $request->user(); // Sanctum user (login table)
+        $user = $request->user('sanctum'); // Sanctum user (login table)
 
         if ($user && $user->currentAccessToken()) {
             $user->currentAccessToken()->delete();
@@ -86,7 +86,7 @@ class AuthController extends Controller
                 'new_password' => 'required|string|min:6|confirmed',
             ]);
 
-            $user = $request->user(); // EmployeeLogin / PesertaMcuLogin
+            $user = $request->user('sanctum'); // EmployeeLogin / PesertaMcuLogin
 
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
@@ -144,12 +144,9 @@ class AuthController extends Controller
             }
         }
 
-        // ===== PASSWORD CHECK =====
-        if ($loginUser && Hash::check($password, $loginUser->password)) {
-            return $loginUser; // 🔥 PENTING: return LOGIN MODEL
-        }
-
-        return null;
+        return ($loginUser && Hash::check($password, $loginUser->password))
+            ? $loginUser
+            : null;
     }
 
     protected function getProfileData($loginUser)
@@ -166,11 +163,7 @@ class AuthController extends Controller
                     'provinsi'
                 ])->first();
 
-            if (!$karyawan) {
-                return null;
-            }
-
-            return [
+            return $karyawan ? [
                 'type' => 'Karyawan',
                 'id' => $karyawan->id,
                 'nama' => $karyawan->nama_karyawan,
@@ -196,14 +189,13 @@ class AuthController extends Controller
                 'berat_badan' => $karyawan->berat_badan,
                 'golongan_darah' => $karyawan->golongan_darah,
                 'is_employee' => true
-            ];
+            ] : null ;
         }
 
         // ======================
         // PESERTA MCU
         // ======================
         if ($loginUser instanceof PesertaMcuLogin) {
-
             $pasien = $loginUser->pasien()
                 ->with(['provinsi'])
                 ->first();
@@ -212,7 +204,7 @@ class AuthController extends Controller
                 return null;
             }
 
-            return [
+            return $pasien ? [
                 'type' => 'Pasien',
                 'id' => $pasien->id,
                 'nama' => $pasien->nama_lengkap,
@@ -237,7 +229,7 @@ class AuthController extends Controller
                 'pekerjaan' => $pasien->pekerjaan,
                 'perusahaan' => $pasien->perusahaan_asal,
                 'is_employee' => false
-            ];
+            ] : null;
         }
 
         return null;
