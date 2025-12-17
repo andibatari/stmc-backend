@@ -94,9 +94,11 @@ class JadwalMcuApiController extends Controller
 
             $riwayat = JadwalMcu::where($column, $userId)
                 ->with(['dokter', 'paketMcu'])
-                ->orderByDesc('tanggal_mcu')
+                ->orderBy('id', 'asc')
                 ->get();
 
+            // Gunakan Resource agar data diolah dulu sebelum dikirim
+            return JadwalMcuResource::collection($riwayat);
             return response()->json([
                 'success' => true,
                 'data_aktif' => JadwalMcuResource::collection($riwayat->whereIn('status', ['Scheduled', 'Present'])),

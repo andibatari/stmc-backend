@@ -9,12 +9,9 @@ class JadwalMcuResource extends JsonResource
 {
     public function toArray($request)
     {
-        // Logika untuk menghitung ini adalah pemeriksaan ke-berapa bagi user ini
-        // Kita hitung jumlah jadwal milik user ini yang ID-nya <= ID saat ini
-        $iteration = \App\Models\JadwalMcu::where(function($query) {
-                $query->where('karyawan_id', $this->karyawan_id)
-                    ->where('peserta_mcus_id', $this->peserta_mcus_id);
-            })
+        // Hitung urutan pemeriksaan khusus untuk user ini
+        $iteration = \App\Models\JadwalMcu::where('karyawan_id', $this->karyawan_id)
+            ->where('peserta_mcus_id', $this->peserta_mcus_id)
             ->where('id', '<=', $this->id)
             ->count();
             
@@ -26,7 +23,7 @@ class JadwalMcuResource extends JsonResource
             'tanggal_mcu' => $this->tanggal_mcu 
                 ? \Carbon\Carbon::parse($this->tanggal_mcu)->translatedFormat('l, d F Y') 
                 : '-',            
-            'dokter' => $this->dokter->nama ?? 'Menunggu Verifikasi Admin',
+            'dokter' => $this->dokter->nama_lengkap ?? 'Menunggu Verifikasi Admin',
             'status' => $this->status,
             'paket_mcu' => $this->paketMcu->nama_paket ?? '-',
             
