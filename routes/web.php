@@ -5,7 +5,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\JadwalMcuController;
-use App\Http\Controllers\HasilMcuController;
 use App\Http\Controllers\KeluargaController;
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\PdfMergerController;
@@ -79,12 +78,10 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::delete('/jadwal/{jadwal}', [JadwalMcuController::class, 'destroy'])->name('jadwal.destroy');
     Route::get('/jadwal/{jadwal}/detail', \App\Livewire\QrPatientDetail::class)->name('qr-patient-detail');
     Route::get('/jadwal/{jadwal}/edit', [JadwalMcuController::class, 'edit'])->name('jadwal.edit');
-Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
+    Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
 
     Route::post('jadwal/{jadwal}/update-status', [JadwalMcuController::class, 'updateStatus'])->name('jadwal.update-status');
     Route::get('/scan-qr', QrScanner::class)->name('scan.qr');
-    Route::get('/jadwal-mcu/{jadwalMcu}/input-hasil', [HasilMcuController::class, 'showInputForm'])->name('hasil.create');
-    Route::post('/jadwal-mcu/{jadwalMcu}/input-hasil', [HasilMcuController::class, 'simpanHasil'])->name('hasil.store');
 
     Route::get('/notifications/dashboard', NotificationDashboard::class)->name('notifications.dashboard');
     Route::get('/notifications/history', NotificationHistory::class)->name('notifications.history');
