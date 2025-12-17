@@ -12,7 +12,7 @@ return [
             'provider' => 'users',
         ],
 
-        'api' => [
+        'sanctum' => [
             'driver' => 'sanctum',
             'provider' => null, // Sanctum handle otomatis
         ],
@@ -29,6 +29,7 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\AdminUser::class,
         ],
+        
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
