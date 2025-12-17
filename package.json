@@ -16,5 +16,9 @@
     },
     "dependencies": {
         "puppeteer": "^24.22.3"
+    },
+
+    "engines": {
+        "node": "20.19.4"
     }
 }
