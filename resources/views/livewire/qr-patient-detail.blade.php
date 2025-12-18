@@ -208,7 +208,18 @@
 
                             @php
                             $resumeFields = [
-                                'bmi' => ['label' => '1. BMI', 'placeholder' => 'Contoh: 27.63 kg/m2 (Obesitas I)'], 'laboratorium' => ['label' => '2. Lab', 'placeholder' => 'ISK, Peningkatan SGOT, dll.'], 'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Sinus Rhythm, HR 67x/i.'], 'gigi' => ['label' => '4. Gigi', 'placeholder' => 'OH Buruk'], 'mata' => ['label' => '5. Mata', 'placeholder' => 'Presbiopia'], 'spirometri' => ['label' => '6. Spiro', 'placeholder' => '-'], 'audiometri' => ['label' => '7. Audio', 'placeholder' => 'Normal'], 'kesegaran' => ['label' => '8. Bugar', 'placeholder' => 'sangat kurang'], 'temuan_lain' => ['label' => '9. Temuan lain', 'placeholder' => 'Hipertensi'], 'thorax_photo' => ['label' => '10. Thorax', 'placeholder' => 'Cor, Pulmo dlm bts normal'], 'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Negatif/Positif'], 'usg' => ['label' => '12. USG', 'placeholder' => 'Fatty Liver/Normal'],
+                                'bmi' => ['label' => '1. BMI', 'placeholder' => 'Contoh: 27.63 kg/m2 (Obesitas I)'], 
+                                'laboratorium' => ['label' => '2. Lab', 'placeholder' => 'ISK, Peningkatan SGOT, dll.'], 
+                                'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Sinus Rhythm, HR 67x/i.'], 
+                                'gigi' => ['label' => '4. Gigi', 'placeholder' => 'OH Buruk'], 
+                                'mata' => ['label' => '5. Mata', 'placeholder' => 'Presbiopia'], 
+                                'spirometri' => ['label' => '6. Spiro', 'placeholder' => '-'], 
+                                'audiometri' => ['label' => '7. Audio', 'placeholder' => 'Normal'], 
+                                'kesegaran' => ['label' => '8. Bugar', 'placeholder' => 'sangat kurang'], 
+                                'temuan_lain' => ['label' => '9. Temuan lain', 'placeholder' => 'Hipertensi'], 
+                                'thorax_photo' => ['label' => '10. Thorax', 'placeholder' => 'Cor, Pulmo dlm bts normal'], 
+                                'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Negatif/Positif'], 
+                                'usg' => ['label' => '12. USG', 'placeholder' => 'Fatty Liver/Normal'],
                             ];
                             @endphp
 

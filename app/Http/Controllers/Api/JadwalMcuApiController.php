@@ -136,10 +136,9 @@ class JadwalMcuApiController extends Controller
             $filesAdded = 0;
 
             foreach ($files as $fileName) {
-                // Pastikan path sesuai dengan tempat Anda menyimpan file
-                $path = storage_path("app/public/pdf_reports/" . $fileName);
-                
-                if (file_exists($path)) {
+                // GUNAKAN CARA INI AGAR PATH SELALU BENAR DI DIGITALOCEAN
+                if (Storage::disk('public')->exists('pdf_reports/' . $fileName)) {
+                    $path = Storage::disk('public')->path('pdf_reports/' . $fileName);
                     $merger->addFile($path);
                     $filesAdded++;
                 }

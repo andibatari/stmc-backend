@@ -36,6 +36,11 @@ class QrPatientDetail extends Component
 
     protected $listeners = ['updatePoliStatus'];
     
+    // Tambahkan properti ini di paling atas class untuk handle error Livewire Upload
+    public function handleUploadError($name, $errors, $isMultiple) {
+        $this->dispatch('error', ['message' => 'File terlalu besar atau koneksi terputus.']);
+    }
+
     protected $rules = [
         'pdfFiles.*' => 'nullable|file|mimes:pdf|max:10240',
 
