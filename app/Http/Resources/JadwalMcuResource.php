@@ -9,9 +9,11 @@ class JadwalMcuResource extends JsonResource
 {
     public function toArray($request)
     {
-        // Hitung urutan pemeriksaan khusus untuk user ini
-        $iteration = \App\Models\JadwalMcu::where('karyawan_id', $this->karyawan_id)
-            ->where('peserta_mcus_id', $this->peserta_mcus_id)
+        // Hitung urutan pemeriksaan khusus untuk user ini (#1, #2, dst)
+        $iteration = \App\Models\JadwalMcu::where(function($q) {
+                $q->where('karyawan_id', $this->karyawan_id)
+                  ->where('peserta_mcus_id', $this->peserta_mcus_id);
+            })
             ->where('id', '<=', $this->id)
             ->count();
             

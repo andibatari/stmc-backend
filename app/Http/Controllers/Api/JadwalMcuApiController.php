@@ -46,7 +46,19 @@ class JadwalMcuApiController extends Controller
             }
 
             $tanggal = Carbon::parse($request->tanggal_mcu)->toDateString();
-            $noAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggal)->count() + 1;
+            // 1. Ambil nomor antrean terakhir KHUSUS pada tanggal yang dipilih
+            $lastAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggal)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($lastAntrean && $lastAntrean->no_antrean) {
+                // Mengambil angka dari string 'C001' -> menjadi integer 1
+                $lastNumber = (int) substr($lastAntrean->no_antrean, 1); 
+                $nextNumber = $lastNumber + 1;
+            } else {
+                // Jika belum ada antrean di tanggal tersebut, mulai dari 1
+                $nextNumber = 1;
+            }
 
             $jadwal = JadwalMcu::create([
                 'qr_code_id'       => (string) Str::uuid(),
@@ -54,7 +66,7 @@ class JadwalMcuApiController extends Controller
                 'tanggal_pendaftaran' => now()->toDateString(),
                 'paket_mcus_id'    => $request->paket_mcu,
                 'dokter_id'        => null,
-                'no_antrean'       => 'A' . str_pad($noAntrean, 3, '0', STR_PAD_LEFT),
+                'no_antrean'       => 'C' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT),
                 'status'           => 'Scheduled',
                 'nama_pasien'      => $user->nama ?? $user->nama_lengkap,
                 'nik_pasien'       => $user->nik ?? $user->nik_pasien,
