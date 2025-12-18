@@ -37,7 +37,7 @@ class QrPatientDetail extends Component
     protected $listeners = ['updatePoliStatus'];
     
     protected $rules = [
-        'pdfFiles.*' => 'nullable|file|mimes:pdf|max:2048',
+        'pdfFiles.*' => 'nullable|file|mimes:pdf|max:10240',
 
         // --- RULES BARU UNTUK RESUME DATA (ARRAY) ---
         'resumeData.bmi' => 'nullable|string|max:255',

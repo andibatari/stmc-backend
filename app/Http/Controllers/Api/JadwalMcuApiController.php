@@ -121,28 +121,52 @@ class JadwalMcuApiController extends Controller
     public function downloadLaporanGabungan($id)
     {
         try {
+            // 1. Pastikan data ditemukan beserta relasinya
             $jadwal = JadwalMcu::with('jadwalPoli')->findOrFail($id);
+            
+            // 2. Ambil semua file_path yang tidak null
             $files = $jadwal->jadwalPoli->whereNotNull('file_path')->pluck('file_path')->toArray();
 
             if (empty($files)) {
-                return response()->json(['message' => 'File tidak tersedia'], 404);
+                return response()->json(['message' => 'Tidak ada file laporan poli untuk digabungkan'], 404);
             }
 
+            // 3. Inisialisasi Merger
             $merger = new Merger();
+            $filesAdded = 0;
+
             foreach ($files as $fileName) {
+                // Pastikan path sesuai dengan tempat Anda menyimpan file
                 $path = storage_path("app/public/pdf_reports/" . $fileName);
-                if (file_exists($path)) $merger->addFile($path);
+                
+                if (file_exists($path)) {
+                    $merger->addFile($path);
+                    $filesAdded++;
+                }
             }
 
-            $output = $merger->merge();
-            $name = "Laporan_MCU_" . Str::slug($jadwal->nama_pasien) . ".pdf";
+            // Jika file fisik tidak ditemukan sama sekali di folder storage
+            if ($filesAdded === 0) {
+                return response()->json(['message' => 'File fisik laporan tidak ditemukan di server'], 404);
+            }
 
+            // 4. Proses Merger
+            $output = $merger->merge();
+            
+            // Nama file hasil unduhan
+            $downloadName = "Laporan_MCU_" . Str::slug($jadwal->nama_pasien) . "_" . $jadwal->no_antrean . ".pdf";
+
+            // 5. Kembalikan response stream PDF
             return response($output)
                 ->header('Content-Type', 'application/pdf')
-                ->header('Content-Disposition', "attachment; filename=\"$name\"");
+                ->header('Content-Disposition', "attachment; filename=\"$downloadName\"");
 
-        } catch (Exception $e) {
-            return response()->json(['message' => 'Gagal menggabungkan PDF'], 500);
+        } catch (\Exception $e) {
+            // Tampilkan error asli untuk debugging (Hapus bagian ini jika sudah masuk tahap produksi)
+            return response()->json([
+                'message' => 'Gagal menggabungkan PDF',
+                'error' => $e->getMessage() 
+            ], 500);
         }
     }
 }
