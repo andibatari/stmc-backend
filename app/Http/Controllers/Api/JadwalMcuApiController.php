@@ -74,14 +74,11 @@ class JadwalMcuApiController extends Controller
 
     public function getRiwayatByUser()
     {
-        // Cek apakah data mentah bisa ditarik tanpa Resource & tanpa Relasi
-        $data = \DB::table('jadwal_mcus')->get();
-        return response()->json($data);
-    
         try {
             $loginUser = auth('sanctum')->user();
             if (!$loginUser) return response()->json(['message' => 'Unauthenticated'], 401);
 
+            // Pastikan filter ID menggunakan ID Karyawan/Pasien yang tepat
             if ($loginUser instanceof EmployeeLogin) {
                 $column = 'karyawan_id';
                 $userId = $loginUser->karyawan_id;
@@ -92,26 +89,17 @@ class JadwalMcuApiController extends Controller
                 return response()->json(['message' => 'User tidak dikenali'], 403);
             }
 
+            // AMBIL DATA BERDASARKAN USER ID (Penting agar tidak tertukar)
             $riwayat = JadwalMcu::where($column, $userId)
                 ->with(['dokter', 'paketMcu'])
-                ->orderBy('id', 'asc')
+                ->orderBy('id', 'asc') // Urutan asc agar iterasi #1, #2 benar
                 ->get();
 
-            // Gunakan Resource agar data diolah dulu sebelum dikirim
+            // Mengembalikan data menggunakan Resource agar iteration_number diproses
             return JadwalMcuResource::collection($riwayat);
-            return response()->json([
-                'success' => true,
-                'data_aktif' => JadwalMcuResource::collection($riwayat->whereIn('status', ['Scheduled', 'Present'])),
-                'data_selesai' => JadwalMcuResource::collection($riwayat->whereIn('status', ['Finished', 'Canceled'])),
-            ]);
+
         } catch (Exception $e) {
-            // GANTI INI UNTUK DEBUGGING:
-            return response()->json([
-                'success' => false, 
-                'message' => $e->getMessage(), // Akan memunculkan error asli di Postman
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
