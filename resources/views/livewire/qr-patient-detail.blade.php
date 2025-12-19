@@ -305,7 +305,12 @@
                                                 <span><i class="fas fa-upload mr-1"></i> Pilih File</span>
                                             </label>
 
-                                            <input type="file" id="file-{{ $poli->id }}" wire:model="pdfFiles.{{ $poli->id }}" accept="application/pdf" class="sr-only">
+                                            <input type="file" 
+                                                    id="file-{{ $poli->id }}" 
+                                                    wire:model="pdfFiles.{{ $poli->id }}" 
+                                                    wire:key="upload-{{ $poli->id }}"
+                                                    accept="application/pdf" 
+                                                    class="sr-only">
 
                                             <span class="text-xs md:text-sm text-gray-600 truncate" wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">
                                                 @if(isset($pdfFiles[$poli->id]))
