@@ -120,6 +120,11 @@ class JadwalMcuApiController extends Controller
      */
     public function downloadLaporanGabungan($id)
     {
+        $token = request()->query('token');
+        if (!$token) {
+            return response()->json(['message' => 'Token autentikasi diperlukan'], 401);
+        }
+        
         try {
             // 1. Pastikan data ditemukan beserta relasinya
             $jadwal = JadwalMcu::with('jadwalPoli')->findOrFail($id);

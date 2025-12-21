@@ -11,8 +11,7 @@ use App\Http\Controllers\Api\JadwalMcuApiController;
 */
 
 Route::post('/login', [ApiAuthController::class, 'login']);
-Route::get('/jadwal-mcu/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan'])
-    ->middleware('auth:sanctum');
+Route::get('/jadwal-mcu/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan']);
 
 /**
  * ===============================
