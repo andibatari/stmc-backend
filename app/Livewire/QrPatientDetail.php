@@ -152,7 +152,10 @@ class QrPatientDetail extends Component
 
     public function savePdf($poliId)
     {
-        $this->validate();
+        // Validasi file sesuai rules (max 10MB, mimes:pdf)
+        $this->validate([
+            "pdfFiles.$poliId" => 'required|file|mimes:pdf|max:10240',
+        ]);
         $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
         if (!$jadwalPoli) {
             $this->dispatch('error', ['message' => 'Data jadwal poli tidak ditemukan.']);
@@ -160,39 +163,37 @@ class QrPatientDetail extends Component
         }
         
         if (isset($this->pdfFiles[$poliId])) {
-            $file = $this->pdfFiles[$poliId];
-            
-            // Dapatkan nama file yang bersih
-            $patientName = $this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien';
-            $safePatientName = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $patientName));
-            $fileName = 'HasilPemeriksaan' . '_' . $safePatientName . '_' . $jadwalPoli->poli->nama_poli . '_' . now()->timestamp . '.pdf';
-            
-            // 🔥 KRITIS: Definisikan path folder *tanpa* menyebutkan disk 'public/' di dalamnya
-            // Nama folder di dalam storage/app/public/ adalah 'pdf_reports'
-            $folderPath = 'pdf_reports'; 
-
             try {
-                // 🔥 AKSI KRITIS: Simpan file ke disk 'public'
-                // storeAs(folder_di_dalam_disk, nama_file, nama_disk)
-                $path = $file->storeAs($folderPath, $fileName, 'public'); 
+                $file = $this->pdfFiles[$poliId];
                 
-                \Log::info("PDF Upload SUKSES untuk Poli {$poliId}. Path Relatif Disk: " . $path); 
+                // Buat nama file yang unik
+                $patientName = $this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien';
+                $safePatientName = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $patientName));
+                $fileName = 'Hasil_' . $safePatientName . '_' . $poliId . '_' . now()->timestamp . '.pdf';
                 
-                // Simpan HANYA NAMA FILE ke database, karena folder sudah diketahui
-                // Jika Anda menyimpan $fileName saja, Anda tidak perlu lagi melakukan basename() di Blade
-                $jadwalPoli->file_path = $fileName; 
+                // PATH FOLDER di dalam Bucket S3
+                $folderPath = 'mcu_results'; 
+
+                /**
+                 * KRITIS: Gunakan disk 's3' agar file dipindahkan dari 
+                 * livewire-tmp (di S3) ke folder tujuan (juga di S3).
+                 */
+                $path = $file->storeAs($folderPath, $fileName, 's3'); 
+                
+                // Simpan path lengkap atau nama file ke database
+                $jadwalPoli->file_path = $path; 
                 $jadwalPoli->status = 'Done';
                 $jadwalPoli->save();
 
+                // Update UI
                 $this->uploadedFileNames[$poliId] = $fileName;
-                $this->dispatch('file-uploaded', ['message' => 'File berhasil diunggah dan status diatur ke Done.']);
-                $this->pdfFiles[$poliId] = null;
+                $this->pdfFiles[$poliId] = null; // Reset input setelah berhasil
+                
+                $this->dispatch('status-updated', ['message' => 'File berhasil diunggah ke Cloud Storage!']);
 
             } catch (\Throwable $e) {
-                \Log::error("PDF Upload GAGAL KRITIS: " . $e->getMessage());
-                // Tambahkan pesan yang meminta pengguna periksa Izin Tulis
-                $this->dispatch('error', ['message' => 'Gagal menyimpan file PDF. Ini masalah Izin Tulis folder storage/app/public/.']);
-                return;
+                \Log::error("S3 Upload Error: " . $e->getMessage());
+                $this->dispatch('error', ['message' => 'Gagal mengunggah ke Cloud: ' . $e->getMessage()]);
             }
         } else {
             $this->dispatch('error', ['message' => 'Silakan pilih file PDF untuk diunggah.']);

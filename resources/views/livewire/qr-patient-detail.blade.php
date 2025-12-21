@@ -340,11 +340,10 @@
                                     </button>
 
                                     @if (isset($jadwalPoliData[$poli->id]) && $jadwalPoliData[$poli->id]->file_path)
-                                        <a href="{{ route('download', ['filePath' => basename($jadwalPoliData[$poli->id]->file_path)]) }}" target="_blank" class="w-full md:w-auto text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
+                                        <a href="{{ Storage::disk('s3')->url($jadwalPoliData[$poli->id]->file_path) }}" 
+                                        target="_blank" 
+                                        class="w-full md:w-auto text-center bg-blue-500 ...">
                                             <i class="fas fa-eye"></i> Lihat File
-                                        </a>
-                                        <a href="{{ route('download', ['filePath' => basename($jadwalPoliData[$poli->id]->file_path)]) }}" download class="w-full md:w-auto text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
-                                            <i class="fas fa-download"></i> Unduh File
                                         </a>
                                     @endif
                                 </div>
@@ -363,14 +362,3 @@
         </div>
     </div>
 </div>
-
-{{-- <style>
-/* Chrome, Safari, Opera: Sembunyikan scrollbar pada elemen tab */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-/* IE and Edge */
-.scrollbar-hide {
-    -ms-overflow-style: none;
-}
-</style> --}}
