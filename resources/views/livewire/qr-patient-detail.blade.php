@@ -308,7 +308,7 @@
                                             <input type="file" 
                                                     id="file-{{ $poli->id }}" 
                                                     wire:model="pdfFiles.{{ $poli->id }}" 
-                                                    wire:key="upload-{{ $poli->id }}"
+                                                    wire:key="upload-input-{{ $poli->id }}"
                                                     accept="application/pdf" 
                                                     class="sr-only">
 
