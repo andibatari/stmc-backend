@@ -20,10 +20,7 @@ class McuPdfController extends Controller
         $jadwal->load(['dokter', 'paketMcu']);
         
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
-        if (!$patient) {
-             // Handle jika pasien tidak ditemukan
-             return null;
-        }
+        if (!$patient) return null;
         
         // KRITIS: Mengambil data dokter
         $doctor = $jadwal->dokter;
@@ -91,83 +88,71 @@ class McuPdfController extends Controller
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
         $patientName = $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'Pasien';
 
+        $tempFiles = []; // Untuk tracking file yang perlu dihapus nanti
         $pdfFilesToMerge = [];
-        $folderPath = 'pdf_reports';
 
-        // 1. GENERATE PDF RESUME DOKTER & Simpan ke file sementara
-        $resumePdf = $this->generateResumePdfObject($jadwal);
-        if (!$resumePdf) {
-            abort(404, 'Data resume atau pasien tidak ditemukan.');
-        }
-
-        $tempDir = 'temp';
-        $tempResumePath = storage_path($tempDir . '/resume_' . $jadwalId . '_' . time() . '.pdf');
-        
-        $tempDirFullPath = storage_path($tempDir);
-
+        // 1. BUAT FOLDER TEMP JIKA BELUM ADA
+        $tempDirFullPath = storage_path('app/temp_pdf');
         if (!file_exists($tempDirFullPath)) {
-            // Buat folder 'temp' di dalam direktori 'storage/'
             mkdir($tempDirFullPath, 0777, true);
         }
-        
+
+        // 2. GENERATE RESUME & SIMPAN LOKAL
+        $resumePdf = $this->generateResumePdfObject($jadwal);
+        if (!$resumePdf) abort(404, 'Data pasien tidak ditemukan.');
+
+        $tempResumePath = $tempDirFullPath . '/resume_' . $jadwalId . '_' . time() . '.pdf';
         $resumePdf->save($tempResumePath);
+        $pdfFilesToMerge[] = $tempResumePath;
+        $tempFiles[] = $tempResumePath;
 
-        // ----------------------------------------------------------------
-        // 🔥 PENTING: LOGIKA PENGUMPULAN PDF POLI DITAMBAHKAN DI SINI
-        // ----------------------------------------------------------------
-
-        // 2. Kumpulkan path semua file PDF Poli yang diunggah dari JadwalPoli
+        // 3. AMBIL FILE DARI S3 (DigitalOcean Spaces)
         foreach ($jadwal->jadwalPoli as $jp) {
-            // Asumsi file_path menyimpan NAMA FILE saja, bukan path lengkap
-            if ($jp->file_path) {
-                // Path file mutlak di sistem, menggunakan disk public
-                $fullPath = Storage::disk('public')->path($folderPath . '/' . $jp->file_path);
-                
-                if (file_exists($fullPath)) {
-                    $pdfFilesToMerge[] = $fullPath;
-                    \Log::info("PDF Ditemukan: " . $fullPath);
-                } else {
-                    \Log::warning("File PDF Poli tidak ditemukan di storage: " . $fullPath);
+            if ($jp->file_path && Storage::disk('s3')->exists($jp->file_path)) {
+                try {
+                    // Ambil isi file dari S3
+                    $fileContent = Storage::disk('s3')->get($jp->file_path);
+                    
+                    // Simpan sementara di server lokal agar bisa dibaca FPDI
+                    $localTempPoli = $tempDirFullPath . '/poli_' . $jp->id . '_' . time() . '.pdf';
+                    file_put_contents($localTempPoli, $fileContent);
+                    
+                    $pdfFilesToMerge[] = $localTempPoli;
+                    $tempFiles[] = $localTempPoli;
+                    
+                    \Log::info("S3 File Downloaded: " . $jp->file_path);
+                } catch (\Exception $e) {
+                    \Log::error("Gagal mendownload file S3: " . $jp->file_path . " Error: " . $e->getMessage());
                 }
-            } else {
-                \Log::info("Poli " . ($jp->poli->nama_poli ?? 'N/A') . " tidak memiliki file path."); // <-- Tambahkan ini
             }
         }
 
-        // ----------------------------------------------------------------
-        // 3. Gabungkan PDF Resume ke awal daftar PDF Poli
-        // ----------------------------------------------------------------
-        // Kita pindahkan PDF Resume ke awal array sebelum proses merging
-        array_unshift($pdfFilesToMerge, $tempResumePath); 
-
-
-        // 4. Gabungkan semua file menggunakan FPDI/TCPDF
+        // 4. PROSES MERGING
         $pdfMerger = new Fpdi();
         $pdfMerger->setPrintHeader(false);
         $pdfMerger->setPrintFooter(false);
-        $pdfMerger->SetAutoPageBreak(true, 10); 
 
         foreach ($pdfFilesToMerge as $file) {
             try {
                 $pageCount = $pdfMerger->setSourceFile($file);
                 for ($i = 1; $i <= $pageCount; $i++) {
                     $template = $pdfMerger->importPage($i);
-                    $pdfMerger->AddPage(); 
+                    $size = $pdfMerger->getTemplateSize($template);
+                    $pdfMerger->AddPage($size['orientation'], [$size['width'], $size['height']]);
                     $pdfMerger->useTemplate($template);
                 }
             } catch (\Exception $e) {
-                \Log::error("Gagal menggabungkan file: {$file}. Error: " . $e->getMessage());
+                \Log::error("Gagal merge file: {$file}. Error: " . $e->getMessage());
             }
         }
-        
-        // 5. Hapus file sementara PDF Resume
-        if (file_exists($tempResumePath)) {
-            unlink($tempResumePath);
+
+        // 5. CLEANUP: Hapus semua file sementara
+        foreach ($tempFiles as $tempFile) {
+            if (file_exists($tempFile)) unlink($tempFile);
         }
 
-        // 6. Stream hasil penggabungan
-        $fileName = 'Hasil_Lengkap_MCU_' . str_replace(' ', '_', $patientName) . '_' . $jadwal->tanggal_mcu . '.pdf';
-        
+        // 6. OUTPUT
+        $fileName = 'Hasil_Lengkap_MCU_' . str_replace(' ', '_', $patientName) . '.pdf';
         return response($pdfMerger->Output($fileName, 'S'))
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
