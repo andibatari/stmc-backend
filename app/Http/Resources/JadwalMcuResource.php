@@ -38,8 +38,8 @@ class JadwalMcuResource extends JsonResource
             ],
 
             // URL Unduhan untuk Flutter
-            'url_unduh_laporan' => $this->status == 'Finished' 
-                ? url("/api/jadwal-mcu/download-laporan-gabungan/{$this->id}") 
+            'url_unduh_laporan' => $this->status === 'Finished' 
+                ? url("/api/jadwal-mcu/download-laporan-gabungan/{$this->id}?token=" . request()->bearerToken()) 
                 : null,
         ];
     }

@@ -124,35 +124,36 @@ class JadwalMcuApiController extends Controller
             // 1. Pastikan data ditemukan beserta relasinya
             $jadwal = JadwalMcu::with('jadwalPoli')->findOrFail($id);
             
-            // 2. Ambil semua file_path yang tidak null
+            // 2. Ambil semua file_path poli yang sudah "Done"
             $files = $jadwal->jadwalPoli->whereNotNull('file_path')->pluck('file_path')->toArray();
 
             if (empty($files)) {
-                return response()->json(['message' => 'Tidak ada file laporan poli untuk digabungkan'], 404);
+                return response()->json(['message' => 'Tidak ada file laporan untuk digabungkan'], 404);
             }
 
             // 3. Inisialisasi Merger
             $merger = new Merger();
             $filesAdded = 0;
 
-            foreach ($files as $fileName) {
-                // GUNAKAN CARA INI AGAR PATH SELALU BENAR DI DIGITALOCEAN
-                if (Storage::disk('public')->exists('pdf_reports/' . $fileName)) {
-                    $path = Storage::disk('public')->path('pdf_reports/' . $fileName);
-                    $merger->addFile($path);
+            foreach ($files as $filePath) {
+                // 🔥 KRITIS: Cek keberadaan file di disk S3
+                if (Storage::disk('s3')->exists($filePath)) {
+                    // Ambil konten file dari S3 (Binary)
+                    $fileContent = Storage::disk('s3')->get($filePath);
+                    
+                    // Tambahkan konten file langsung ke merger
+                    $merger->addRaw($fileContent);
                     $filesAdded++;
                 }
             }
 
-            // Jika file fisik tidak ditemukan sama sekali di folder storage
             if ($filesAdded === 0) {
-                return response()->json(['message' => 'File fisik laporan tidak ditemukan di server'], 404);
+                return response()->json(['message' => 'File tidak ditemukan di Cloud Storage'], 404);
             }
 
             // 4. Proses Merger
             $output = $merger->merge();
             
-            // Nama file hasil unduhan
             $downloadName = "Laporan_MCU_" . Str::slug($jadwal->nama_pasien) . "_" . $jadwal->no_antrean . ".pdf";
 
             // 5. Kembalikan response stream PDF
@@ -161,7 +162,7 @@ class JadwalMcuApiController extends Controller
                 ->header('Content-Disposition', "attachment; filename=\"$downloadName\"");
 
         } catch (\Exception $e) {
-            // Tampilkan error asli untuk debugging (Hapus bagian ini jika sudah masuk tahap produksi)
+            \Log::error("Gagal Merger API: " . $e->getMessage());
             return response()->json([
                 'message' => 'Gagal menggabungkan PDF',
                 'error' => $e->getMessage() 

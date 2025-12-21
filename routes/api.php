@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\JadwalMcuApiController;
 */
 
 Route::post('/login', [ApiAuthController::class, 'login']);
+Route::get('/jadwal-mcu/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan'])
+    ->middleware('auth:sanctum');
 
 /**
  * ===============================
@@ -28,23 +30,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('jadwal-mcu')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);
         Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
-        
-        // Rute Baru untuk Download PDF Gabungan
-        Route::get('/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan']);
     });
 });
-
-// /**
-//  * ===============================
-//  * ROUTE KHUSUS MCU
-//  * ===============================
-//  */
-// Route::middleware('auth:employee_api')->group(function () {
-//     Route::post('/jadwal-mcu/ajukan', [JadwalMcuApiController::class, 'store']);
-//     Route::get('/jadwal-mcu/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
-// });
-
-// Route::middleware('auth:peserta_api')->group(function () {
-//     Route::post('/jadwal-mcu/ajukan', [JadwalMcuApiController::class, 'store']);
-//     Route::get('/jadwal-mcu/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
-// });
