@@ -340,11 +340,21 @@
                                     </button>
 
                                     @if (isset($jadwalPoliData[$poli->id]) && $jadwalPoliData[$poli->id]->file_path)
-                                        <a href="{{ Storage::disk('s3')->url($jadwalPoliData[$poli->id]->file_path) }}" 
-                                        target="_blank" 
-                                        class="w-full md:w-auto text-center bg-blue-500 ...">
-                                            <i class="fas fa-eye"></i> Lihat File
-                                        </a>
+                                        <div class="flex flex-col space-y-2 md:flex-row md:space-x-3 md:space-y-0 pt-2">
+                                            {{-- Tombol Lihat File --}}
+                                            <a href="{{ Storage::disk('s3')->url($jadwalPoliData[$poli->id]->file_path) }}" 
+                                            target="_blank" 
+                                            class="w-full md:w-auto text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
+                                                <i class="fas fa-eye mr-1"></i> Lihat File
+                                            </a>
+
+                                            {{-- Tombol Unduh File --}}
+                                            <a href="{{ Storage::disk('s3')->url($jadwalPoliData[$poli->id]->file_path) }}" 
+                                            download 
+                                            class="w-full md:w-auto text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
+                                                <i class="fas fa-download mr-1"></i> Unduh File
+                                            </a>
+                                        </div>
                                     @endif
                                 </div>
                             </div>
