@@ -18,7 +18,7 @@ class PesertaMcuExport implements FromCollection, WithHeadings, WithMapping
         // Filter di mana 'karyawan_id' adalah null, karena ini menandakan pasien non-PTST
         // Load relasi yang diperlukan (jika ada, sesuai skema tabel)
         return PesertaMcu::whereNull('karyawan_id')
-                         ->with(['provinsi', 'kabupaten', 'kecamatan'])
+                         ->with(['provinsi'])
                          ->get();
     }
 

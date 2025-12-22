@@ -15,7 +15,7 @@ class KaryawanExport implements FromCollection, WithHeadings, WithMapping
     public function collection()
     {
         // Ambil semua data karyawan dengan eager loading untuk semua relasi yang dibutuhkan
-        return Karyawan::with(['unitKerja', 'departemen', 'provinsi', 'kabupaten', 'kecamatan'])->get();
+        return Karyawan::with(['unitKerja', 'departemen', 'provinsi'])->get();
     }
 
     /**
