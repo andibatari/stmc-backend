@@ -13,6 +13,7 @@ use App\Models\PesertaMcuLogin;
 use App\Models\Dokter;
 use App\Http\Resources\JadwalMcuResource;
 use iio\libmergepdf\Merger;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 
