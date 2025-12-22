@@ -173,8 +173,8 @@ class AuthController extends Controller
                 'unit_kerja' => $karyawan->unitKerja->nama_unit_kerja ?? null,
                 'email' => $karyawan->email,
                 'no_hp' => $karyawan->no_hp,
-                'foto' => $karyawan->foto_profil
-                    ? asset('storage/' . $karyawan->foto_profil)
+                'foto' => $profile->foto_profil 
+                    ? Storage::disk('s3')->url($profile->foto_profil) 
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
@@ -212,7 +212,7 @@ class AuthController extends Controller
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
                 'foto' => $pasien->foto_profil
-                    ? asset('storage/' . $pasien->foto_profil)
+                    ? Storage::disk('s3')->url($pasien->foto_profil)
                     : null,
                 'tanggal_lahir' => $pasien->tanggal_lahir,
                 'umur' => $pasien->umur,
@@ -258,10 +258,16 @@ class AuthController extends Controller
 
         // 2. Handle Upload Foto
         if ($request->hasFile('foto_profil')) {
+            // 1. Hapus foto lama dari S3 jika ada
             if ($profile->foto_profil) {
-                \Storage::disk('public')->delete($profile->foto_profil);
+                Storage::disk('s3')->delete($profile->foto_profil);
             }
-            $path = $request->file('foto_profil')->store('profile_photos', 'public');
+            
+            // 2. Simpan ke S3 (DigitalOcean Spaces)
+            // Pastikan folder 'profile_photos' ada di bucket Anda
+            $path = $request->file('foto_profil')->store('profile_photos', 's3');
+            
+            // 3. Simpan path relatif ke database
             $profile->foto_profil = $path;
         }
 
