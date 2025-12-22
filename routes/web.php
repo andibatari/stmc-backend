@@ -53,6 +53,8 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // Manajemen Karyawan
+    Route::get('/karyawan/download', [KaryawanController::class, 'downloadExcel'])->name('karyawan.download');
+    Route::get('/peserta-mcu/download', [KaryawanController::class, 'pesertaMcuExcel'])->name('peserta.mcu.download');
     Route::get('/karyawan', [KaryawanController::class, 'index'])->name('karyawan.index');
     Route::get('/karyawan/{karyawan_id}/keluarga/{tipe}', [KaryawanController::class, 'showKeluarga'])->name('data.keluarga.show');
     Route::get('/karyawan/create', [KaryawanController::class, 'create'])->name('karyawan.create');
@@ -63,12 +65,10 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::delete('/karyawan/{karyawan}', [KaryawanController::class, 'destroy'])->name('karyawan.destroy');
     Route::delete('/keluarga/{keluarga}', [KeluargaController::class, 'destroy'])->name('keluarga.destroy');
     Route::post('/karyawan/import', [KaryawanController::class, 'importExcel'])->name('karyawan.import');
-    Route::get('/karyawan/download', [KaryawanController::class, 'downloadExcel'])->name('karyawan.download');
     Route::get('/karyawan/{karyawan_id}/add-keluarga', [KaryawanController::class, 'addKeluarga'])->name('karyawan.add.keluarga');
     Route::post('/karyawan/{karyawan_id}/store-keluarga', [KaryawanController::class, 'storeKeluarga'])->name('karyawan.store.keluarga');
     Route::get('/add-pasien-non-karyawan', [KaryawanController::class, 'addKeluarga'])->name('pasien.add.nonkaryawan');
     Route::post('/store-pasien-non-karyawan', [KaryawanController::class, 'storeKeluarga'])->name('pasien.store.nonkaryawan');
-    Route::get('/peserta-mcu/download', [KaryawanController::class, 'pesertaMcuExcel'])->name('peserta.mcu.download');
     Route::post('/peserta-mcu/import', [KaryawanController::class, 'pesertaMcuImport'])->name('peserta-mcu.import');
 
     // Manajemen Jadwal MCU
