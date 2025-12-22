@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\JadwalMcu;
+use App\Models\JadwalPoli; // TAMBAHKAN INI
+use App\Models\PoliGigiResult;
+use App\Models\KebugaranResult;
+use App\Models\FisikResult;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -11,6 +15,43 @@ use setasign\Fpdi\Tcpdf\Fpdi; // Import library untuk penggabungan
 
 class McuPdfController extends Controller
 {
+    // Fungsi baru untuk melihat PDF dari S3
+    public function viewPdf($id) {
+        // Cari data di JadwalPoli karena file_path ada di sana
+        $poliData = JadwalPoli::findOrFail($id);
+        
+        // Cek apakah file ada di S3 (DigitalOcean Spaces)
+        if ($poliData->file_path && Storage::disk('s3')->exists($poliData->file_path)) {
+            // Redirect langsung ke URL file di S3
+            return redirect(Storage::disk('s3')->url($poliData->file_path));
+        }
+        
+        abort(404, "File tidak ditemukan di Cloud Storage (S3).");
+    }
+
+    public function viewPdfGigi($id) {
+        $result = PoliGigiResult::where('jadwal_poli_id', $id)->firstOrFail();
+        return $this->redirectS3($result->file_path);
+    }
+
+    public function viewPdfKebugaran($id) {
+        $result = KebugaranResult::where('jadwal_poli_id', $id)->firstOrFail();
+        return $this->redirectS3($result->file_path);
+    }
+
+    public function viewPdfFisik($id) {
+        $result = FisikResult::where('jadwal_poli_id', $id)->firstOrFail();
+        return $this->redirectS3($result->file_path);
+    }
+
+    // Helper function agar kode tidak berulang
+    private function redirectS3($filePath) {
+        if ($filePath && Storage::disk('s3')->exists($filePath)) {
+            return redirect(Storage::disk('s3')->url($filePath));
+        }
+        abort(404, "File tidak ditemukan di S3 Cloud Storage.");
+    }
+    
     /**
      * Helper: Menghasilkan PDF Resume sebagai objek DomPDF yang siap digabungkan (tidak di-stream).
      */

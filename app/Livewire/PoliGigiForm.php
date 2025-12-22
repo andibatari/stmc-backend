@@ -289,15 +289,17 @@ class PoliGigiForm extends Component
             // 1. Render View ke PDF menggunakan Dompdf
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-gigi-report', $data);
 
-            // 2. Simpan konten mentah ke disk 'public'
-            Storage::disk('public')->put($storagePath, $pdf->output());
-            
+            // Simpan ke S3 atau Public Disk (Pilih salah satu)
+            // Jika Anda ingin digabungkan ke laporan utama (S3), gunakan 's3'
+            Storage::disk('s3')->put($storagePath, $pdf->output());
+                        
             // 3. SIMPAN PATH FILE KE DATABASE POLI_GIGI_RESULTS
             $this->poliGigiResult->file_path = $fileName;
             $this->poliGigiResult->save(); // Simpan hasil pemeriksaan dan path file ke tabel poli_gigi_results
 
-            // 4. KRITIS: SIMPAN PATH FILE KE TABEL JADWAL_POLIS (sesuai permintaan user)
-            $this->poliData->file_path = $fileName;
+            // KRITIS: Simpan path LENGKAP ke database
+            $this->poliData->file_path = $storagePath; // Hasil: pdf_reports/Hasil_Pemeriksaan_...pdf
+            $this->poliData->status = 'Done';
             $this->poliData->save();
             
             session()->flash('success', 'Hasil pemeriksaan gigi dan laporan PDF berhasil disimpan!');
