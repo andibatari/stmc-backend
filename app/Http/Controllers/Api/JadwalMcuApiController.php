@@ -137,34 +137,28 @@ class JadwalMcuApiController extends Controller
 
             // 3. Siapkan Data untuk View Resume (Sesuai struktur yang Anda berikan)
             $dataResume = [
-                'type'           => 'Karyawan',
-                'id'             => $karyawan->id,
-                'nama'           => $karyawan->nama_karyawan,
-                'no_sap'         => $karyawan->no_sap,
-                'nik'            => $karyawan->nik_karyawan,
-                'departemen'     => $karyawan->departemen->nama_departemen ?? null,
-                'unit_kerja'     => $karyawan->unitKerja->nama_unit_kerja ?? null,
-                'email'          => $karyawan->email,
-                'no_hp'          => $karyawan->no_hp,
-                'jabatan'        => $karyawan->jabatan,
-                'tanggal_lahir'  => $karyawan->tanggal_lahir,
-                'umur'           => $karyawan->umur,
-                'jenis_kelamin'  => $karyawan->jenis_kelamin,
-                'agama'          => $karyawan->agama,
-                'alamat'         => $karyawan->alamat,
-                'provinsi'       => $karyawan->provinsi->nama_provinsi ?? null,
-                'kabupaten'      => $karyawan->nama_kabupaten,
-                'kecamatan'      => $karyawan->nama_kecamatan,
-                'tinggi_badan'   => $karyawan->tinggi_badan,
-                'berat_badan'    => $karyawan->berat_badan,
-                'golongan_darah' => $karyawan->golongan_darah,
-                'is_employee'    => true,
-                // Data Medis dari Jadwal
-                'resume_body'    => json_decode($jadwal->resume_body),
-                'resume_saran'   => $jadwal->resume_saran,
-                'resume_kategori'=> $jadwal->resume_kategori,
-                'tanggal_mcu'    => Carbon::parse($jadwal->tanggal_mcu)->translatedFormat('d F Y'),
-                'dokter_nama'    => $jadwal->dokter->nama_lengkap ?? 'N/A',
+                'patient_data' => [
+                    'nama'           => $karyawan->nama_karyawan,
+                    'tgl_lahir'      => $karyawan->tanggal_lahir,
+                    'alamat'         => $karyawan->alamat,
+                    'jenis_kelamin'  => $karyawan->jenis_kelamin,
+                    'nik_sap'        => $karyawan->no_sap ?? $karyawan->nik_karyawan,
+                    'paket_mcu'      => $jadwal->paketMcu->nama_paket ?? 'N/A',
+                    'unit_kerja'     => $karyawan->unitKerja->nama_unit_kerja ?? 'N/A',
+                ],
+                
+                // 3. Pastikan key di bawah ini sesuai dengan variabel di Blade
+                'tanggal_mcu'     => \Carbon\Carbon::parse($jadwal->tanggal_mcu)->format('d F Y'),
+                'resume_body_raw' => $jadwal->resume_body, // Data JSON dari database
+                'resume_saran'    => $jadwal->resume_saran,
+                'resume_kategori' => $jadwal->resume_kategori,
+                'tanggal_cetak'   => now()->translatedFormat('d F Y'),
+                
+                // 4. Data Dokter
+                'doctor_data'     => [
+                    'nama' => $jadwal->dokter->nama_lengkap ?? 'Dokter Tidak Ditunjuk',
+                    'nip'  => $jadwal->dokter->nip ?? '-'
+                ],
             ];
 
             // 4. Inisialisasi Merger
