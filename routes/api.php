@@ -25,6 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
+    Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); // Tambahkan ini
     // Rute Jadwal MCU
     Route::prefix('jadwal-mcu')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);

@@ -234,4 +234,66 @@ class AuthController extends Controller
 
         return null;
     }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user('sanctum');
+        // Memastikan model profil yang tepat diambil
+        $profile = ($user instanceof \App\Models\EmployeeLogin) ? $user->karyawan : $user->pasien;
+
+        // 1. Perluas Validasi sesuai field yang dikirim dari Flutter
+        $request->validate([
+            'nik'           => 'nullable|string',
+            'nama'          => 'nullable|string',
+            'email'         => 'nullable|email',
+            'no_hp'         => 'nullable|string',
+            'tinggi_badan'  => 'nullable|numeric',
+            'berat_badan'   => 'nullable|numeric',
+            'alamat'        => 'nullable|string',
+            'provinsi'      => 'nullable|string',
+            'kabupaten'     => 'nullable|string',
+            'kecamatan'     => 'nullable|string',
+            'foto_profil'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        // 2. Handle Upload Foto
+        if ($request->hasFile('foto_profil')) {
+            if ($profile->foto_profil) {
+                \Storage::disk('public')->delete($profile->foto_profil);
+            }
+            $path = $request->file('foto_profil')->store('profile_photos', 'public');
+            $profile->foto_profil = $path;
+        }
+
+        // 3. Mapping data dari Flutter ke kolom Database
+        // Sesuaikan kunci di request (kiri) dengan kunci yang dikirim Flutter
+        $updateData = [
+            'no_hp'          => $request->no_hp,
+            'alamat'         => $request->alamat,
+            'tinggi_badan'   => $request->tinggi_badan,
+            'berat_badan'    => $request->berat_badan,
+            'nama_kabupaten' => $request->kabupaten, // Mapping ke kolom database Anda
+            'nama_kecamatan' => $request->kecamatan, // Mapping ke kolom database Anda
+        ];
+
+        // Khusus Karyawan vs Pasien jika nama kolomnya berbeda
+        if ($user instanceof \App\Models\EmployeeLogin) {
+            $updateData['nik_karyawan'] = $request->nik;
+            $updateData['nama_karyawan'] = $request->nama;
+            $updateData['email'] = $request->email;
+        } else {
+            $updateData['nik_pasien']   = $request->nik;
+            $updateData['nama_lengkap'] = $request->nama;
+            $updateData['email']        = $request->email;
+        }
+
+        $profile->update(array_filter($updateData)); // array_filter agar tidak menimpa data dengan null jika tidak dikirim
+        $profile->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profil berhasil diperbarui',
+            'user_profile' => $this->getProfileData($user) // Mengirim data terbaru
+        ]);
+    }
 }
