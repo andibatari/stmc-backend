@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\PemantauanLingkungan; // Sesuaikan dengan nama model Anda
+use App\Models\PemantauanLingkungan;
 use Carbon\Carbon;
 
 class LingkunganApiController extends Controller
@@ -12,104 +12,80 @@ class LingkunganApiController extends Controller
     public function index(Request $request)
     {
         try {
-            // Gunakan eager loading agar data Departemen & Unit Kerja ikut terkirim ke API
             $query = PemantauanLingkungan::with(['departemen', 'unitKerja']);
 
-            // 1. Filter Berdasarkan Area (Jika 'location' di Flutter merujuk pada kolom 'area')
             if ($request->has('location') && $request->location != 'Semua') {
                 $query->where('area', $request->location);
             }
 
-            // 2. Filter Berdasarkan Bulan (Format: "Juli 2025")
-            if ($request->has('month') && $request->month != '') {
-                try {
-                    // Tambahkan pengecekan jika bulan dalam format Indonesia
-                    $monthName = $request->month;
-                    
-                    // Pemetaan sederhana jika locale server tidak mendukung bahasa Indonesia
-                    $monthsId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-                    $monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                    $monthConverted = str_replace($monthsId, $monthsEn, $monthName);
-
-                    $date = Carbon::createFromFormat('F Y', $monthConverted);
-                    
-                    $query->whereMonth('tanggal_pemantauan', $date->month)
-                        ->whereYear('tanggal_pemantauan', $date->year);
-                } catch (\Exception $e) {
-                    // Tetap lanjutkan query tanpa filter bulan jika parsing gagal
-                }
+            if ($request->has('department') && $request->department != 'Semua') {
+                $query->whereHas('departemen', function ($q) use ($request) {
+                    $q->where('nama_departemen', $request->department);
+                });
             }
 
-            // Ambil data terbaru
+            if ($request->has('unit_kerja') && $request->unit_kerja != 'Semua') {
+                $query->whereHas('unitKerja', function ($q) use ($request) {
+                    $q->where('nama_unit_kerja', $request->unit_kerja);
+                });
+            }
+
             $data = $query->orderBy('tanggal_pemantauan', 'desc')->get();
 
-            // Transformasi data agar Flutter lebih mudah membaca (Opsional tapi direkomendasikan)
             $transformedData = $data->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'location' => $item->area, // Map 'area' ke 'location' di Flutter
-                    'sub_area' => $item->lokasi, // Map 'lokasi' ke 'sub_area'
+                    'location' => $item->area,
+                    'sub_area' => $item->lokasi,
                     'department' => $item->departemen->nama_departemen ?? 'N/A',
                     'unit_kerja' => $item->unitKerja->nama_unit_kerja ?? 'N/A',
                     'tanggal' => Carbon::parse($item->tanggal_pemantauan)->format('d M Y'),
+                    'kesimpulan' => $item->kesimpulan ?? 'N/A', // REVISI: Ambil dari kolom database
                     
-                    // Data Pemantauan (Asumsi disimpan sebagai JSON di database)
                     'cahaya_lux' => $item->data_pemantauan['cahaya'] ?? 0,
                     'bising_db' => $item->data_pemantauan['bising'] ?? 0,
                     'debu_mg_nm3' => $item->data_pemantauan['debu'] ?? 0,
+                    
+                    // REVISI: Samakan key JSON dengan model di Flutter
                     'suhu_basah' => $item->data_pemantauan['suhu_basah'] ?? 'N/A',
                     'suhu_kering' => $item->data_pemantauan['suhu_kering'] ?? 'N/A',
+                    'suhu_radiasi' => $item->data_pemantauan['suhu_radiasi'] ?? 'N/A',
+                    'suhu_indoor' => $item->data_pemantauan['isbb_indoor'] ?? 'N/A',
+                    'suhu_outdoor' => $item->data_pemantauan['isbb_outdoor'] ?? 'N/A',
                     'rh' => $item->data_pemantauan['rh'] ?? 'N/A',
-                    
-                    // Metadata NAB untuk logika warna di Flutter
-                    'nab_cahaya' => $item->nab_cahaya,
-                    'nab_bising' => $item->nab_bising,
-                    'nab_debu' => $item->nab_debu,
                 ];
             });
 
             return response()->json([
                 'status' => 'success',
-                'count' => $transformedData->count(),
                 'data' => $transformedData
             ], 200);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
     public function getFilters()
     {
         try {
-            // 1. Ambil Area dan tambahkan 'Semua' secara manual
-            $areas = \App\Models\PemantauanLingkungan::distinct()->pluck('area')->toArray();
+            // Ambil Area unik
+            $areas = PemantauanLingkungan::distinct()->pluck('area')->toArray();
             array_unshift($areas, 'Semua');
 
-            // 2. Ambil Departemen dan tambahkan 'Semua'
+            // Ambil Departemen
             $departments = \App\Models\Departemen::pluck('nama_departemen')->toArray();
             array_unshift($departments, 'Semua');
 
-            // 3. Ambil Unit Kerja dan tambahkan 'Semua'
+            // Ambil Unit Kerja
             $units = \App\Models\UnitKerja::pluck('nama_unit_kerja')->toArray();
             array_unshift($units, 'Semua');
-
-            // 4. Ambil Bulan unik dari tanggal_pemantauan
-            $months = \App\Models\PemantauanLingkungan::selectRaw("DATE_FORMAT(tanggal_pemantauan, '%M %Y') as month_year")
-                ->distinct()
-                ->orderBy('tanggal_pemantauan', 'desc')
-                ->pluck('month_year')
-                ->toArray();
 
             return response()->json([
                 'status' => 'success',
                 'areas' => $areas,
                 'departments' => $departments,
-                'units' => $units,
-                'months' => $months
+                'units' => $units
             ], 200);
 
         } catch (\Exception $e) {
