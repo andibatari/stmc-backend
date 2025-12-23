@@ -149,44 +149,30 @@ class AddKeluargaKaryawan extends Component
             // -----------------------------------------------------
             // FIX: Gunakan array properti yang hanya berisi data model
             // -----------------------------------------------------
-            $data = $this->only([
-                'no_sap', 'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 
-                'tanggal_lahir', 'umur', 'golongan_darah', 'pendidikan', 'pekerjaan', 
-                'perusahaan_asal', 'agama', 'no_hp', 'email', 'alamat', 'provinsi_id', 
-                'nama_kabupaten', 'nama_kecamatan', 'tinggi_badan', 'berat_badan', 
-                'departemens_id', 'unit_kerjas_id', 'tipe_anggota', 'karyawan_id'
-            ]);
+            $data = $this->all(); // Mengambil semua properti publik
+
+            // $data = $this->only([
+            //     'no_sap', 'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 
+            //     'tanggal_lahir', 'umur', 'golongan_darah', 'pendidikan', 'pekerjaan', 
+            //     'perusahaan_asal', 'agama', 'no_hp', 'email', 'alamat', 'provinsi_id', 
+            //     'nama_kabupaten', 'nama_kecamatan', 'tinggi_badan', 'berat_badan', 
+            //     'departemens_id', 'unit_kerjas_id', 'tipe_anggota', 'karyawan_id'
+            // ]);
             
-            // Tambahkan kolom yang mungkin ada di tabel tapi tidak di form (optional)
-            $data['fcm_token'] = null;
-            $data['profile_photo_path'] = null;
-            // -----------------------------------------------------
-
-
-            $isPasienUmum = $this->tipe_anggota == 'Non-Karyawan';
-
-            if ($isPasienUmum) {
-                // Pasien non-karyawan: Relasi & Organisasi disetel null
+            // Logika Tipe Anggota
+            if ($this->tipe_anggota == 'Non-Karyawan') {
                 $data['karyawan_id'] = null;
-                $data['tipe_anggota'] = 'Non-Karyawan';
                 $data['departemens_id'] = null;
                 $data['unit_kerjas_id'] = null;
             } else {
-                // Anggota keluarga: Relasi diisi, Organisasi dipertahankan
                 $data['karyawan_id'] = $this->karyawan_id;
-                $data['tipe_anggota'] = $this->tipe_anggota;
-                // data['departemens_id'] & data['unit_kerjas_id'] sudah di-copy dari $this->only()
             }
-            
-            // Hapus key yang null atau tidak ada di properti Livewire untuk menghindari Mass Assignment
-            $data = array_filter($data, fn($value) => !is_null($value));
-
 
             // Simpan data ke tabel peserta_mcus
             $pesertaMcu = PesertaMcu::create($data); 
             
-            // Simpan data login (WAJIB ADA PASSWORD)
-            if ($isPasienUmum || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
+            // Simpan data login
+            if ($this->tipe_anggota == 'Non-Karyawan' || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
                 PesertaMcuLogin::create([
                     'peserta_mcu_id' => $pesertaMcu->id, 
                     'nik_pasien' => $this->nik_pasien,
@@ -195,12 +181,7 @@ class AddKeluargaKaryawan extends Component
             }
             
             DB::commit();
-            
-            if ($isPasienUmum) {
-                $this->dispatch('pesertaSaved');
-            } else {
-                $this->dispatch('karyawanSaved');
-            }
+            $this->dispatch($this->tipe_anggota == 'Non-Karyawan' ? 'pesertaSaved' : 'karyawanSaved');
 
         } catch (ValidationException $e) {
             DB::rollBack();
