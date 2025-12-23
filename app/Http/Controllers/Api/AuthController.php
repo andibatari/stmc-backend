@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\EmployeeLogin;
 use App\Models\PesertaMcuLogin;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
