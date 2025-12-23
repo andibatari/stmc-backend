@@ -22,10 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ✅ Logout untuk SEMUA USER
     Route::post('/logout', [ApiAuthController::class, 'logout']);
-
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
-    Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); // Tambahkan ini
+    Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); 
+    Route::get('/lingkungan', [LingkunganApiController::class, 'index']);
+    
     // Rute Jadwal MCU
     Route::prefix('jadwal-mcu')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);
