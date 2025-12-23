@@ -239,8 +239,15 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user('sanctum');
-        // Memastikan model profil yang tepat diambil (Karyawan atau Pasien)
-        $profile = ($user instanceof \App\Models\EmployeeLogin) ? $user->karyawan : $user->pasien;
+    
+        // Gunakan pengecekan class yang lebih aman
+        if ($user instanceof \App\Models\EmployeeLogin) {
+            $profile = $user->karyawan;
+        } elseif ($user instanceof \App\Models\PesertaMcuLogin) {
+            $profile = $user->pasien;
+        } else {
+            return response()->json(['message' => 'Tipe user tidak dikenali'], 403);
+        }
 
         // 1. Validasi field yang dikirim dari Flutter
         $request->validate([
@@ -290,18 +297,13 @@ class AuthController extends Controller
             $updateData['nama_lengkap'] = $request->nama;
         }
         
-        // Email diupdate jika dikirim
-        if ($request->email) {
-            $profile->email = $request->email;
-        }
-
         // Eksekusi update dan simpan perubahan foto_profil
         $profile->fill(array_filter($updateData));
         $profile->save();
 
-        // 4. KRITIS: Refresh relasi user agar memuat data profil terbaru dari database
-        $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen', 'pasien.provinsi']);
-
+        // REFRESH DATA AGAR FOTO TERBARU TERIKUT
+        $user->refresh();
+        
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui',
