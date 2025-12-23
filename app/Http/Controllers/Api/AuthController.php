@@ -239,10 +239,10 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user('sanctum');
-        // Memastikan model profil yang tepat diambil
+        // Memastikan model profil yang tepat diambil (Karyawan atau Pasien)
         $profile = ($user instanceof \App\Models\EmployeeLogin) ? $user->karyawan : $user->pasien;
 
-        // 1. Perluas Validasi sesuai field yang dikirim dari Flutter
+        // 1. Validasi field yang dikirim dari Flutter
         $request->validate([
             'nik'           => 'nullable|string',
             'nama'          => 'nullable|string',
@@ -257,50 +257,55 @@ class AuthController extends Controller
             'foto_profil'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Handle Upload Foto
+        // 2. Handle Upload Foto ke S3 (DigitalOcean Spaces)
         if ($request->hasFile('foto_profil')) {
-            // 1. Hapus foto lama dari S3 jika ada
+            // Hapus foto lama dari S3 jika ada path tersimpan
             if ($profile->foto_profil) {
                 Storage::disk('s3')->delete($profile->foto_profil);
             }
             
-            // 2. Simpan ke S3 (DigitalOcean Spaces)
-            // Pastikan folder 'profile_photos' ada di bucket Anda
+            // Simpan file baru ke folder 'profile_photos' di disk 's3'
             $path = $request->file('foto_profil')->store('profile_photos', 's3');
             
-            // 3. Simpan path relatif ke database
+            // Update kolom foto_profil di model
             $profile->foto_profil = $path;
         }
 
-        // 3. Mapping data dari Flutter ke kolom Database
-        // Sesuaikan kunci di request (kiri) dengan kunci yang dikirim Flutter
+        // 3. Mapping data teks dari Flutter ke kolom Database
         $updateData = [
             'no_hp'          => $request->no_hp,
             'alamat'         => $request->alamat,
             'tinggi_badan'   => $request->tinggi_badan,
             'berat_badan'    => $request->berat_badan,
-            'nama_kabupaten' => $request->kabupaten, // Mapping ke kolom database Anda
-            'nama_kecamatan' => $request->kecamatan, // Mapping ke kolom database Anda
+            'nama_kabupaten' => $request->kabupaten, // Mapping ke kolom DB 'nama_kabupaten'
+            'nama_kecamatan' => $request->kecamatan, // Mapping ke kolom DB 'nama_kecamatan'
         ];
 
-        // Khusus Karyawan vs Pasien jika nama kolomnya berbeda
+        // Penyesuaian nama kolom jika berbeda antara tabel Karyawan dan Pasien
         if ($user instanceof \App\Models\EmployeeLogin) {
             $updateData['nik_karyawan'] = $request->nik;
             $updateData['nama_karyawan'] = $request->nama;
-            $updateData['email'] = $request->email;
         } else {
             $updateData['nik_pasien']   = $request->nik;
             $updateData['nama_lengkap'] = $request->nama;
-            $updateData['email']        = $request->email;
+        }
+        
+        // Email diupdate jika dikirim
+        if ($request->email) {
+            $profile->email = $request->email;
         }
 
-        $profile->update(array_filter($updateData)); // array_filter agar tidak menimpa data dengan null jika tidak dikirim
+        // Eksekusi update dan simpan perubahan foto_profil
+        $profile->fill(array_filter($updateData));
         $profile->save();
+
+        // 4. KRITIS: Refresh relasi user agar memuat data profil terbaru dari database
+        $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen', 'pasien.provinsi']);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui',
-            'user_profile' => $this->getProfileData($user) // Mengirim data terbaru
+            'user_profile' => $this->getProfileData($user) // Mengirim objek profil terbaru
         ]);
     }
 }
