@@ -301,8 +301,14 @@ class AuthController extends Controller
         $profile->fill(array_filter($updateData));
         $profile->save();
 
-        // 4. KRITIS: Refresh relasi user agar memuat data profil terbaru dari database
-        $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen', 'pasien.provinsi']);
+// 4. PERBAIKAN: Load relasi secara spesifik berdasarkan tipe user
+        if ($user instanceof \App\Models\EmployeeLogin) {
+            // Hanya load relasi yang ada pada model EmployeeLogin (karyawan)
+            $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen']);
+        } elseif ($user instanceof \App\Models\PesertaMcuLogin) {
+            // Hanya load relasi yang ada pada model PesertaMcuLogin (pasien)
+            $user->load(['pasien.provinsi']);
+        }       
         $user->refresh();
 
         return response()->json([
