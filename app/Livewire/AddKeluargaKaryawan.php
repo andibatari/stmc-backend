@@ -149,38 +149,48 @@ class AddKeluargaKaryawan extends Component
             // -----------------------------------------------------
             // FIX: Gunakan array properti yang hanya berisi data model
             // -----------------------------------------------------
-            $data = $this->all(); // Mengambil semua properti publik
+            $data = [
+                'no_sap'          => $this->no_sap,
+                'nik_pasien'      => $this->nik_pasien,
+                'nama_lengkap'    => $this->nama_lengkap,
+                'jenis_kelamin'   => $this->jenis_kelamin,
+                'tempat_lahir'    => $this->tempat_lahir,
+                'tanggal_lahir'   => $this->tanggal_lahir,
+                'umur'            => $this->umur,
+                'golongan_darah'  => $this->golongan_darah,
+                'pendidikan'      => $this->pendidikan,
+                'pekerjaan'       => $this->pekerjaan,
+                'perusahaan_asal' => $this->perusahaan_asal,
+                'agama'           => $this->agama,
+                'no_hp'           => $this->no_hp,
+                'email'           => $this->email,
+                'alamat'          => $this->alamat,
+                'provinsi_id'     => $this->provinsi_id,
+                'nama_kabupaten'  => $this->nama_kabupaten,
+                'nama_kecamatan'  => $this->nama_kecamatan,
+                'tinggi_badan'    => $this->tinggi_badan,
+                'berat_badan'     => $this->berat_badan,
+                'tipe_anggota'    => $this->tipe_anggota,
+                // Logika Karyawan ID
+                'karyawan_id'     => ($this->tipe_anggota == 'Non-Karyawan') ? null : $this->karyawan_id,
+                'departemens_id'  => ($this->tipe_anggota == 'Non-Karyawan') ? null : $this->departemens_id,
+                'unit_kerjas_id'  => ($this->tipe_anggota == 'Non-Karyawan') ? null : $this->unit_kerjas_id,
+            ];
 
-            // $data = $this->only([
-            //     'no_sap', 'nik_pasien', 'nama_lengkap', 'jenis_kelamin', 'tempat_lahir', 
-            //     'tanggal_lahir', 'umur', 'golongan_darah', 'pendidikan', 'pekerjaan', 
-            //     'perusahaan_asal', 'agama', 'no_hp', 'email', 'alamat', 'provinsi_id', 
-            //     'nama_kabupaten', 'nama_kecamatan', 'tinggi_badan', 'berat_badan', 
-            //     'departemens_id', 'unit_kerjas_id', 'tipe_anggota', 'karyawan_id'
-            // ]);
-            
-            // Logika Tipe Anggota
-            if ($this->tipe_anggota == 'Non-Karyawan') {
-                $data['karyawan_id'] = null;
-                $data['departemens_id'] = null;
-                $data['unit_kerjas_id'] = null;
-            } else {
-                $data['karyawan_id'] = $this->karyawan_id;
-            }
-
-            // Simpan data ke tabel peserta_mcus
+            // Simpan ke tabel utama
             $pesertaMcu = PesertaMcu::create($data); 
             
-            // Simpan data login
+            // Simpan data login ke tabel login
             if ($this->tipe_anggota == 'Non-Karyawan' || in_array($this->tipe_anggota, ['Istri', 'Suami'])) {
                 PesertaMcuLogin::create([
                     'peserta_mcu_id' => $pesertaMcu->id, 
-                    'nik_pasien' => $this->nik_pasien,
-                    'password' => Hash::make($this->password),
+                    'nik_pasien'     => $this->nik_pasien,
+                    'password'       => Hash::make($this->password),
                 ]);
             }
             
             DB::commit();
+            
             $this->dispatch($this->tipe_anggota == 'Non-Karyawan' ? 'pesertaSaved' : 'karyawanSaved');
 
         } catch (ValidationException $e) {
