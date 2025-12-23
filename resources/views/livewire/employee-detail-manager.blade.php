@@ -13,8 +13,16 @@
             <div class="p-3 bg-white rounded-xl shadow-xl border border-gray-100 mb-4">
                 <div class="flex flex-col items-center text-center">
                     {{-- Foto Profil --}}
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gray-200 flex items-center justify-center rounded-full shadow-lg border-4 border-red-100 mb-3">
-                        <svg class="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gray-200 flex items-center justify-center rounded-full shadow-lg border-4 border-red-100 mb-3 overflow-hidden">
+                        @if($activeUser->foto_profil)
+                            <img src="{{ Storage::disk('s3')->url($activeUser->foto_profil) }}" 
+                                alt="Profil" class="w-full h-full object-cover">
+                        @else
+                            {{-- Ikon Default jika foto tidak ada --}}
+                            <svg class="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
+                        @endif
                     </div>
                     {{-- Nama Dinamis --}}
                     <h2 class="text-base sm:text-lg font-bold text-gray-800">{{ $activeUser->nama_lengkap ?? $activeUser->nama_karyawan }}</h2>
