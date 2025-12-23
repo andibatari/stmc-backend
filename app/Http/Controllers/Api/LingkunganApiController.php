@@ -85,22 +85,33 @@ class LingkunganApiController extends Controller
     public function getFilters()
     {
         try {
-            // Ambil daftar area unik dari database
+            // 1. Ambil Area dan tambahkan 'Semua' secara manual
             $areas = \App\Models\PemantauanLingkungan::distinct()->pluck('area')->toArray();
             array_unshift($areas, 'Semua');
 
-            // Ambil daftar bulan unik dari kolom tanggal_pemantauan
-            $monthsRaw = \App\Models\PemantauanLingkungan::selectRaw("DATE_FORMAT(tanggal_pemantauan, '%M %Y') as month_year")
+            // 2. Ambil Departemen dan tambahkan 'Semua'
+            $departments = \App\Models\Departemen::pluck('nama_departemen')->toArray();
+            array_unshift($departments, 'Semua');
+
+            // 3. Ambil Unit Kerja dan tambahkan 'Semua'
+            $units = \App\Models\UnitKerja::pluck('nama_unit_kerja')->toArray();
+            array_unshift($units, 'Semua');
+
+            // 4. Ambil Bulan unik dari tanggal_pemantauan
+            $months = \App\Models\PemantauanLingkungan::selectRaw("DATE_FORMAT(tanggal_pemantauan, '%M %Y') as month_year")
                 ->distinct()
                 ->orderBy('tanggal_pemantauan', 'desc')
                 ->pluck('month_year')
                 ->toArray();
-            
+
             return response()->json([
                 'status' => 'success',
                 'areas' => $areas,
-                'months' => $monthsRaw
+                'departments' => $departments,
+                'units' => $units,
+                'months' => $months
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
