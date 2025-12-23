@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\JadwalMcuApiController;
+use App\Http\Controllers\Api\LingkunganApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +26,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
     Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); 
+    // PEMANTAUAN LINGKUNGAN
     Route::get('/lingkungan', [LingkunganApiController::class, 'index']);
+    // TAMBAHKAN RUTE FILTER INI AGAR DROPDOWN DI FLUTTER BERFUNGSI:
+    Route::get('/lingkungan/filters', [LingkunganApiController::class, 'getFilters']);
     
     // Rute Jadwal MCU
     Route::prefix('jadwal-mcu')->group(function () {

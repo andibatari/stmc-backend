@@ -23,14 +23,20 @@ class LingkunganApiController extends Controller
             // 2. Filter Berdasarkan Bulan (Format: "Juli 2025")
             if ($request->has('month') && $request->month != '') {
                 try {
-                    // Konversi string "Juli 2025" menjadi objek Carbon
-                    // Pastikan locale diatur ke Indonesia jika input menggunakan nama bulan Indonesia
-                    $date = Carbon::createFromFormat('F Y', $request->month);
+                    // Tambahkan pengecekan jika bulan dalam format Indonesia
+                    $monthName = $request->month;
+                    
+                    // Pemetaan sederhana jika locale server tidak mendukung bahasa Indonesia
+                    $monthsId = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+                    $monthsEn = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    $monthConverted = str_replace($monthsId, $monthsEn, $monthName);
+
+                    $date = Carbon::createFromFormat('F Y', $monthConverted);
                     
                     $query->whereMonth('tanggal_pemantauan', $date->month)
-                          ->whereYear('tanggal_pemantauan', $date->year);
+                        ->whereYear('tanggal_pemantauan', $date->year);
                 } catch (\Exception $e) {
-                    // Jika format tanggal salah, abaikan filter atau beri log
+                    // Tetap lanjutkan query tanpa filter bulan jika parsing gagal
                 }
             }
 
