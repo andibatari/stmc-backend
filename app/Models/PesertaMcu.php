@@ -40,6 +40,8 @@ class PesertaMcu extends Model
         'fcm_token',
     ];
 
+    protected $appends = ['email'];
+
     /**
      * Relasi ke model Karyawan (jika peserta adalah anggota keluarga karyawan).
      */
@@ -75,12 +77,6 @@ class PesertaMcu extends Model
     public function jadwalMcu()
     {
         return $this->hasMany(JadwalMcu::class, 'peserta_mcus_id');
-    }
-
-    // Accessor untuk konsistensi di Job/Mailable
-    public function getEmailKaryawanAttribute()
-    {
-        return $this->attributes['email']; // Menggunakan kolom 'email'
     }
 
     public function getFcmTokenAttribute()
