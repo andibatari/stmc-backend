@@ -16,7 +16,6 @@ class PesertaMcu extends Model
         'karyawan_id',
         'tipe_anggota',
         'no_sap',
-        'hubungan',
         'nik_pasien',
         'nama_lengkap',
         'jenis_kelamin',
@@ -37,10 +36,7 @@ class PesertaMcu extends Model
         'nama_kecamatan',
         'tinggi_badan',
         'berat_badan',
-        'fcm_token',
     ];
-
-    protected $appends = ['email'];
 
     /**
      * Relasi ke model Karyawan (jika peserta adalah anggota keluarga karyawan).
@@ -48,22 +44,6 @@ class PesertaMcu extends Model
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
-    }
-
-    /**
-     * Relasi ke model Departemen (jika peserta adalah non-karyawan).
-     */
-    public function departemen()
-    {
-        return $this->belongsTo(Departemen::class, 'departemens_id');
-    }
-
-    /**
-     * Relasi ke model UnitKerja (jika peserta adalah non-karyawan).
-     */
-    public function unitKerja()
-    {
-        return $this->belongsTo(UnitKerja::class, 'unit_kerjas_id');
     }
 
     /**

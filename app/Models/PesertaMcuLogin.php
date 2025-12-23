@@ -14,7 +14,7 @@ class PesertaMcuLogin extends Authenticatable
     protected $table = 'peserta_mcu_logins';
 
     protected $fillable = [
-        'peserta_mcus_id',
+        'peserta_mcu_id',
         'nik_pasien',
         'password',
     ];

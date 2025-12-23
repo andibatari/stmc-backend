@@ -56,36 +56,20 @@
     });
 
     // Livewire akan mendengarkan event 'karyawanSaved'
-    Livewire.on('karyawanSaved', () => {
-        // Saat event diterima, tampilkan pop-up SweetAlert
+    Livewire.on('show-success-popup', (event) => {
         Swal.fire({
-            title: 'Berhasil!',
-            text: 'Data anggota keluarga berhasil disimpan.',
+            title: event[0].title,
+            text: event[0].message,
             icon: 'success',
-            confirmButtonText: 'OK',
             confirmButtonColor: '#dc2626'
-        }).then((result) => {
-            // Setelah pengguna menekan 'OK', arahkan kembali ke halaman detail karyawan
-            if (result.isConfirmed) {
-                window.location.href = "{{ route('karyawan.index') }}";
-            }
         });
     });
 
-    // Livewire akan mendengarkan event 'pesertaSaved'
-    Livewire.on('pesertaSaved', () => {
-        // Saat event diterima, tampilkan pop-up SweetAlert
+    Livewire.on('show-error-popup', (event) => {
         Swal.fire({
-            title: 'Berhasil!',
-            text: 'Data peserta non-karyawan berhasil disimpan.',
-            icon: 'success',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#dc2626'
-        }).then((result) => {
-            // Setelah pengguna menekan 'OK', arahkan kembali ke halaman daftar karyawan
-            if (result.isConfirmed) {
-                window.location.href = "{{ route('karyawan.index') }}";
-            }
+            title: 'Error!',
+            text: event[0].message,
+            icon: 'error'
         });
     });
 </script>
