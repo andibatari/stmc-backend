@@ -175,7 +175,7 @@ class AuthController extends Controller
                 'email' => $karyawan->email,
                 'no_hp' => $karyawan->no_hp,
                 'foto' => $karyawan->foto_profil 
-                    ? Storage::disk('s3')->url($profile->foto_profil) 
+                    ? Storage::disk('s3')->url($karyawan->foto_profil) 
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
