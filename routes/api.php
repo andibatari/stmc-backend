@@ -30,10 +30,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/lingkungan', [LingkunganApiController::class, 'index']);
     // TAMBAHKAN RUTE FILTER INI AGAR DROPDOWN DI FLUTTER BERFUNGSI:
     Route::get('/lingkungan/filters', [LingkunganApiController::class, 'getFilters']);
-    
+
     // Rute Jadwal MCU
     Route::prefix('jadwal-mcu')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);
         Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
+        Route::get('/paket', [JadwalMcuApiController::class, 'getPaketMcu']);
     });
 });

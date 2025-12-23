@@ -200,58 +200,26 @@ class JadwalMcuApiController extends Controller
             ], 500);
         }
         
-        // $token = request()->query('token');
-        // if (!$token) {
-        //     return response()->json(['message' => 'Token autentikasi diperlukan'], 401);
-        // }
-        
-        // try {
-        //     // 1. Pastikan data ditemukan beserta relasinya
-        //     $jadwal = JadwalMcu::with('jadwalPoli')->findOrFail($id);
-            
-        //     // 2. Ambil semua file_path poli yang sudah "Done"
-        //     $files = $jadwal->jadwalPoli->whereNotNull('file_path')->pluck('file_path')->toArray();
+    }
+    
+    public function getPaketMcu()
+    {
+        try {
+            // Ambil ID dan Nama Paket dari tabel paket_mcus
+            // Sesuaikan nama kolom jika berbeda (misal: 'id' dan 'nama_paket')
+            $pakets = \DB::table('paket_mcus')
+                ->select('id', 'nama_paket as name') 
+                ->get();
 
-        //     if (empty($files)) {
-        //         return response()->json(['message' => 'Tidak ada file laporan untuk digabungkan'], 404);
-        //     }
-
-        //     // 3. Inisialisasi Merger
-        //     $merger = new Merger();
-        //     $filesAdded = 0;
-
-        //     foreach ($files as $filePath) {
-        //         // 🔥 KRITIS: Cek keberadaan file di disk S3
-        //         if (Storage::disk('s3')->exists($filePath)) {
-        //             // Ambil konten file dari S3 (Binary)
-        //             $fileContent = Storage::disk('s3')->get($filePath);
-                    
-        //             // Tambahkan konten file langsung ke merger
-        //             $merger->addRaw($fileContent);
-        //             $filesAdded++;
-        //         }
-        //     }
-
-        //     if ($filesAdded === 0) {
-        //         return response()->json(['message' => 'File tidak ditemukan di Cloud Storage'], 404);
-        //     }
-
-        //     // 4. Proses Merger
-        //     $output = $merger->merge();
-            
-        //     $downloadName = "Laporan_MCU_" . Str::slug($jadwal->nama_pasien) . "_" . $jadwal->no_antrean . ".pdf";
-
-        //     // 5. Kembalikan response stream PDF
-        //     return response($output)
-        //         ->header('Content-Type', 'application/pdf')
-        //         ->header('Content-Disposition', "attachment; filename=\"$downloadName\"");
-
-        // } catch (\Exception $e) {
-        //     \Log::error("Gagal Merger API: " . $e->getMessage());
-        //     return response()->json([
-        //         'message' => 'Gagal menggabungkan PDF',
-        //         'error' => $e->getMessage() 
-        //     ], 500);
-        // }
+            return response()->json([
+                'success' => true,
+                'data' => $pakets
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data paket'
+            ], 500);
+        }
     }
 }
