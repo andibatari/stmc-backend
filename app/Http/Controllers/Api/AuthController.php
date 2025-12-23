@@ -301,9 +301,10 @@ class AuthController extends Controller
         $profile->fill(array_filter($updateData));
         $profile->save();
 
-        // REFRESH DATA AGAR FOTO TERBARU TERIKUT
+        // 4. KRITIS: Refresh relasi user agar memuat data profil terbaru dari database
+        $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen', 'pasien.provinsi']);
         $user->refresh();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui',
