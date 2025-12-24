@@ -197,7 +197,7 @@ class AuthController extends Controller
         // PESERTA MCU
         // ======================
         if ($loginUser instanceof PesertaMcuLogin) {
-            $pasien = $loginUser->pasien();
+            $pasien = $loginUser->pasien;
             if (!$pasien) {
                 return [
                     'type' => 'Pasien',
