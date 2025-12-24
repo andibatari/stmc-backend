@@ -24,11 +24,7 @@ class PesertaMcuDetailManager extends Component
         // Eager load relasi yang diperlukan, termasuk jadwal MCU dan dokternya
         $this->pesertaMcu = $pesertaMcu->load([
             'karyawan', 
-            'karyawan.unitKerja', 
-            'karyawan.departemen', 
-            'provinsi', 
-            'kabupaten', 
-            'kecamatan', 
+            'provinsi',
             'jadwalMcu.dokter' // WAJIB: Eager load jadwal MCU
         ]);
     }

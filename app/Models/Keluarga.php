@@ -48,6 +48,8 @@ class Keluarga extends Model
         'nama_kecamatan',
         'departemens_id',
         'unit_kerjas_id',
+        'tinggi_badan',
+        'berat_badan',
     ];
 
     /**

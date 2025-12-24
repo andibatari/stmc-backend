@@ -142,16 +142,6 @@ class EditKaryawanForm extends Component
         $this->nama_kecamatan = null; // Reset input teks Kecamatan
     }
     
-    // /**
-    //  * Logika dropdown berantai untuk Lokasi (Kabupaten -> Kecamatan)
-    //  * Dijalankan saat kabupaten_id diubah.
-    //  */
-    // public function updatedKabupatenId($value)
-    // {
-    //     $this->kecamatan_id = null;
-    //     $this->kecamatans = Kecamatan::where('kabupaten_id', $value)->get();
-    // }
-
     /**
      * Aturan validasi untuk form.
      */
