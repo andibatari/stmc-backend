@@ -199,54 +199,57 @@
                 Alamat & Kontak 📞
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                
-                {{-- Provinsi --}}
+                {{-- Kolom Kiri: Provinsi --}}
                 <div class="space-y-1">
                     <label for="provinsi_id" class="block text-xs font-medium text-gray-700">Provinsi</label>
                     <select wire:model.live="provinsi_id" id="provinsi_id" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
-                        <option value="">Pilih Provinsi</option>
-                        {{-- Asumsi $provinsis dimuat di class Livewire Edit --}}
+                        <option value="">Pilih Provinsi</option>
                         @foreach($provinsis as $provinsi)
-                        <option value="{{ $provinsi->id }}">{{ $provinsi->nama_provinsi }}</option>
+                            <option value="{{ $provinsi->id }}">{{ $provinsi->nama_provinsi }}</option>
                         @endforeach
                     </select>
                     @error('provinsi_id') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                                
-                {{-- Kabupaten (Input Teks) --}}
+
+                {{-- Kolom Kanan: Kabupaten/Kota --}}
                 <div class="space-y-1">
                     <label for="nama_kabupaten" class="block text-xs font-medium text-gray-700">Kabupaten/Kota</label>
                     <input type="text" wire:model.live="nama_kabupaten" id="nama_kabupaten" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     @error('nama_kabupaten') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                                
-                {{-- Kecamatan (Input Teks) --}}
+
+                {{-- Kolom Kiri: Kecamatan --}}
                 <div class="space-y-1">
                     <label for="nama_kecamatan" class="block text-xs font-medium text-gray-700">Kecamatan</label>
                     <input type="text" wire:model.live="nama_kecamatan" id="nama_kecamatan" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     @error('nama_kecamatan') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                
-                {{-- Nomor HP --}}
+
+                {{-- Kolom Kanan: Nomor HP --}}
                 <div class="space-y-1">
                     <label for="no_hp" class="block text-xs font-medium text-gray-700">Nomor HP</label>
                     <input type="text" wire:model.live="no_hp" id="no_hp" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     @error('no_hp') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
-                {{-- Email --}}
+                {{-- Kolom Kiri: Email --}}
                 <div class="space-y-1">
                     <label for="email" class="block text-xs font-medium text-gray-700">Email</label>
                     <input type="email" wire:model.live="email" id="email" class="block w-full px-3 py-2 text-sm rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500">
                     @error('email') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                
-                {{-- Alamat Lengkap (Textarea - 2 kolom) --}}
+
+                {{-- Kolom Kosong (Spacer) agar simetris di laptop, 
+                    Atau biarkan kosong agar Textarea di bawahnya menarik perhatian --}}
+                <div class="hidden md:block"></div>
+
+                {{-- Alamat Lengkap (Textarea - Memanjang 2 kolom di Laptop) --}}
                 <div class="space-y-1 md:col-span-2">
                     <label for="alamat" class="block text-xs font-medium text-gray-700">Alamat Lengkap</label>
-                    <textarea wire:model="alamat" id="alamat" rows="2" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-2 transition-colors duration-200"></textarea>
+                    <textarea wire:model="alamat" id="alamat" rows="3" class="block w-full rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-2 transition-colors duration-200"></textarea>
                     @error('alamat') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                 </div>
+
             </div>
 
             <hr class="my-4">
