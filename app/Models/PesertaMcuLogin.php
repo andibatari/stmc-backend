@@ -28,6 +28,6 @@ class PesertaMcuLogin extends Authenticatable
      */
     public function pasien()
     {
-        return $this->belongsTo(PesertaMcu::class, 'peserta_mcus_id');
+        return $this->belongsTo(PesertaMcu::class, 'peserta_mcu_id');
     }
 }

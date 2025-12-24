@@ -197,15 +197,16 @@ class AuthController extends Controller
         // PESERTA MCU
         // ======================
         if ($loginUser instanceof PesertaMcuLogin) {
-            $pasien = $loginUser->pasien()
-                ->with(['provinsi'])
-                ->first();
-
+            $pasien = $loginUser->pasien();
             if (!$pasien) {
-                return null;
+                return [
+                    'type' => 'Pasien',
+                    'message' => 'Data profil pasien tidak ditemukan di database',
+                    'is_employee' => false
+                ];
             }
 
-            return $pasien ? [
+            return [
                 'type' => 'Pasien',
                 'id' => $pasien->id,
                 'nama' => $pasien->nama_lengkap,
@@ -230,7 +231,7 @@ class AuthController extends Controller
                 'pekerjaan' => $pasien->pekerjaan,
                 'perusahaan' => $pasien->perusahaan_asal,
                 'is_employee' => false
-            ] : null;
+            ];
         }
 
         return null;
