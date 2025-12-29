@@ -208,7 +208,7 @@
 
                             @php
                             $resumeFields = [
-                                'bmi' => ['label' => '1. BMI', 'placeholder' => 'Contoh: 27.63 kg/m2 (Obesitas I)'], 
+                                'bmi' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Terhitung otomatis dari profil'],
                                 'laboratorium' => ['label' => '2. Lab', 'placeholder' => 'ISK, Peningkatan SGOT, dll.'], 
                                 'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Sinus Rhythm, HR 67x/i.'], 
                                 'gigi' => ['label' => '4. Gigi', 'placeholder' => 'OH Buruk'], 
@@ -225,10 +225,22 @@
 
                             @foreach ($resumeFields as $key => $field)
                                 <div>
-                                    <label for="resume_{{ $key }}" class="block text-xs font-semibold text-gray-700 mb-0.5">{{ $field['label'] }}</label>
-                                    <input type="text" id="resume_{{ $key }}" wire:model.defer="resumeData.{{ $key }}"
-                                        class="mt-0.5 block w-full rounded-lg border-gray-300 shadow-sm text-xs md:text-sm focus:border-red-500 focus:ring-red-500" 
+                                    <label for="resume_{{ $key }}" class="block text-xs font-semibold text-gray-700 mb-0.5">
+                                        {{ $field['label'] }}
+                                    </label>
+                                    
+                                    {{-- REVISI KHUSUS INPUT BMI --}}
+                                    <input type="text" id="resume_{{ $key }}" 
+                                        wire:model.defer="resumeData.{{ $key }}"
+                                        @if($key === 'bmi') readonly @endif
+                                        class="mt-0.5 block w-full rounded-lg border-gray-300 shadow-sm text-xs md:text-sm focus:border-red-500 focus:ring-red-500 
+                                        @if($key === 'bmi') bg-gray-100 font-bold text-blue-700 @endif" 
                                         placeholder="{{ $field['placeholder'] }}">
+                                    
+                                    @if($key === 'bmi')
+                                        <p class="text-[10px] text-gray-500 mt-0.5 italic">*Berdasarkan Tinggi: {{ $patient->tinggi_badan }}cm, Berat: {{ $patient->berat_badan }}kg</p>
+                                    @endif
+
                                     @error("resumeData.{$key}") <span class="text-red-500 text-xs mt-0.5 block">{{ $message }}</span> @enderror
                                 </div>
                             @endforeach

@@ -90,8 +90,9 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::get('/tambah-admin', TambahAdmin::class)->name('admin.create');
     Route::get('/tambah-dokter', TambahDokter::class)->name('admin.tambah-dokter');
     Route::get('/kelola-paket-poli', PaketPoli::class)->name('paket-poli');
+    Route::get('/admin/laporan-pemeriksaan', \App\Livewire\Admin\ExportPemeriksaan::class)->name('admin.laporan.pemeriksaan');
 
-     Route::prefix('lingkungan')->group(function () {
+    Route::prefix('lingkungan')->group(function () {
         Route::get('pemantauan', PemantauanLingkunganIndex::class)->name('pemantauan.index');
         Route:
     });
@@ -103,79 +104,11 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     // Rute untuk mengunduh PDF gabungan
     Route::get('/download-mcu-summary/{jadwalId}', [McuPdfController::class, 'downloadMcuSummary'])->name('download.mcu.summary');
     Route::get('/download/mcu-resume/{jadwalId}', [McuPdfController::class, 'downloadResume'])->name('download.resume.pdf');
-    // Route::get('/kelola-paket-poli', KelolaLayanan::class)->name('paket-poli');
-    // Route untuk menampilkan/mengunduh PDF secara aman dari folder storage
-    // Rute untuk menampilkan/mengunduh PDF secara aman dari folder storage
-    // Nama rute sekarang akan menjadi 'admin.pdf.view'
-    // Route::get('/pdf/view/{id}', function ($id) {
-    //     $result = PoliGigiResult::where('jadwal_poli_id', $id)->firstOrFail();
-    //     $filePath = $result->file_path;
-
-    //     if ($filePath) {
-    //         // Hapus 'public/' dari path untuk Flysystem
-    //         $relativePath = str_replace('public/', '', $filePath); 
-
-    //         if (Storage::disk('public')->exists($relativePath)) {
-    //             // KIRIM RESPONSE HANYA MENGGUNAKAN PATH RELATIF
-    //             return Storage::disk('public')->response($relativePath, basename($filePath), [
-    //                 'Content-Type' => 'application/pdf',
-    //                 'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
-    //             ]);
-    //         }
-    //     }
-        
-    //     abort(404, 'File PDF tidak ditemukan atau belum dibuat.');
-    // })->name('pdf.view');
+    
     Route::get('/pdf/view-summary/{id}', [McuPdfController::class, 'viewPdf'])->name('pdf.view');
     Route::get('/pdf/gigi/{id}', [McuPdfController::class, 'viewPdfGigi'])->name('pdf.view.gigi');
     Route::get('/pdf/kebugaran/{id}', [McuPdfController::class, 'viewPdfKebugaran'])->name('pdf.kebugaran.view');
     Route::get('/pdf/fisik/{id}', [McuPdfController::class, 'viewPdfFisik'])->name('pdf.fisik.view');
-    // Route::get('/pdf/kebugaran/{id}', function ($id) {
-    //     // 1. Cari hasilnya langsung di tabel KebugaranResult menggunakan jadwal_poli_id
-    //     $result = App\Models\KebugaranResult::where('jadwal_poli_id', $id)->first();
-        
-    //     if (!$result || !$result->file_path) {
-    //         // Jika data tidak ada, tampilkan error yang lebih spesifik
-    //         abort(404, 'Hasil Kebugaran tidak ditemukan atau file PDF belum dibuat.');
-    //     }
-        
-    //     $filePath = $result->file_path; 
-        
-    //     // Hapus 'public/' dari path jika menggunakan Storage::disk('public')
-    //     // Path di DB: pdf_reports/Kebugaran_N_A_JadwalPoli_8.pdf
-    //     $relativePath = str_replace('public/', '', $filePath); 
-
-    //     if (Storage::disk('public')->exists($relativePath)) {
-    //         return Storage::disk('public')->response($relativePath, basename($filePath), [
-    //             'Content-Type' => 'application/pdf',
-    //             'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
-    //         ]);
-    //     }
-        
-    //     abort(404, 'File PDF Kebugaran ditemukan di database tetapi tidak ada di storage.');
-    // })->name('pdf.kebugaran.view');
-
-    // Route::get('/pdf/fisik/{id}', function ($id) {
-    //     // Mencari data FisikResult menggunakan jadwal_poli_id
-    //     $result = App\Models\FisikResult::where('jadwal_poli_id', $id)->firstOrFail();
-    //     $filePath = $result->file_path; 
-
-    //     if (!$filePath) {
-    //         abort(404, 'File path tidak ditemukan di Fisik Result.');
-    //     }
-        
-    //     // Hapus 'public/' dari path jika menggunakan Storage::disk('public')
-    //     $relativePath = str_replace('public/', '', $filePath); 
-
-    //     if (Storage::disk('public')->exists($relativePath)) {
-    //         return Storage::disk('public')->response($relativePath, basename($filePath), [
-    //             'Content-Type' => 'application/pdf',
-    //             'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
-    //         ]);
-    //     }
-        
-    //     abort(404, 'File PDF Fisik tidak ditemukan di storage.');
-    // })->name('pdf.fisik.view');
 
     Route::get('/download/{filePath}', function ($filePath) {
     

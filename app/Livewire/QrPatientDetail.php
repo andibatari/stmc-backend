@@ -66,15 +66,30 @@ class QrPatientDetail extends Component
     
     public function mount(JadwalMcu $jadwal)
     {
-        // Muat relasi JadwalPoli menggunakan nama relasi yang benar ('polis')
-        // dan pastikan poli data juga dimuat
-        // $jadwal->load(['polis.poli', 'karyawan', 'pesertaMcu', 'paketMcu.poli']);
         $this->jadwal = $jadwal;
 
-        // Memuat data resume yang sudah ada (jika ada)
-        // Gunakan getDefaultResumeData() untuk memastikan semua field baru terisi null jika belum ada data.
+        // 1. Ambil data pasien (Karyawan atau Peserta Umum)
+        $patientData = $jadwal->karyawan ?? $jadwal->pesertaMcu;
+
+        // 2. Memuat data resume yang sudah ada
         $existingData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : [];
         $this->resumeData = array_merge($this->getDefaultResumeData(), $existingData);
+
+        // 3. LOGIKA OTOMATIS BMI
+        // Jika field 'bmi' di resume masih kosong dan data pasien tersedia
+        if (empty($this->resumeData['bmi']) && $patientData) {
+            $weight = $patientData->berat_badan;
+            $height = $patientData->tinggi_badan;
+
+            if ($weight > 0 && $height > 0) {
+                // Rumus: BB / (TB dalam meter ^ 2)
+                $heightInMeter = $height / 100;
+                $bmiValue = $weight / ($heightInMeter * $heightInMeter);
+                
+                // Format 1 angka di belakang koma (contoh: 22.5)
+                $this->resumeData['bmi'] = number_format($bmiValue, 1);
+            }
+        }
 
         $this->resumeSaran = $jadwal->resume_saran ?? '';
         $this->resumeKategori = $jadwal->resume_kategori ?? '';
