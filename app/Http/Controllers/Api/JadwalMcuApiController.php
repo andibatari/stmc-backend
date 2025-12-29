@@ -72,6 +72,7 @@ class JadwalMcuApiController extends Controller
                 'status'           => 'Scheduled',
                 'nama_pasien'      => $user->nama ?? $user->nama_lengkap,
                 'nik_pasien'       => $user->nik ?? $user->nik_pasien,
+                'no_sap'             => $user->no_sap ?? null,
                 'perusahaan_asal'  => $user->perusahaan ?? 'Pribadi',
                 'karyawan_id'      => ($column == 'karyawan_id') ? $user->id : null,
                 'peserta_mcus_id'  => ($column == 'peserta_mcus_id') ? $user->id : null,
