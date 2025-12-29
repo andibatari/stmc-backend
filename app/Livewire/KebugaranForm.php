@@ -146,38 +146,41 @@ class KebugaranForm extends Component
         // --- LOGIKA PEMBUATAN PDF DENGAN DOMPDF ---
         $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
         $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
-        $fileName = 'Hasil Pemeriksaan Kebugaran ' . $safeIdentifier . ' JadwalPoli ' . $this->jadwalPoliId . ' '. time(). '.pdf';
-        $folderPath = 'pdf_reports';
-        $storagePath = $folderPath . '/' . $fileName; // pdf_reports/nama_file.pdf 
+        
+        $folderPath = 'mcu_results'; 
+        $fileName = 'Hasil_Kebugaran_' . $safeIdentifier . '_' . time() . '.pdf';
+        $fullPath = $folderPath . '/' . $fileName; // Path lengkap untuk S3
 
         try {
             $reportData = [
-                'patient' => $this->patient, 'kebugaranResult' => $kebugaran, 
-                'instansiPasien' => $this->instansiPasien, 'isKaryawan' => $this->isKaryawan,
+                'patient' => $this->patient, 
+                'kebugaranResult' => $kebugaran, 
+                'instansiPasien' => $this->instansiPasien, 
+                'isKaryawan' => $this->isKaryawan,
             ];
 
-            // 1. Render View ke PDF menggunakan Dompdf
+            // 1. Render View ke PDF
             $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
             
-            // 2. Simpan konten mentah ke disk 'public'
-            Storage::disk('public')->put($storagePath, $pdf->output());
+            // 2. Simpan ke S3 (DigitalOcean Spaces)
+            // Pastikan visibilitas 'public' agar bisa dibuka melalui URL langsung
+            Storage::disk('s3')->put($fullPath, $pdf->output(), 'public');
             
-            // SIMPAN PATH FILE KE KEBUGARANRESULT
-            $kebugaran->file_path = $fileName;
+            // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
+            // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
+            $kebugaran->file_path = $fullPath; 
             $kebugaran->save();
-            
-            // 🔥 KRITIS: SALIN PATH KE TABEL JADWAL_POLI 🔥
-            $this->poliData->file_path = $fileName; // Ambil path dari KebugaranResult
-            
-            // Update status poli
+
+            // 4. Update model JadwalPoli agar tombol di Dashboard Admin & PDF Gabungan berfungsi
+            $this->poliData->file_path = $fullPath; 
             $this->poliData->status = 'Done';
             $this->poliData->save();
 
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('PDF Kebugaran GAGAL (Dompdf): ' . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
-            session()->flash('error', 'Gagal membuat file PDF Kebugaran (Dompdf). Error: ' . $e->getMessage());
+            Log::error('PDF Kebugaran S3 GAGAL: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menyimpan ke S3. Cek koneksi internet/konfigurasi S3.');
         }
     }
 
