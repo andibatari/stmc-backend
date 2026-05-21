@@ -55,6 +55,19 @@ class JadwalMcuController extends Controller
      */
     public function store(Request $request)
     {
+        //1.TAMBAHKAN LOGIKA PENGECEKAN KUOTA DI SINI
+        $tanggal_mcu_cek = \Carbon\Carbon::parse($request->tanggal_mcu)->toDateString();
+
+        $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $tanggal_mcu_cek)
+                                ->where('status', '!=', 'Canceled') // Abaikan yang dibatalkan
+                                ->count();
+
+        if ($kuotaTerisi >= 30) {
+            return back()
+                ->with('error', 'Mohon maaf, kuota Medical Check Up untuk tanggal ' . \Carbon\Carbon::parse($tanggal_mcu_cek)->format('d-m-Y') . ' sudah penuh (30 orang). Silakan pilih hari lain.')
+                ->withInput();
+        }
+        
         DB::beginTransaction();
 
         try {

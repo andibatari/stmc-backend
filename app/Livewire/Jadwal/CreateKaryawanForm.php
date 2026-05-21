@@ -156,6 +156,30 @@ class CreateKaryawanForm extends Component
     {
         $this->validate();
 
+        // ==============================================================
+        // ⬇️ TAMBAHAN FITUR: CEK KUOTA MAKSIMAL 30 ORANG/HARI ⬇️
+        // ==============================================================
+        if (!$this->isEditMode) { // Hanya cek kuota saat membuat jadwal baru
+            $tanggal_mcu_cek = Carbon::parse($this->tanggal_mcu)->toDateString();
+            
+            $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $tanggal_mcu_cek)
+                                    ->where('status', '!=', 'Canceled')
+                                    ->count();
+
+            if ($kuotaTerisi >= 30) {
+                // Tampilkan error menggunakan SweetAlert (event 'jadwal-created')
+                $this->dispatch('jadwal-created', [
+                    'type' => 'error',
+                    'message' => 'Mohon maaf, kuota jadwal untuk tanggal ' . Carbon::parse($tanggal_mcu_cek)->format('d-m-Y') . ' sudah penuh (30 orang). Silakan pilih hari lain.'
+                ]);
+                
+                return; // Hentikan eksekusi kode di bawahnya
+            }
+        }
+        // ==============================================================
+        // ⬆️ AKHIR TAMBAHAN FITUR ⬆️
+        // ==============================================================
+
         $finalKaryawanId = $this->karyawan_id;
         $finalPesertaMcuId = $this->peserta_mcus_id;
         $finalNoSap = $this->finalNoSap;

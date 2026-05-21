@@ -48,6 +48,24 @@ class JadwalMcuApiController extends Controller
             }
 
             $tanggal = Carbon::parse($request->tanggal_mcu)->toDateString();
+
+            // ==============================================================
+            // ⬇️ TAMBAHAN FITUR: CEK KUOTA MAKSIMAL 30 ORANG/HARI ⬇️
+            // ==============================================================
+            $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $tanggal)
+                                    ->where('status', '!=', 'Canceled') // Abaikan yang sudah dibatalkan
+                                    ->count();
+
+            if ($kuotaTerisi >= 30) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Mohon maaf, kuota jadwal untuk tanggal tersebut sudah penuh. Silakan pilih hari yang lain.'
+                ], 422); // Gunakan 422 Unprocessable Entity
+            }
+            // ==============================================================
+            // ⬆️ AKHIR TAMBAHAN FITUR ⬆️
+            // ==============================================================
+
             // 1. Ambil nomor antrean terakhir KHUSUS pada tanggal yang dipilih
             $lastAntrean = JadwalMcu::whereDate('tanggal_mcu', $tanggal)
                 ->orderBy('id', 'desc')
@@ -106,7 +124,7 @@ class JadwalMcuApiController extends Controller
 
             // AMBIL DATA BERDASARKAN USER ID (Penting agar tidak tertukar)
             $riwayat = JadwalMcu::where($column, $userId)
-                ->with(['dokter', 'paketMcu'])
+                ->with(['dokter', 'paketMcu', 'jadwalPoli.poli'])
                 ->orderBy('id', 'asc') // Urutan asc agar iterasi #1, #2 benar
                 ->get();
 

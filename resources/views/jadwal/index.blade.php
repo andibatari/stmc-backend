@@ -39,8 +39,9 @@
                     <label for="status_jadwal" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
                     <select id="status_jadwal" name="status" class="block w-full px-3 py-2 text-sm rounded-md border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500" onchange="this.form.submit()">
                         <option value="" @if(!$status) selected @endif>All</option>
+                        <option value="Pending" @if($status == 'Pending') selected @endif>Pending</option>
                         <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Scheduled</option>
-                        <option value="Waited" @if($status == 'Waited') selected @endif>Waited</option>
+                        <option value="Present" @if($status == 'Present') selected @endif>Present</option>
                         <option value="Canceled" @if($status == 'Canceled') selected @endif>Canceled</option>
                         <option value="Finished" @if($status == 'Finished') selected @endif>Finished</option>
                     </select>
@@ -117,7 +118,9 @@
                             
                             <td class="py-2 px-2 text-xs lg:text-sm text-gray-700">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    @if($jadwalMcu->status === 'Pending') bg-gray-100 text-gray-800 @endif
                                     @if($jadwalMcu->status === 'Scheduled') bg-yellow-100 text-yellow-800 @endif
+                                    @if($jadwalMcu->status === 'Present') bg-gray-100 text-gray-800 @endif
                                     @if($jadwalMcu->status === 'Finished') bg-green-100 text-green-800 @endif
                                     @if($jadwalMcu->status === 'Canceled') bg-red-100 text-red-800 @endif">
                                     {{ $jadwalMcu->status }}
@@ -154,7 +157,7 @@
 </div>
 
 <div x-data="dropdownMenu()" 
-     @open-dropdown.window="openDropdown($event.detail.id, $event.detail.event)">
+     @open-dropdown.window="openDropdown($event.detail.id, $event.detail.status, $event.detail.event)">
     
     <div x-show="open" 
          x-transition:enter="transition ease-out duration-100" 
@@ -165,10 +168,42 @@
          x-transition:leave-end="transform opacity-0 scale-95" 
          x-bind:style="`top: ${top}px; left: ${left}px;`"
          @click.outside="open = false"
-         class="fixed w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+         class="fixed w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 py-1">
          
-        <div class="py-1">
+        <template x-if="currentStatus === 'Pending'">
             <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="Scheduled">
+                <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-white bg-green-600 hover:bg-green-700 font-bold border-b border-green-700">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Approve Jadwal
+                </button>
+            </form>
+        </template>
+
+        <template x-if="currentStatus !== 'Pending' && currentStatus !== 'Finished' && currentStatus !== 'Canceled'">
+            <div class="border-b border-gray-100">
+                <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" value="Present">
+                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100">
+                        <svg class="h-4 w-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Set Present
+                    </button>
+                </form>
+                <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" value="Finished">
+                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100">
+                        <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Set Finished
+                    </button>
+                </form>
+            </div>
+        </template>
+
+        <div class="py-1">
+            {{-- <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
                 @csrf
                 <input type="hidden" name="status" value="Scheduled">
                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
@@ -184,25 +219,27 @@
                     <svg class="h-5 w-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Present
                 </button>
-            </form>
+            </form> --}}
 
-            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="Canceled">
-                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                    <svg class="h-5 w-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Canceled
-                </button>
-            </form>
+            <template x-if="currentStatus !== 'Finished' && currentStatus !== 'Canceled'">
+                <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+                    @csrf
+                    <input type="hidden" name="status" value="Canceled">
+                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-red-600 hover:bg-red-50">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Cancel Jadwal
+                    </button>
+                </form>
+            </template>
             
-            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
+            {{-- <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
                 @csrf
                 <input type="hidden" name="status" value="Finished">
                 <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
                     <svg class="h-5 w-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Finished
                 </button>
-            </form>
+            </form> --}}
 
             <a x-bind:href="`{{ route('qr-patient-detail', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" title="Detail" role="menuitem">
                 <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -229,28 +266,23 @@
         return {
             open: false,
             id: null,
+            currentStatus: '',
             top: 0,
             left: 0,
-            openDropdown(id, event) {
+            openDropdown(id, status, event) {
                 this.id = id;
+                this.currentStatus = status;
                 const buttonRect = event.target.closest('button').getBoundingClientRect();
-                
-                // Menentukan posisi top dropdown
                 this.top = buttonRect.bottom + window.scrollY + 5; 
-                
-                // Menentukan posisi left dropdown (sejajar dengan tombol)
-                let dropdownLeft = buttonRect.left;
-                const dropdownWidth = 192; // Lebar dropdown w-48 (~192px)
-
-                // Sesuaikan posisi jika dropdown terlalu dekat ke tepi kanan layar
-                if (dropdownLeft + dropdownWidth > window.innerWidth) {
-                    dropdownLeft = window.innerWidth - dropdownWidth - 20; // Margin dari tepi kanan
-                }
-                
+                let dropdownLeft = buttonRect.left + window.scrollX - 160;
+                if (dropdownLeft < 10) dropdownLeft = 10;
                 this.left = dropdownLeft;
                 this.open = true;
             }
         }
     }
 </script>
+<style>
+    [x-cloak] { display: none !important; }
+</style>
 @endsection
