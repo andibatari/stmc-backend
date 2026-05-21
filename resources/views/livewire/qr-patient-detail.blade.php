@@ -109,22 +109,103 @@
                 {{-- Tabs untuk setiap Poli --}}
                 @if($polis->count() > 0)
                     @foreach ($polis as $poli)
-                        @php
-                            // Pemendekan nama poli untuk layar kecil
-                            $shortName = match(strtoupper($poli->nama_poli)) {
-                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'MATA' => 'Mata', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
-                            };
-                            $displayName = $shortName; 
-                        @endphp
-                        <li class="mr-1 flex-shrink-0" role="presentation">
-                            <button class="inline-block px-2 py-2 md:px-4 md:py-2 border-b-2 rounded-t-lg
-                                @if($activeTab === 'poli-' . $poli->id) text-red-600 border-red-600
-                                @else text-gray-600 hover:text-gray-800 hover:border-gray-300 @endif"
-                                wire:click="$set('activeTab', 'poli-{{ $poli->id }}')"
-                                type="button">
-                                {{ $displayName }}
-                            </button>
-                        </li>
+                        @if ($activeTab === 'poli-' . $poli->id)
+                        <div class="p-3 md:p-4 bg-gray-50 rounded-lg shadow-inner">
+                            <h3 class="text-base md:text-lg font-bold mb-3 text-gray-800">Input Hasil {{ $poli->nama_poli }}</h3>
+
+                            {{-- CEK APAKAH DATA JADWAL POLI TERSEDIA --}}
+                            @php
+                                $currentPoliData = $jadwalPoliData[$poli->id] ?? null;
+                            @endphp
+
+                            @if(!$currentPoliData)
+                                <div class="p-4 mb-4 text-sm text-yellow-800 rounded-lg bg-yellow-100 border border-yellow-200" role="alert">
+                                    <span class="font-bold">⚠️ Perhatian!</span> Data antrean untuk poli ini tidak ditemukan. Ini biasanya terjadi pada data jadwal lama. Silakan buat ulang jadwal MCU untuk pasien ini.
+                                </div>
+                            @else
+                                {{-- RENDER KOMPONEN LIVEWIRE --}}
+                                @if (strtoupper($poli->nama_poli) === 'GIGI')
+                                    @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $currentPoliData ], key('gigi-'.$poli->id))
+                                
+                                @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
+                                    @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $currentPoliData->id, 'poliData' => $currentPoliData ], key('bugar-'.$poli->id))
+
+                                @elseif (strtoupper($poli->nama_poli) === 'FISIK')
+                                    @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $currentPoliData->id, 'poliData' => $currentPoliData ], key('fisik-'.$poli->id))
+
+                                @elseif (in_array(strtoupper($poli->nama_poli), $uploadablePoliNames))
+                                    <div class="space-y-4">
+                                        <div class="mb-4">
+                                            <label class="block text-xs md:text-sm font-semibold text-gray-700 mb-1">Pilih File PDF Hasil {{ $poli->nama_poli }}</label>
+                                            <div class="mt-1 flex flex-col space-y-3">
+                                                <div class="flex items-center space-x-3">
+                                                    <label for="file-{{ $poli->id }}" class="flex-shrink-0 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-2 text-xs rounded-md shadow-md transition duration-150 ease-in-out">
+                                                        <span><i class="fas fa-upload mr-1"></i> Pilih File</span>
+                                                    </label>
+
+                                                    <input type="file" 
+                                                            id="file-{{ $poli->id }}" 
+                                                            wire:model="pdfFiles.{{ $poli->id }}" 
+                                                            wire:key="upload-input-{{ $poli->id }}"
+                                                            accept="application/pdf" 
+                                                            class="sr-only">
+
+                                                    <span class="text-xs md:text-sm text-gray-600 truncate" wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">
+                                                        @if(isset($pdfFiles[$poli->id]))
+                                                            {{ $pdfFiles[$poli->id]->getClientOriginalName() }}
+                                                        @elseif(isset($uploadedFileNames[$poli->id]) && $uploadedFileNames[$poli->id])
+                                                            {{ $uploadedFileNames[$poli->id] }}
+                                                        @else
+                                                            No file chosen
+                                                        @endif
+                                                    </span>
+                                                    <span class="text-xs md:text-sm text-gray-500" wire:loading wire:target="pdfFiles.{{ $poli->id }}">Mengunggah...</span>
+                                                </div>
+                                                @error('pdfFiles.' . $poli->id)
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        {{-- Tombol Aksi File --}}
+                                        <div class="flex flex-col space-y-2 md:flex-row md:space-x-3 md:space-y-0 pt-2 border-t">
+                                            <button
+                                                wire:click="savePdf({{ $poli->id }})"
+                                                class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs"
+                                                wire:loading.attr="disabled" wire:target="pdfFiles.{{ $poli->id }}">
+                                                <span wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">Simpan File</span>
+                                                <span wire:loading wire:target="pdfFiles.{{ $poli->id }}">Mengunggah...</span>
+                                            </button>
+
+                                            @if ($currentPoliData->file_path)
+                                                <div class="flex flex-col space-y-2 md:flex-row md:space-x-3 md:space-y-0 pt-2">
+                                                    {{-- Tombol Lihat File --}}
+                                                    <a href="{{ Storage::disk('s3')->url($currentPoliData->file_path) }}" 
+                                                    target="_blank" 
+                                                    class="w-full md:w-auto text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
+                                                        <i class="fas fa-eye mr-1"></i> Lihat File
+                                                    </a>
+
+                                                    {{-- Tombol Unduh File --}}
+                                                    <a href="{{ Storage::disk('s3')->url($currentPoliData->file_path) }}" 
+                                                    download 
+                                                    class="w-full md:w-auto text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-md shadow-md transition duration-150 ease-in-out text-xs">
+                                                        <i class="fas fa-download mr-1"></i> Unduh File
+                                                    </a>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                        <p class="text-gray-600 text-sm">
+                                            <i class="fas fa-info-circle mr-2 text-red-500"></i> Poli ini adalah poli interaktif dan memerlukan input di halaman ini.
+                                        </p>
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
                     @endforeach
                 @endif
             </ul>
