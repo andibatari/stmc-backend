@@ -380,13 +380,13 @@
 
                         {{-- RENDER KOMPONEN LIVEWIRE --}}
                         @if (strtoupper($poli->nama_poli) === 'GIGI')
-                            @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                            @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id ?? null, 'poliData' => $jadwalPoliData[$poli->id] ?? null ])
                         
                         @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
-                            @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                            @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id ?? null, 'poliData' => $jadwalPoliData[$poli->id] ?? null ])
 
                         @elseif (strtoupper($poli->nama_poli) === 'FISIK')
-                            @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                            @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id ?? null, 'poliData' => $jadwalPoliData[$poli->id] ?? null ])
 
                         @elseif (in_array(strtoupper($poli->nama_poli), $uploadablePoliNames))
                             <div class="space-y-4">
