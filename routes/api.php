@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); 
     // PEMANTAUAN LINGKUNGAN
     Route::get('/lingkungan', [LingkunganApiController::class, 'index']);
+    Route::post('/jadwal-poli/checkin', [\App\Http\Controllers\Api\JadwalMcuApiController::class, 'checkInPoli']);
     // TAMBAHKAN RUTE FILTER INI AGAR DROPDOWN DI FLUTTER BERFUNGSI:
     Route::get('/lingkungan/filters', [LingkunganApiController::class, 'getFilters']);
 

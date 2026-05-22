@@ -258,4 +258,47 @@ class JadwalMcuApiController extends Controller
             ], 500);
         }
     }
+
+    public function checkInPoli(Request $request)
+    {
+        // Pastikan user sedang login
+        $loginUser = auth('sanctum')->user();
+        if (!$loginUser) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        // Validasi input dari Flutter
+        $request->validate([
+            'id_jadwal_poli' => 'required|exists:jadwal_polis,id'
+        ]);
+
+        try {
+            // Cari data antrean poli tersebut
+            $jadwalPoli = \App\Models\JadwalPoli::findOrFail($request->id_jadwal_poli);
+
+            // Pastikan statusnya masih Pending sebelum diubah
+            if ($jadwalPoli->status !== 'Pending') {
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Gagal: Antrean ini sudah diambil atau sudah selesai.'
+                ], 400);
+            }
+
+            // Ubah status antrean menjadi Waiting (Menunggu Panggilan)
+            $jadwalPoli->update([
+                'status' => 'Waiting'
+            ]);
+
+            return response()->json([
+                'success' => true, 
+                'message' => 'Berhasil mengambil antrean poli!'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Terjadi kesalahan di server: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
