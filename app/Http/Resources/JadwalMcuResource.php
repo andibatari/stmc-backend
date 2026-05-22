@@ -43,24 +43,22 @@ class JadwalMcuResource extends JsonResource
                 ? url("/api/jadwal-mcu/download-laporan-gabungan/{$this->id}?token=" . request()->bearerToken()) 
                 : null,
 
-            'checklist_poli' => $this->whenLoaded('jadwalPoli', function () {
-                return $this->jadwalPoli->map(function ($jp) {
-                    
-                    // Hitung jumlah pasien yang sedang antre (Waiting) di poli yang sama pada hari H
-                    $jumlahAntrean = JadwalPoli::where('poli_id', $jp->poli_id)
-                        ->where('status', 'Waiting')
-                        ->whereHas('jadwalMcu', function ($query) {
-                            $query->whereDate('tanggal_mcu', $this->tanggal_mcu);
-                        })
-                        ->count();
+            'checklist_poli' => $this->jadwalPoli->map(function ($jp) {
+                
+                // Hitung jumlah pasien yang sedang antre (Waiting) di poli yang sama
+                $jumlahAntrean = \App\Models\JadwalPoli::where('poli_id', $jp->poli_id)
+                    ->where('status', 'Waiting')
+                    ->whereHas('jadwalMcu', function ($query) {
+                        $query->whereDate('tanggal_mcu', $this->tanggal_mcu);
+                    })
+                    ->count();
 
-                    return [
-                        'id_jadwal_poli' => $jp->id,
-                        'nama_poli' => $jp->poli->nama_poli ?? 'Poli Tidak Diketahui',
-                        'antrean_sekarang' => $jumlahAntrean,
-                        'status' => $jp->status, // Pending, Waiting, Finished
-                    ];
-                });
+                return [
+                    'id_jadwal_poli' => $jp->id,
+                    'nama_poli' => $jp->poli->nama_poli ?? 'Poli Tidak Diketahui',
+                    'antrean_sekarang' => $jumlahAntrean,
+                    'status' => $jp->status, // Pending, Waiting, Finished
+                ];
             }),
         ];
     }
