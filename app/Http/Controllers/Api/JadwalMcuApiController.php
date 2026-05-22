@@ -108,7 +108,6 @@ class JadwalMcuApiController extends Controller
                         'jadwal_mcus_id' => $jadwal->id,
                         'poli_id'        => $itemPoli->id,
                         'status'         => 'Pending',
-                        'notes'          => null,
                     ]);
                 }
             }
