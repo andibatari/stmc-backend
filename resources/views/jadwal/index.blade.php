@@ -18,6 +18,71 @@
             </div>
         </div>
 
+        {{-- AREA ANTREAN POLI (Horizontal Scroll) --}}
+        <div class="mb-6 lg:mb-8">
+            <h2 class="text-sm md:text-base font-bold text-gray-800 mb-3 border-b pb-2">
+                <i class="fas fa-users mr-2 text-red-600"></i> Antrean Poli Hari Ini
+            </h2>
+            
+            {{-- Container yang bisa di-scroll ke samping --}}
+            <div class="flex overflow-x-auto space-x-4 pb-4 snap-x hide-scrollbar">
+                
+                @forelse ($polis as $poli)
+                    @if ($poli->jadwalPoli->count() > 0)
+                        {{-- Card Poli --}}
+                        <div class="flex-none w-72 bg-gray-50 border border-gray-200 rounded-xl shadow-sm snap-start">
+                            <div class="bg-red-600 text-white px-4 py-2 rounded-t-xl flex justify-between items-center">
+                                <h3 class="font-bold text-sm truncate">{{ $poli->nama_poli }}</h3>
+                                <span class="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                                    {{ $poli->jadwalPoli->count() }} Antre
+                                </span>
+                            </div>
+                            
+                            {{-- Daftar Pasien di dalam Card --}}
+                            <div class="p-3 max-h-48 overflow-y-auto space-y-2">
+                                @foreach ($poli->jadwalPoli as $index => $antrean)
+                                    @php
+                                        // Tentukan nama pasien
+                                        $jadwal = $antrean->jadwalMcu;
+                                        $namaPasien = '-';
+                                        if ($jadwal->karyawan_id) {
+                                            $namaPasien = $jadwal->karyawan->nama_karyawan;
+                                        } elseif ($jadwal->peserta_mcus_id) {
+                                            $namaPasien = $jadwal->pesertaMcu->nama_lengkap;
+                                        } else {
+                                            $namaPasien = $jadwal->nama_pasien;
+                                        }
+                                    @endphp
+                                    
+                                    <div class="flex items-start bg-white p-2 rounded border border-gray-100 shadow-sm">
+                                        <div class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-700 font-bold rounded flex items-center justify-center text-xs mr-3">
+                                            {{ $index + 1 }}
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $namaPasien }}</p>
+                                            <p class="text-[10px] text-gray-500 truncate">SAP: {{ $jadwal->no_sap ?? 'N/A' }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                @empty
+                    <div class="w-full p-4 bg-gray-50 text-gray-500 text-sm text-center rounded-lg border border-dashed border-gray-300">
+                        Belum ada data poli yang tersedia.
+                    </div>
+                @endforelse
+
+                {{-- Pesan jika tidak ada pasien yang mengantre sama sekali --}}
+                @if ($polis->sum(fn($p) => $p->jadwalPoli->count()) === 0)
+                    <div class="w-full p-4 bg-green-50 text-green-700 text-sm font-medium text-center rounded-lg border border-green-200">
+                        🎉 Tidak ada antrean pasien di semua poli saat ini.
+                    </div>
+                @endif
+            </div>
+        </div>
+        {{-- END AREA ANTREAN POLI --}}
+
         <form method="GET" action="{{ route('jadwal.index') }}">
             <div class="flex flex-col md:flex-row md:items-end md:justify-start gap-3 mb-4 lg:gap-4 lg:mb-6">
 
