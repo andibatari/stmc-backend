@@ -117,7 +117,8 @@
                             $displayName = $shortName; 
                         @endphp
                         <li class="mr-1 flex-shrink-0" role="presentation">
-                            <button class="inline-block px-2 py-2 md:px-4 md:py-2 border-b-2 rounded-t-lg
+                            <button id="btn-tab-poli-{{ $poli->id }}" 
+                                class="inline-block px-2 py-2 md:px-4 md:py-2 border-b-2 rounded-t-lg
                                 @if($activeTab === 'poli-' . $poli->id) text-red-600 border-red-600
                                 @else text-gray-600 hover:text-gray-800 hover:border-gray-300 @endif"
                                 wire:click="$set('activeTab', 'poli-{{ $poli->id }}')"
@@ -392,15 +393,15 @@
         const tabName = urlParams.get('tab');
 
         if (tabName) {
-            // Beri jeda sedikit agar Livewire selesai memuat halaman
+            // Beri jeda 0.5 detik agar Livewire benar-benar selesai memuat halaman
             setTimeout(() => {
-                // Cari tombol tab yang memiliki perintah wire:click untuk tab tersebut
-                const tabButton = document.querySelector(`button[wire\\:click="\\$set('activeTab', '${tabName}')"]`);
+                // Cari tombol berdasarkan ID yang baru saja kita buat
+                const tabButton = document.getElementById('btn-tab-' + tabName);
                 
                 if (tabButton) {
                     tabButton.click(); // Klik otomatis tombol tab-nya!
                 }
-            }, 300); // Jeda 0.3 detik
+            }, 500); 
         }
     });
 </script>

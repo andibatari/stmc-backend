@@ -67,7 +67,7 @@
                                         <div class="min-w-0 flex-1">
                                             {{-- 3. Bungkus nama pasien dengan tag <a> yang bisa diklik --}}
                                             <a href="{{ route('qr-patient-detail', $jadwal->id) }}?tab={{ Str::slug($poli->nama_poli) }}" 
-                                                class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline truncate block">
+                                                class="text-xs font-bold text-gray-800 hover:text-gray-600 truncate block cursor-pointer">
                                                 {{ $namaPasien }}
                                             </a>
                                             <p class="text-[10px] text-gray-500 truncate">SAP: {{ $jadwal->no_sap ?? 'N/A' }}</p>
