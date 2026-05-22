@@ -39,7 +39,7 @@ class JadwalMcuController extends Controller
         // 2. QUERY UNTUK CARD ANTREAN POLI (HARI INI)
         $polis = \App\Models\Poli::with(['jadwalPoli' => function ($query) {
             // Hanya ambil antrean yang statusnya 'Pending' di poli tersebut
-            $query->where('status', 'Pending')
+            $query->where('status', 'Waiting')
                   ->whereHas('jadwalMcu', function ($qJadwal) {
                       // HANYA pasien yang sudah 'Present' (hadir) pada HARI INI
                       $qJadwal->where('status', 'Present')

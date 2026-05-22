@@ -1,4 +1,8 @@
 @extends('layouts.app')
+@section('head')
+    {{-- Halaman ini akan me-refresh dirinya sendiri secara otomatis setiap 30 detik --}}
+    <meta http-equiv="refresh" content="20">
+@endsection
 
 @section('title', 'Daftar Jadwal')
 
@@ -42,6 +46,7 @@
                             <div class="p-3 max-h-48 overflow-y-auto space-y-2">
                                 @foreach ($poli->jadwalPoli as $index => $antrean)
                                     @php
+                                        // 1. Logika PHP ditaruh di sini (tanpa HTML)
                                         // Tentukan nama pasien
                                         $jadwal = $antrean->jadwalMcu;
                                         $namaPasien = '-';
@@ -54,12 +59,17 @@
                                         }
                                     @endphp
                                     
+                                    {{-- 2. HTML ditaruh di bawahnya --}}
                                     <div class="flex items-start bg-white p-2 rounded border border-gray-100 shadow-sm">
                                         <div class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-700 font-bold rounded flex items-center justify-center text-xs mr-3">
                                             {{ $index + 1 }}
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <p class="text-xs font-bold text-gray-800 truncate">{{ $namaPasien }}</p>
+                                            {{-- 3. Bungkus nama pasien dengan tag <a> yang bisa diklik --}}
+                                            <a href="{{ route('jadwal.detail', $jadwal->id) }}?tab={{ Str::slug($poli->nama_poli) }}" 
+                                                class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline truncate block">
+                                                {{ $namaPasien }}
+                                            </a>
                                             <p class="text-[10px] text-gray-500 truncate">SAP: {{ $jadwal->no_sap ?? 'N/A' }}</p>
                                         </div>
                                     </div>
@@ -268,24 +278,6 @@
         </template>
 
         <div class="py-1">
-            {{-- <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="Scheduled">
-                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                    <svg class="h-5 w-5 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h6m-1 0v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6z"></path></svg>
-                    Scheduled
-                </button>
-            </form>
-            
-            <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="Present">
-                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                    <svg class="h-5 w-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Present
-                </button>
-            </form> --}}
-
             <template x-if="currentStatus !== 'Finished' && currentStatus !== 'Canceled'">
                 <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
                     @csrf
@@ -296,15 +288,6 @@
                     </button>
                 </form>
             </template>
-            
-            {{-- <form x-data :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" method="POST">
-                @csrf
-                <input type="hidden" name="status" value="Finished">
-                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" role="menuitem">
-                    <svg class="h-5 w-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    Finished
-                </button>
-            </form> --}}
 
             <a x-bind:href="`{{ route('qr-patient-detail', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', id)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" title="Detail" role="menuitem">
                 <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>

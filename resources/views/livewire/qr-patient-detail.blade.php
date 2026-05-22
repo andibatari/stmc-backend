@@ -384,3 +384,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Ambil parameter dari URL (misal hasilnya: ?tab=poli-2)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabName = urlParams.get('tab');
+
+        if (tabName) {
+            // Beri jeda sedikit agar Livewire selesai memuat halaman
+            setTimeout(() => {
+                // Cari tombol tab yang memiliki perintah wire:click untuk tab tersebut
+                const tabButton = document.querySelector(`button[wire\\:click="\\$set('activeTab', '${tabName}')"]`);
+                
+                if (tabButton) {
+                    tabButton.click(); // Klik otomatis tombol tab-nya!
+                }
+            }, 300); // Jeda 0.3 detik
+        }
+    });
+</script>
