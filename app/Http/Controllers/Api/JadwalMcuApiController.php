@@ -96,6 +96,24 @@ class JadwalMcuApiController extends Controller
                 'peserta_mcus_id'  => ($column == 'peserta_mcus_id') ? $user->id : null,
             ]);
 
+            // ==============================================================
+            // TAMBAHAN: GENERATE JADWAL POLI OTOMATIS BERDASARKAN PAKET MCU
+            // ==============================================================
+            $paket = \App\Models\PaketMcu::find($request->paket_mcu);
+            
+            // Cek apakah paketnya ada dan ambil relasi polis-nya
+            if ($paket && $paket->poli()->exists()) {
+                foreach ($paket->poli as $itemPoli) {
+                    \App\Models\JadwalPoli::create([
+                        'jadwal_mcus_id' => $jadwal->id,
+                        'poli_id'        => $itemPoli->id,
+                        'status'         => 'Pending',
+                        'notes'          => null,
+                    ]);
+                }
+            }
+            // ==============================================================
+
             return response()->json(['success' => true, 'qr_code_id' => $jadwal->qr_code_id, 'message' => 'Jadwal berhasil dibuat'], 201);
 
         } catch (ValidationException $e) {
