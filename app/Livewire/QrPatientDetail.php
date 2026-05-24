@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Events\PanggilPasienEvent;
 use Livewire\Component;
 use App\Models\JadwalMcu;
 use App\Models\Karyawan;
@@ -240,6 +241,23 @@ class QrPatientDetail extends Component
     public function markAsPending($poliId)
     {
         $this->updatePoliStatus($poliId, 'Pending');
+    }
+
+    public function panggilPasien($poliId)
+    {
+        $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
+        
+        if ($jadwalPoli) {
+            // 1. Ubah status di database jadi Calling atau Waiting
+            $jadwalPoli->status = 'Calling'; 
+            $jadwalPoli->save();
+
+            // 2. TEMBAKKAN SINYAL KE PUSHER!
+            $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
+            event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
+
+            $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim ke HP Pasien!"]);
+        }
     }
     
     public function render()
