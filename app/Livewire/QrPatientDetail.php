@@ -43,12 +43,11 @@ class QrPatientDetail extends Component
     public function handleUploadError($name, $errors, $isMultiple) {
         $this->dispatch('error', ['message' => 'File terlalu besar atau koneksi terputus.']);
     }
-    
-    public function changeTab($data)
+
+    public function changeTab($tabName) // <-- Parameter disamakan dengan nama dari JavaScript
     {
-        // $data berbentuk array: ['tabName' => 'poli-2']
-        if (isset($data['tabName'])) {
-            $this->activeTab = $data['tabName'];
+        if ($tabName) {
+            $this->activeTab = $tabName;
         }
     }
 
