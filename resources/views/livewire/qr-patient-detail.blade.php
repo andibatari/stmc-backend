@@ -168,16 +168,29 @@
                                         </td>
                                         <td class="py-2 px-3 md:py-3 md:px-4 text-center space-x-1 flex justify-center">
                                             @if($poliData->id)
+                                                
+                                                {{-- TOMBOL PANGGIL PASIEN (BARU) --}}
+                                                <button
+                                                    wire:click="panggilPasien({{ $poli->id }})"
+                                                    class="px-2 py-0.5 rounded-md text-white font-semibold text-xs bg-blue-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
+                                                    title="Panggil Pasien ke Poli Ini"
+                                                >
+                                                    <i class="fas fa-bullhorn mr-1"></i> Panggil
+                                                </button>
+
+                                                {{-- TOMBOL DONE LAMA --}}
                                                 <button
                                                     wire:click="markAsDone({{ $poliData->id }})"
-                                                    class="px-1.5 py-0.5 rounded-md text-white font-semibold text-xs bg-green-500 hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
-                                                    @if($poliData->status === 'Done') disabled @endif
+                                                    class="px-2 py-0.5 rounded-md text-white font-semibold text-xs bg-green-500 hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
+                                                    @if($poliData->status === 'Finished' || $poliData->status === 'Done') disabled @endif
                                                 >
                                                     Done
                                                 </button>
+
+                                                {{-- TOMBOL CANCEL LAMA --}}
                                                 <button
                                                     wire:click="markAsPending({{ $poliData->id }})"
-                                                    class="px-1.5 py-0.5 rounded-md text-gray-700 font-semibold text-xs bg-gray-200 hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50"
+                                                    class="px-2 py-0.5 rounded-md text-gray-700 font-semibold text-xs bg-gray-200 hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50"
                                                     @if($poliData->status === 'Pending') disabled @endif
                                                 >
                                                     Cancel

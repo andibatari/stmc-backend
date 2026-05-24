@@ -243,6 +243,7 @@ class QrPatientDetail extends Component
         $this->updatePoliStatus($poliId, 'Pending');
     }
 
+    // Fungsi untuk memanggil pasien via Pusher
     public function panggilPasien($poliId)
     {
         $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
