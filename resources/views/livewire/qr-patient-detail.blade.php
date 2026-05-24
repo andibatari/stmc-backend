@@ -381,27 +381,20 @@
                     </div>
                 @endif
             @endforeach
-
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Ambil parameter dari URL (misal hasilnya: ?tab=poli-2)
         const urlParams = new URLSearchParams(window.location.search);
         const tabName = urlParams.get('tab');
 
         if (tabName) {
-            // Beri jeda 0.5 detik agar Livewire benar-benar selesai memuat halaman
+            // Beri sedikit jeda agar komponen Livewire siap
             setTimeout(() => {
-                // Cari tombol berdasarkan ID yang baru saja kita buat
-                const tabButton = document.getElementById('btn-tab-' + tabName);
-                
-                if (tabButton) {
-                    tabButton.click(); // Klik otomatis tombol tab-nya!
-                }
-            }, 500); 
+                // Panggil event ke Livewire
+                Livewire.dispatch('changeTab', { tabName: tabName });
+            }, 300);
         }
     });
 </script>

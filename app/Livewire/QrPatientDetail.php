@@ -34,11 +34,22 @@ class QrPatientDetail extends Component
     
     public $uploadablePoliNames = ['LABORATORIUM', 'SPIROMETRI', 'AUDIOMETRI', 'EKG', 'THORAX PHOTO', 'TREADMILL', 'USG'];
 
-    protected $listeners = ['updatePoliStatus'];
+    protected $listeners = [
+        'updatePoliStatus',
+        'changeTab'
+        ];
     
     // Tambahkan properti ini di paling atas class untuk handle error Livewire Upload
     public function handleUploadError($name, $errors, $isMultiple) {
         $this->dispatch('error', ['message' => 'File terlalu besar atau koneksi terputus.']);
+    }
+    
+    public function changeTab($data)
+    {
+        // $data berbentuk array: ['tabName' => 'poli-2']
+        if (isset($data['tabName'])) {
+            $this->activeTab = $data['tabName'];
+        }
     }
 
     protected $rules = [
@@ -67,6 +78,13 @@ class QrPatientDetail extends Component
     public function mount(JadwalMcu $jadwal)
     {
         $this->jadwal = $jadwal;
+
+        // ==============================================================
+        // PERUBAHAN 1: TANGKAP PARAMETER URL UNTUK BUKA TAB OTOMATIS
+        // ==============================================================
+        if (request()->has('tab')) {
+            $this->activeTab = request()->query('tab');
+        }
 
         // 1. Ambil data pasien (Karyawan atau Peserta Umum)
         $patientData = $jadwal->karyawan ?? $jadwal->pesertaMcu;
@@ -197,7 +215,7 @@ class QrPatientDetail extends Component
                 
                 // Simpan path lengkap atau nama file ke database
                 $jadwalPoli->file_path = $path; 
-                $jadwalPoli->status = 'Done';
+                $jadwalPoli->status = 'FInished';
                 $jadwalPoli->save();
 
                 // Update UI
@@ -217,7 +235,7 @@ class QrPatientDetail extends Component
     
     public function markAsDone($poliId)
     {
-        $this->updatePoliStatus($poliId, 'Done');
+        $this->updatePoliStatus($poliId, 'FInished');
     }
     
     public function markAsPending($poliId)

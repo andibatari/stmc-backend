@@ -60,19 +60,19 @@
                                     @endphp
                                     
                                     {{-- 2. HTML ditaruh di bawahnya --}}
-                                    <div class="flex items-start bg-white p-2 rounded border border-gray-100 shadow-sm">
-                                        <div class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-700 font-bold rounded flex items-center justify-center text-xs mr-3">
+                                    <a href="{{ route('qr-patient-detail', $jadwal->id) }}?tab=poli-{{ $poli->id }}" 
+                                       class="flex items-start bg-white p-2 rounded border border-gray-100 shadow-sm hover:bg-red-50 hover:border-red-200 transition-colors duration-200 group block cursor-pointer">
+                                        
+                                        <div class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-700 font-bold rounded flex items-center justify-center text-xs mr-3 group-hover:bg-red-600 group-hover:text-white transition-colors">
                                             {{ $index + 1 }}
                                         </div>
+                                        
                                         <div class="min-w-0 flex-1">
-                                            {{-- 3. Bungkus nama pasien dengan tag <a> yang bisa diklik --}}
-                                            <a href="{{ route('qr-patient-detail', $jadwal->id) }}?tab={{ Str::slug($poli->nama_poli) }}" 
-                                                class="text-xs font-bold text-gray-800 hover:text-gray-600 truncate block cursor-pointer">
-                                                {{ $namaPasien }}
-                                            </a>
+                                            {{-- Teks nama biasa, tidak lagi berbentuk link --}}
+                                            <p class="text-xs font-bold text-gray-800 truncate group-hover:text-red-700 transition-colors">{{ $namaPasien }}</p>
                                             <p class="text-[10px] text-gray-500 truncate">SAP: {{ $jadwal->no_sap ?? 'N/A' }}</p>
                                         </div>
-                                    </div>
+                                    </a>
                                 @endforeach
                             </div>
                         </div>
