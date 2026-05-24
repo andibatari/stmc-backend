@@ -44,6 +44,8 @@
             transition: margin-left 0.3s ease-in-out;
             /* Default: No margin on Mobile */
             margin-left: 0;
+            min-width: 0;
+            width: 100%;
         }
         
         /* Margin kiri untuk main content di layar besar (lg) */

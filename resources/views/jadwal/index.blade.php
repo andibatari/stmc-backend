@@ -332,5 +332,13 @@
 </script>
 <style>
     [x-cloak] { display: none !important; }
+    /* Menyembunyikan Garis Scrollbar Horizontal di HP */
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .hide-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
 </style>
 @endsection
