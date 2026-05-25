@@ -177,6 +177,9 @@ class QrPatientDetail extends Component
         if ($jadwalPoli) {
             $jadwalPoli->status = $status;
             $jadwalPoli->save();
+
+            // Agar saat diklik "Done", HP pasien langsung berkedip hijau!
+            event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
             
             $this->jadwal->load('jadwalPoli.poli');
             $this->dispatch('status-updated', ['message' => 'Status poli berhasil diperbarui.']);

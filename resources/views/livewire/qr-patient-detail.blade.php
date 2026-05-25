@@ -171,6 +171,7 @@
                                                 
                                                 {{-- TOMBOL PANGGIL PASIEN (BARU) --}}
                                                 <button
+                                                    type="button"
                                                     wire:click="panggilPasien({{ $poli->id }})"
                                                     class="px-2 py-0.5 rounded-md text-white font-semibold text-xs bg-blue-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
                                                     title="Panggil Pasien ke Poli Ini"
@@ -180,7 +181,8 @@
 
                                                 {{-- TOMBOL DONE LAMA --}}
                                                 <button
-                                                    wire:click="markAsDone({{ $poliData->id }})"
+                                                    type="button"
+                                                    wire:click="markAsDone({{ $poli->id }})"
                                                     class="px-2 py-0.5 rounded-md text-white font-semibold text-xs bg-green-500 hover:bg-green-600 transition-colors duration-200 disabled:opacity-50"
                                                     @if($poliData->status === 'Finished' || $poliData->status === 'Done') disabled @endif
                                                 >
@@ -189,7 +191,8 @@
 
                                                 {{-- TOMBOL CANCEL LAMA --}}
                                                 <button
-                                                    wire:click="markAsPending({{ $poliData->id }})"
+                                                    type="button"
+                                                    wire:click="markAsPending({{ $poli->id }})"
                                                     class="px-2 py-0.5 rounded-md text-gray-700 font-semibold text-xs bg-gray-200 hover:bg-gray-300 transition-colors duration-200 disabled:opacity-50"
                                                     @if($poliData->status === 'Pending') disabled @endif
                                                 >
