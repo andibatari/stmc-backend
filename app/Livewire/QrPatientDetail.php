@@ -211,7 +211,7 @@ class QrPatientDetail extends Component
                  * KRITIS: Gunakan disk 's3' agar file dipindahkan dari 
                  * livewire-tmp (di S3) ke folder tujuan (juga di S3).
                  */
-                $path = $file->storeAs($folderPath, $fileName, 's3'); 
+                $path = $file->storeAs($folderPath, $fileName, 'public'); 
                 
                 // Simpan path lengkap atau nama file ke database
                 $jadwalPoli->file_path = $path; 
