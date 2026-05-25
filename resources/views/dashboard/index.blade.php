@@ -136,35 +136,21 @@
             </div>
             
             {{-- BAGIAN BAWAH: GRAFIK & NOTIFIKASI --}}
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 lg:col-span-2">
-                    <h2 class="text-base lg:text-lg font-semibold text-gray-800 mb-4">Tren Pasien MCU Tahunan</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                        
-                        <div>
-                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Total Pasien MCU (Karyawan & Non-Karyawan)</p>
-                            <div style="height: 250px;"><canvas id="totalMcuChart" class="w-full h-full"></canvas></div>
-                        </div>
-
-                        <div>
-                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Pasien Berdasarkan Kategori</p>
-                            <div style="height: 250px;"><canvas id="categoryMcuChart" class="w-full h-full"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6">
-                    <h2 class="text-base lg:text-lg font-semibold text-gray-800 mb-4">Manajemen Notifikasi</h2>
+            <div class="mt-4 lg:mt-6">
+                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 w-full">
+                    <h2 class="text-base lg:text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Analitik & Tren Pasien MCU Tahunan</h2>
                     
-                    <div class="space-y-4">
-                        <p class="text-xs text-gray-600">Gunakan fitur ini untuk mengirim pengingat jadwal MCU kepada karyawan melalui email dan Aplikasi Mobile STMC (Flutter).</p>
-                        
-                        <div class="flex flex-col">
-                            <a href="#" class="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 transition ease-in-out duration-150">
-                                <svg class="h-3 w-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                                Kirim Notif Pengingat Besok
-                            </a>
-                            <p class="text-xs text-gray-500 mt-1 text-center">Akan memproses jadwal MCU yang jatuh tempo besok (Aplikasi & Email).</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+                        {{-- Grafik Kiri --}}
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Total Seluruh Pasien MCU</p>
+                            <div style="height: 300px;"><canvas id="totalMcuChart" class="w-full h-full"></canvas></div>
+                        </div>
+
+                        {{-- Grafik Kanan --}}
+                        <div>
+                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Perbandingan Karyawan vs Non PTST</p>
+                            <div style="height: 300px;"><canvas id="categoryMcuChart" class="w-full h-full"></canvas></div>
                         </div>
                     </div>
                 </div>
