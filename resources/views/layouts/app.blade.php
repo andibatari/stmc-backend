@@ -345,7 +345,13 @@
                             $photoUrl = null;
                             
                             if (isset($user) && $user->foto_profil) {
-                                $photoUrl = Storage::disk('public')->url($user->foto_profil) . '?t=' . now()->timestamp; 
+                                // Cek apakah ini foto dari sistem lama (folder admin_photos)
+                                if (str_starts_with($user->foto_profil, 'admin_photos/')) {
+                                    $photoUrl = asset($user->foto_profil) . '?t=' . now()->timestamp;
+                                } else {
+                                    // Jika sistem baru (folder profile_photos di dalam storage)
+                                    $photoUrl = asset('storage/' . $user->foto_profil) . '?t=' . now()->timestamp;
+                                }
                             } else {
                                 $photoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=40';
                             }
