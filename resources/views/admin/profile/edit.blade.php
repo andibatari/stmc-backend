@@ -40,11 +40,12 @@
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">Foto Profil</h2>
                     <div class="flex flex-col items-center">
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
-                        <div class="mb-4">
+                        <div class="mb-4 flex justify-center">
                             @php
                                 $imageUrl = null;
                                 
-                                if ($admin->foto_profil) {
+                                if (isset($admin) && $admin->foto_profil) {
+                                    // Cek apakah ini foto lama atau baru
                                     if (str_starts_with($admin->foto_profil, 'admin_photos/')) {
                                         $imageUrl = asset($admin->foto_profil) . '?t=' . now()->timestamp;
                                     } else {
