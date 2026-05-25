@@ -23,29 +23,36 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validasi data input
-        $credentials = $request->validate([
-            'no_sap' => 'required|string',
+        // 1. Validasi input menggunakan nama 'login_id' yang baru
+        $request->validate([
+            'login_id' => 'required|string',
             'password' => 'required|min:6',
         ]);
 
-        $customCredentials = [
-            'no_sap' => $credentials['no_sap'],
-            'password' => $credentials['password'],
-        ];
+        $loginId = $request->login_id;
+        $password = $request->password;
 
-        // --- PENANGANAN WEB (Lanjutan dari kode Anda) ---
-        
-        // Coba otentikasi sebagai Admin (WEB)
-        if (Auth::guard('admin_users')->attempt($customCredentials)) {
-             $request->session()->regenerate();
-             return redirect()->intended('/admin/dashboard');
+        // 2. LOGIKA UTAMA: Cari admin berdasarkan Email ATAU NIK ATAU No. SAP
+        $user = AdminUser::where('email', $loginId)
+                        ->orWhere('nik', $loginId)
+                        ->orWhere('no_sap', $loginId)
+                        ->first();
+
+        // 3. Cek apakah user ditemukan DAN passwordnya cocok
+        if ($user && Hash::check($password, $user->password)) {
+            
+            // Catat sesinya menggunakan guard 'admin_users'
+            Auth::guard('admin_users')->login($user);
+            $request->session()->regenerate();
+
+            // Arahkan ke dashboard
+            return redirect()->intended('/admin/dashboard');
         } 
 
-        // Jika otentikasi WEB gagal
+        // 4. Jika otentikasi gagal, kembalikan ke halaman login
         return back()->withErrors([
-             'no_sap' => 'Akses ditolak. Nomor SAP atau password salah (Hanya untuk Admin).',
-        ])->onlyInput('no_sap');
+             'login_id' => 'Akses ditolak. Email/NIK/No. SAP atau password salah.',
+        ])->onlyInput('login_id');
     }
 
     /**
