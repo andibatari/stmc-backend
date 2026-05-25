@@ -42,12 +42,18 @@
                         {{-- Tampilkan Foto Profil Saat Ini atau Inisial --}}
                         <div class="mb-4">
                             @php
-                                use Illuminate\Support\Facades\Storage;
+                                $imageUrl = null;
                                 
-                                $imageUrl = $admin->foto_profil
-                                        ? Storage::disk('public')->url($admin->foto_profil) . '?t=' . now()->timestamp
-                                        : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin');
-                                @endphp
+                                if ($admin->foto_profil) {
+                                    if (str_starts_with($admin->foto_profil, 'admin_photos/')) {
+                                        $imageUrl = asset($admin->foto_profil) . '?t=' . now()->timestamp;
+                                    } else {
+                                        $imageUrl = asset('storage/' . $admin->foto_profil) . '?t=' . now()->timestamp;
+                                    }
+                                } else {
+                                    $imageUrl = 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin');
+                                }
+                            @endphp
                             
                             <img src="{{ $imageUrl }}" 
                                 alt="Foto Profil" 
