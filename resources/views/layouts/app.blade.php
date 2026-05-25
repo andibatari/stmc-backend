@@ -146,6 +146,8 @@
                             </a>
                         </li>
                         
+                        {{-- HANYA SUPERADMIN & ADMIN YANG BISA AKSES MANAJEMEN PASIEN (Ubah Data Karyawan) --}}
+                        @if(in_array(Auth::guard('admin_users')->user()->role ?? '', ['superadmin', 'admin']))
                         <li class="my-1">
                             <button id="toggleKaryawan" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg transition-colors duration-200 {{ request()->routeIs('karyawan.*') ? 'active bg-red-700' : '' }}">
                                 <span class="flex items-center">
@@ -162,6 +164,7 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
                         
                         <li class="my-1">
                             <button id="toggleJadwal" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg transition-colors duration-200 {{ request()->routeIs('jadwal.*') || request()->routeIs('scan.qr') ? 'active bg-red-700' : '' }}">
@@ -203,6 +206,8 @@
                             </ul>
                         </li>
 
+                        {{-- HANYA SUPERADMIN & ADMIN YANG BISA AKSES NOTIFIKASI --}}
+                        @if(in_array(Auth::guard('admin_users')->user()->role ?? '', ['superadmin', 'admin']))
                         <li class="my-1">
                             <button id="toggleNotifikasi" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg transition-colors duration-200 {{ request()->routeIs('notifications.*') ? 'active bg-red-700' : '' }}">
                                 <span class="flex items-center">
@@ -224,7 +229,10 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
                         
+                        {{-- HANYA SUPERADMIN & ADMIN YANG BISA AKSES MANAJEMEN LAYANAN (Tambah Admin, Tambah Dokter, dll) --}}
+                        @if(in_array(Auth::guard('admin_users')->user()->role ?? '', ['superadmin', 'admin']))
                         <li class="my-1">
                             <button id="toggleAdmin" class="w-full text-left sidebar-link flex items-center justify-between p-4 text-gray-200 hover:bg-red-700 rounded-lg transition-colors duration-200 {{ request()->routeIs(['admin.create', 'admin.tambah-dokter', 'paket-poli']) ? 'active bg-red-700' : '' }}">
                                 <span class="flex items-center">
@@ -259,6 +267,7 @@
                                 </li>
                             </ul>
                         </li>
+                        @endif
                     </ul>
                 </nav>
             </div>
@@ -336,8 +345,7 @@
                             $photoUrl = null;
                             
                             if (isset($user) && $user->foto_profil) {
-                                $basePath = str_replace('public/', 'storage/', $user->foto_profil);
-                                $photoUrl = asset($basePath) . '?t=' . now()->timestamp; 
+                                $photoUrl = Storage::disk('public')->url($user->foto_profil) . '?t=' . now()->timestamp; 
                             } else {
                                 $photoUrl = 'https://ui-avatars.com/api/?name=' . urlencode($user->nama_lengkap ?? 'Admin') . '&color=FFFFFF&background=DC2626&size=40';
                             }

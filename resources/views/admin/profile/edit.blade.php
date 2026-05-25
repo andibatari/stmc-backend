@@ -45,9 +45,9 @@
                                 use Illuminate\Support\Facades\Storage;
                                 
                                 $imageUrl = $admin->foto_profil
-                                    ? Storage::url($admin->foto_profil) . '?t=' . now()->timestamp
-                                    : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin');
-                            @endphp
+                                        ? Storage::disk('public')->url($admin->foto_profil) . '?t=' . now()->timestamp
+                                        : 'https://ui-avatars.com/api/?name=' . urlencode($admin->nama_lengkap ?? 'Admin');
+                                @endphp
                             
                             <img src="{{ $imageUrl }}" 
                                 alt="Foto Profil" 

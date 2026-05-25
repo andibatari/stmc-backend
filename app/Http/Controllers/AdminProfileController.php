@@ -103,21 +103,19 @@ class AdminProfileController extends Controller
         // Kita hanya mengambil 'nama_lengkap' dan 'email' dari request
         $data = $request->only('nama_lengkap', 'email');
         
-        // 3. LOGIKA UPLOAD FOTO PROFIL
+        // 3. LOGIKA UPLOAD FOTO PROFIL (Menggunakan Storage Disk 'public')
         if ($request->hasFile('foto_profil')) {
         
-            // Hapus foto lama jika ada (JANGAN ubah kode penghapusan, biarkan Storage::exists() menangani path lama)
-            if ($admin->foto_profil && Storage::exists($admin->foto_profil)) {
-                Storage::delete($admin->foto_profil);
+            // Hapus foto lama JIKA ADA di dalam disk 'public'
+            if ($admin->foto_profil && Storage::disk('public')->exists($admin->foto_profil)) {
+                Storage::disk('public')->delete($admin->foto_profil);
             }
             
-            $file = $request->file('foto_profil');
+            // Simpan foto baru ke folder 'profile_photos' menggunakan disk 'public'
+            $path = $request->file('foto_profil')->store('profile_photos', 'public');
 
-            $filename = time() . '_' . $file->getClientOriginalName();
-
-            $file->move(public_path('admin_photos'), $filename);
-
-            $data['foto_profil'] = 'admin_photos/' . $filename; 
+            // Simpan path-nya ke database
+            $data['foto_profil'] = $path; 
         }
 
         // 4. LOGIKA UPDATE PASSWORD

@@ -45,6 +45,13 @@ class TambahAdmin extends Component
 
     public function mount()
     {
+        // 1. CEK HAK AKSES (GATEKEEPER)
+        // Jika yang login BUKAN superadmin atau admin, tendang keluar!
+        if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
+            abort(403, 'Akses Ditolak! Halaman ini khusus untuk Superadmin/Admin.');
+        }
+
+        // 2. Kode asli kamu tetap berjalan jika dia lolos pengecekan
         $this->listDokter = Dokter::pluck('nama_lengkap', 'id');
     }
 
