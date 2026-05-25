@@ -15,41 +15,40 @@ use setasign\Fpdi\Tcpdf\Fpdi; // Import library untuk penggabungan
 
 class McuPdfController extends Controller
 {
-    // Fungsi baru untuk melihat PDF dari S3
+    // Fungsi untuk melihat PDF dari Local Storage (GCP)
     public function viewPdf($id) {
         // Cari data di JadwalPoli karena file_path ada di sana
         $poliData = JadwalPoli::findOrFail($id);
         
-        // Cek apakah file ada di S3 (DigitalOcean Spaces)
-        if ($poliData->file_path && Storage::disk('s3')->exists($poliData->file_path)) {
-            // Redirect langsung ke URL file di S3
-            return redirect(Storage::disk('s3')->url($poliData->file_path));
+        if ($poliData->file_path && Storage::disk('public')->exists($poliData->file_path)) {
+            // Redirect langsung ke URL file di Local Storage
+            return redirect(Storage::disk('public')->url($poliData->file_path));
         }
         
-        abort(404, "File tidak ditemukan di Cloud Storage (S3).");
+        abort(404, "File tidak ditemukan di Local Storage.");
     }
 
     public function viewPdfGigi($id) {
         $result = PoliGigiResult::where('jadwal_poli_id', $id)->firstOrFail();
-        return $this->redirectS3($result->file_path);
+        return $this->redirectLocal($result->file_path);
     }
 
     public function viewPdfKebugaran($id) {
         $result = KebugaranResult::where('jadwal_poli_id', $id)->firstOrFail();
-        return $this->redirectS3($result->file_path);
+        return $this->redirectLocal($result->file_path);
     }
 
     public function viewPdfFisik($id) {
         $result = FisikResult::where('jadwal_poli_id', $id)->firstOrFail();
-        return $this->redirectS3($result->file_path);
+        return $this->redirectLocal($result->file_path);
     }
 
     // Helper function agar kode tidak berulang
-    private function redirectS3($filePath) {
-        if ($filePath && Storage::disk('s3')->exists($filePath)) {
-            return redirect(Storage::disk('s3')->url($filePath));
+    private function redirectLocal($filePath) {
+        if ($filePath && Storage::disk('public')->exists($filePath)) {
+            return redirect(Storage::disk('public')->url($filePath));
         }
-        abort(404, "File tidak ditemukan di S3 Cloud Storage.");
+        abort(404, "File tidak ditemukan di Local Storage.");
     }
     
     /**
@@ -57,7 +56,7 @@ class McuPdfController extends Controller
      */
     protected function generateResumePdfObject(JadwalMcu $jadwal)
     {
-        // PENTING: Eager load relasi dokter
+        // Eager load relasi dokter
         $jadwal->load(['dokter', 'paketMcu']);
         
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
@@ -147,12 +146,12 @@ class McuPdfController extends Controller
         $pdfFilesToMerge[] = $tempResumePath;
         $tempFiles[] = $tempResumePath;
 
-        // 3. AMBIL FILE DARI S3 (DigitalOcean Spaces)
+        // 3. AMBIL FILE DARI LOCAL STORAGE (GCP)
         foreach ($jadwal->jadwalPoli as $jp) {
-            if ($jp->file_path && Storage::disk('s3')->exists($jp->file_path)) {
+            if ($jp->file_path && Storage::disk('public')->exists($jp->file_path)) {
                 try {
-                    // Ambil isi file dari S3
-                    $fileContent = Storage::disk('s3')->get($jp->file_path);
+                    // Ambil isi file dari disk lokal public
+                    $fileContent = Storage::disk('public')->get($jp->file_path);
                     
                     // Simpan sementara di server lokal agar bisa dibaca FPDI
                     $localTempPoli = $tempDirFullPath . '/poli_' . $jp->id . '_' . time() . '.pdf';
@@ -161,9 +160,9 @@ class McuPdfController extends Controller
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
                     
-                    \Log::info("S3 File Downloaded: " . $jp->file_path);
+                    \Log::info("Local File Retrieved: " . $jp->file_path);
                 } catch (\Exception $e) {
-                    \Log::error("Gagal mendownload file S3: " . $jp->file_path . " Error: " . $e->getMessage());
+                    \Log::error("Gagal mengambil file lokal: " . $jp->file_path . " Error: " . $e->getMessage());
                 }
             }
         }
