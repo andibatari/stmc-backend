@@ -189,7 +189,10 @@ class QrPatientDetail extends Component
         $this->validate([
             "pdfFiles.$poliId" => 'required|file|mimes:pdf|max:10240',
         ]);
-        $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
+
+        // Ambil data JadwalPoli beserta relasi Poli-nya untuk mendapatkan nama poli
+        $jadwalPoli = $this->jadwal->jadwalPoli()->with('poli')->where('poli_id', $poliId)->first();
+
         if (!$jadwalPoli) {
             $this->dispatch('error', ['message' => 'Data jadwal poli tidak ditemukan.']);
             return;
@@ -199,25 +202,33 @@ class QrPatientDetail extends Component
             try {
                 $file = $this->pdfFiles[$poliId];
                 
-                // Buat nama file yang unik
+                // 1. Ambil Nama Pasien
                 $patientName = $this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien';
                 $safePatientName = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $patientName));
-                $fileName = 'Hasil_' . $safePatientName . '_' . $poliId . '_' . now()->timestamp . '.pdf';
                 
-                // PATH FOLDER di dalam Bucket S3
+                // 2. Ambil Nama Poli dari relasi
+                $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
+                $safeNamaPoli = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $namaPoli));
+                
+                // 3. Ambil Tahun Pemeriksaan
+                $tahun = now()->format('Y');
+                
+                // 4. BENTUK NAMA FILE BARU: Hasil_Pemeriksaan_NamaPoli_NamaPasien_Tahun.pdf
+                // Saya tambahkan timestamp di akhir agar tetap unik jika ada 2 pasien dengan nama persis sama di tahun yang sama
+                $fileName = 'Hasil_Pemeriksaan_' . $safeNamaPoli . '_' . $safePatientName . '_' . $tahun . '_' . now()->timestamp . '.pdf';
+                
+                // PATH FOLDER
                 $folderPath = 'mcu_results'; 
 
-                /**
-                 * KRITIS: Gunakan disk 's3' agar file dipindahkan dari 
-                 * livewire-tmp (di S3) ke folder tujuan (juga di S3).
-                 */
+                // Simpan ke disk 'public'
                 $path = $file->storeAs($folderPath, $fileName, 'public'); 
                 
-                // Simpan path lengkap atau nama file ke database
+                // Simpan path lengkap ke database
                 $jadwalPoli->file_path = $path; 
                 $jadwalPoli->status = 'Finished';
                 $jadwalPoli->save();
-                // Tambahkan baris ini agar Pusher mengirim sinyal ke HP pasien
+
+                // Pusher mengirim sinyal ke HP pasien
                 event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
 
                 // Update UI
