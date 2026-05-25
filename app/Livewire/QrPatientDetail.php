@@ -215,8 +215,10 @@ class QrPatientDetail extends Component
                 
                 // Simpan path lengkap atau nama file ke database
                 $jadwalPoli->file_path = $path; 
-                $jadwalPoli->status = 'FInished';
+                $jadwalPoli->status = 'Finished';
                 $jadwalPoli->save();
+                // Tambahkan baris ini agar Pusher mengirim sinyal ke HP pasien
+                event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
 
                 // Update UI
                 $this->uploadedFileNames[$poliId] = $fileName;
@@ -235,7 +237,7 @@ class QrPatientDetail extends Component
     
     public function markAsDone($poliId)
     {
-        $this->updatePoliStatus($poliId, 'FInished');
+        $this->updatePoliStatus($poliId, 'Finished');
     }
     
     public function markAsPending($poliId)
