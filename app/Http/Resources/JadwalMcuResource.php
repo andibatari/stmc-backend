@@ -58,6 +58,7 @@ class JadwalMcuResource extends JsonResource
                     'nama_poli' => $jp->poli->nama_poli ?? 'Poli Tidak Diketahui',
                     'antrean_sekarang' => $jumlahAntrean,
                     'status' => $jp->status, // Pending, Waiting, Finished
+                    'no_antrean_poli' => $item->no_antrean_poli,
                 ];
             }),
         ];
