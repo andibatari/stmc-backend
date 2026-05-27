@@ -290,8 +290,9 @@ class JadwalMcuApiController extends Controller
                 ->whereHas('jadwalMcu', function($query) use ($jadwalPoli) {
                     $query->whereDate('tanggal_mcu', $jadwalPoli->jadwalMcu->tanggal_mcu);
                 })
-                ->max('no_antrean_poli'); // Asumsi kolomnya bernama no_antrean_poli
+                ->max('no_antrean_poli'); 
 
+            // Jika maxAntrean adalah 0 atau null, maka nextNumber akan jadi 1
             $nextNumber = ($maxAntrean ?? 0) + 1;
 
             // 3. Update status menjadi Waiting sekaligus simpan nomor antrean
