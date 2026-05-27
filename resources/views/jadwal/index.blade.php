@@ -32,9 +32,17 @@
             <div class="flex overflow-x-auto space-x-4 pb-4 snap-x hide-scrollbar">
                 
                 @forelse ($polis as $poli)
+
+                    @php
+                        // 1. FILTERING: Hanya tampilkan pasien yang berstatus 'Waiting' atau 'Calling'
+                        $antreanAktif = $poli->jadwalPoli->filter(function($jp) {
+                            return in_array($jp->status, ['Waiting', 'Calling']);
+                        });
+                    @endphp
+
                     @if ($poli->jadwalPoli->count() > 0)
                         {{-- Card Poli --}}
-                        <div  wire:poll.3s  class="flex-none w-72 bg-gray-50 border border-gray-200 rounded-xl shadow-sm snap-start">
+                        <div class="flex-none w-72 bg-gray-50 border border-gray-200 rounded-xl shadow-sm snap-start">
                             <div class="bg-red-600 text-white px-4 py-2 rounded-t-xl flex justify-between items-center">
                                 <h3 class="font-bold text-sm truncate">{{ $poli->nama_poli }}</h3>
                                 <span class="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
@@ -46,32 +54,33 @@
                             <div class="p-3 max-h-48 overflow-y-auto space-y-2">
                                 @foreach ($poli->jadwalPoli as $index => $antrean)
                                     @php
-                                        // 1. Logika PHP ditaruh di sini (tanpa HTML)
-                                        // Tentukan nama pasien
+                                        // 2. PENENTUAN NAMA & STATUS
                                         $jadwal = $antrean->jadwalMcu;
-                                        $namaPasien = '-';
-                                        if ($jadwal->karyawan_id) {
-                                            $namaPasien = $jadwal->karyawan->nama_karyawan;
-                                        } elseif ($jadwal->peserta_mcus_id) {
-                                            $namaPasien = $jadwal->pesertaMcu->nama_lengkap;
-                                        } else {
-                                            $namaPasien = $jadwal->nama_pasien;
-                                        }
+                                        $namaPasien = $jadwal->karyawan->nama_karyawan ?? $jadwal->pesertaMcu->nama_lengkap ?? $jadwal->nama_pasien ?? '-';
+                                        $isCalling = $antrean->status === 'Calling';
                                     @endphp
                                     
-                                    {{-- 2. HTML ditaruh di bawahnya --}}
+                                    {{-- LINK CARD PASIEN BISA DIKLIK --}}
                                     <a href="{{ route('qr-patient-detail', $jadwal->id) }}?tab=poli-{{ $poli->id }}" 
-                                       class="flex items-start bg-white p-2 rounded border border-gray-100 shadow-sm hover:bg-red-50 hover:border-red-200 transition-colors duration-200 group block cursor-pointer">
+                                       class="flex items-center p-2 rounded border shadow-sm transition-all duration-200 group block cursor-pointer {{ $isCalling ? 'bg-yellow-50 border-yellow-300 hover:bg-yellow-100' : 'bg-white border-gray-200 hover:border-red-300 hover:bg-red-50' }}">
                                         
-                                        <div class="flex-shrink-0 w-6 h-6 bg-red-100 text-red-700 font-bold rounded flex items-center justify-center text-xs mr-3 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                        {{-- Nomor Urut Kotak --}}
+                                        <div class="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center text-xs font-bold mr-3 transition-colors {{ $isCalling ? 'bg-yellow-500 text-white' : 'bg-red-100 text-red-700 group-hover:bg-red-600 group-hover:text-white' }}">
                                             {{ $index + 1 }}
                                         </div>
                                         
+                                        {{-- Nama dan NIK/SAP --}}
                                         <div class="min-w-0 flex-1">
-                                            {{-- Teks nama biasa, tidak lagi berbentuk link --}}
-                                            <p class="text-xs font-bold text-gray-800 truncate group-hover:text-red-700 transition-colors">{{ $namaPasien }}</p>
-                                            <p class="text-[10px] text-gray-500 truncate">SAP: {{ $jadwal->no_sap ?? 'N/A' }}</p>
+                                            <p class="text-sm font-bold text-gray-800 truncate group-hover:text-red-700 transition-colors">{{ $namaPasien }}</p>
+                                            <p class="text-[10px] text-gray-500 truncate">SAP/NIK: {{ $jadwal->no_sap ?? $jadwal->nik_pasien ?? 'Umum' }}</p>
                                         </div>
+
+                                        {{-- Indikator Sedang Diperiksa (Titik Berkedip) --}}
+                                        @if($isCalling)
+                                        <div class="flex-shrink-0 ml-2" title="Sedang diperiksa di ruangan">
+                                            <span class="animate-pulse h-3 w-3 bg-yellow-500 rounded-full inline-block shadow"></span>
+                                        </div>
+                                        @endif
                                     </a>
                                 @endforeach
                             </div>
