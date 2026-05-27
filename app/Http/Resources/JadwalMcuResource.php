@@ -56,7 +56,11 @@ class JadwalMcuResource extends JsonResource
                 return [
                     'id_jadwal_poli' => $jp->id,
                     'nama_poli' => $jp->poli->nama_poli ?? 'Poli Tidak Diketahui',
-                    'antrean_sekarang' => $jumlahAntrean,
+                    'antrean_sekarang' => \App\Models\JadwalPoli::where('poli_id', $jp->poli_id)
+                        ->where('status', 'Waiting')
+                        // ✅ INI KUNCINYA: Hitung yang nomornya lebih kecil dari nomor pasien ini
+                        ->where('no_antrean_poli', '<', $jp->no_antrean_poli) 
+                        ->count(),
                     'status' => $jp->status, // Pending, Waiting, Finished
                     'no_antrean_poli' => $jp->no_antrean_poli,
                 ];
