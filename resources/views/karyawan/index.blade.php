@@ -1,8 +1,4 @@
 @extends('layouts.app')
-@section('head')
-    {{-- Halaman ini akan me-refresh dirinya sendiri secara otomatis setiap 3 detik --}}
-    <meta http-equiv="refresh" content="3">
-@endsection
 @section('title', 'Manajemen Pasien / Daftar Pasien')
 
 @section('content')
