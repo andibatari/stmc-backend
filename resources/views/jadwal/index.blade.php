@@ -23,7 +23,7 @@
         </div>
 
         {{-- AREA ANTREAN POLI (Horizontal Scroll) --}}
-        <div wire:poll.3s class="mb-6 lg:mb-8">
+        <div class="mb-6 lg:mb-8">
             <h2 class="text-sm md:text-base font-bold text-gray-800 mb-3 border-b pb-2">
                 <i class="fas fa-users mr-2 text-red-600"></i> Antrean Poli Hari Ini
             </h2>
@@ -34,7 +34,7 @@
                 @forelse ($polis as $poli)
                     @if ($poli->jadwalPoli->count() > 0)
                         {{-- Card Poli --}}
-                        <div class="flex-none w-72 bg-gray-50 border border-gray-200 rounded-xl shadow-sm snap-start">
+                        <div  wire:poll.3s  class="flex-none w-72 bg-gray-50 border border-gray-200 rounded-xl shadow-sm snap-start">
                             <div class="bg-red-600 text-white px-4 py-2 rounded-t-xl flex justify-between items-center">
                                 <h3 class="font-bold text-sm truncate">{{ $poli->nama_poli }}</h3>
                                 <span class="bg-white text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
