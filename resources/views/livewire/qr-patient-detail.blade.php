@@ -1,7 +1,7 @@
 @section('title', 'Detail Jadwal Pasien MCU')
 
 {{-- OUTER CONTAINER: Minimal padding untuk mobile (px-2), Max Width untuk desktop (md:max-w-6xl) --}}
-<div class="py-4 px-2 md:max-w-6xl md:mx-auto md:px-4"> 
+<div wire:poll.3s class="py-4 px-2 md:max-w-6xl md:mx-auto md:px-4"> 
     
     {{-- KARTU UTAMA --}}
     <div class="bg-white rounded-xl shadow-xl p-3 sm:p-4 md:p-8 border border-gray-100">
