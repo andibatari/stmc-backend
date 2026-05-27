@@ -13,7 +13,7 @@ class JadwalPoli extends Model
         'jadwal_mcus_id',
         'poli_id',
         'status',
-        'notes', // Tambahkan 'notes' karena ini ada di logika update
+        'no_antrean_poli', // Tambahkan 'notes' karena ini ada di logika update
     ];
 
     // REVISI DI SINI: Tambahkan relasi ke JadwalMcu

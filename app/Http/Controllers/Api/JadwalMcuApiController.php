@@ -284,14 +284,28 @@ class JadwalMcuApiController extends Controller
                 ], 400);
             }
 
-            // Ubah status antrean menjadi Waiting (Menunggu Panggilan)
+            // Hitung Nomor Antrean Otomatis
+            // Cari antrean tertinggi untuk poli yang sama pada tanggal MCU yang sama
+            $maxAntrean = \App\Models\JadwalPoli::where('poli_id', $jadwalPoli->poli_id)
+                ->whereHas('jadwalMcu', function($query) use ($jadwalPoli) {
+                    $query->whereDate('tanggal_mcu', $jadwalPoli->jadwalMcu->tanggal_mcu);
+                })
+                ->max('no_antrean_poli'); // Asumsi kolomnya bernama no_antrean_poli
+
+            $nextNumber = ($maxAntrean ?? 0) + 1;
+
+            // 3. Update status menjadi Waiting sekaligus simpan nomor antrean
             $jadwalPoli->update([
-                'status' => 'Waiting'
+                'status' => 'Waiting',
+                'no_antrean_poli' => $nextNumber // Simpan nomor urut antrean
             ]);
 
             return response()->json([
                 'success' => true, 
-                'message' => 'Berhasil mengambil antrean poli!'
+                'message' => 'Berhasil mengambil antrean!',
+                'data' => [
+                    'no_antrean_poli' => $nextNumber
+                ]
             ], 200);
 
         } catch (\Exception $e) {
