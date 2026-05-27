@@ -23,7 +23,7 @@
         </div>
 
         {{-- AREA ANTREAN POLI (Horizontal Scroll) --}}
-        <div class="mb-6 lg:mb-8">
+        <div wire:poll.3s class="mb-6 lg:mb-8">
             <h2 class="text-sm md:text-base font-bold text-gray-800 mb-3 border-b pb-2">
                 <i class="fas fa-users mr-2 text-red-600"></i> Antrean Poli Hari Ini
             </h2>
