@@ -1,7 +1,7 @@
 @extends('layouts.app') 
 @section('head')
     {{-- Halaman ini akan me-refresh dirinya sendiri secara otomatis setiap 3 detik --}}
-    <meta http-equiv="refresh" content="3">
+    <meta http-equiv="refresh" content="1">
 @endsection
 @section('content')
 
