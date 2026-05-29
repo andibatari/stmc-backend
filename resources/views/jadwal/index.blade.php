@@ -3,7 +3,7 @@
 @section('title', 'Daftar Jadwal')
 
 @section('content')
-<div class="container mx-auto p-1 lg:p-4">
+<div wire:poll.3s class="container mx-auto p-1 lg:p-4">
     <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 lg:mb-6">Manajemen Jadwal MCU</h1>
 
     <div class="bg-white rounded-xl shadow-lg p-4 lg:p-8">
