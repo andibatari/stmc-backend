@@ -57,8 +57,17 @@ class JadwalMcuResource extends JsonResource
                     'id_jadwal_poli' => $jp->id,
                     'nama_poli' => $jp->poli->nama_poli ?? 'Poli Tidak Diketahui',
                     'status' => $jp->status, // Pending, Waiting, Finished
+                    'antrean_sekarang' => $jumlahAntrean,
                     'no_antrean_poli' => $jp->no_antrean_poli,
-                    'sisa_antrean' => $jp->no_antrean_poli > 0 ? ($jp->no_antrean_poli - 1) : 0,
+                    'sisa_antrean'    => \App\Models\JadwalPoli::where('poli_id', $jp->poli_id)
+                        ->whereHas('jadwalMcu', function($query) {
+                            // Pastikan hanya menghitung antrean pada tanggal yang sama
+                            $query->whereDate('tanggal_mcu', $this->tanggal_mcu); 
+                        })
+                        ->where('status', 'Waiting') // Hanya hitung yang masih menunggu
+                        ->where('no_antrean_poli', '>', 0) // Abaikan yang belum dapat nomor (0)
+                        ->where('no_antrean_poli', '<', $jp->no_antrean_poli) // Hitung yang nomornya lebih kecil dari pasien ini
+                        ->count(),
                 ];
             }),
         ];
