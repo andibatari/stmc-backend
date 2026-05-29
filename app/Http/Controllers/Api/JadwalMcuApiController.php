@@ -286,14 +286,15 @@ class JadwalMcuApiController extends Controller
 
             // Hitung Nomor Antrean Otomatis
             // Cari antrean tertinggi untuk poli yang sama pada tanggal MCU yang sama
-            $maxAntrean = \App\Models\JadwalPoli::where('poli_id', $jadwalPoli->poli_id)
+            $currentCount = \App\Models\JadwalPoli::where('poli_id', $jadwalPoli->poli_id)
                 ->whereHas('jadwalMcu', function($query) use ($jadwalPoli) {
                     $query->whereDate('tanggal_mcu', $jadwalPoli->jadwalMcu->tanggal_mcu);
                 })
-                ->max('no_antrean_poli');
+                ->where('status', '!=', 'Canceled') // Hanya hitung yang tidak batal
+                ->where('status', '!=', 'Pending')  // Hitung yang sudah ambil antrean
+                ->count();
 
-            // Jika maxAntrean adalah 0 atau null, maka nextNumber akan jadi 1
-            $nextNumber = ($maxAntrean ?? 0) + 1;
+            $nextNumber = $currentCount + 1; // Jika 1 orang sudah antre, maka ini nomor 2
 
             // 3. Update status menjadi Waiting sekaligus simpan nomor antrean
             $jadwalPoli->update([
