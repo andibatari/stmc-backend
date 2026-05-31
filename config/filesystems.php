@@ -49,21 +49,23 @@ return [
 
         'gcs' => [
             'driver' => 'gcs',
-            'project_id' => env('project-44d7b574-5b2f-47af-9e5'),
-            'bucket' => env('stmc-health-bucket'),
-            'visibility' => 'public', // Agar file bisa diakses
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+            'path_prefix' => '',
+            'storage_api_uri' => null, 
+            'visibility' => 'public', 
         ],
 
-        's3' => [
-            'driver' => 's3',
-            'key' => env('DO_SPACES_KEY'),
-            'secret' => env('DO_SPACES_SECRET'),
-            'region' => env('DO_SPACES_REGION'),
-            'bucket' => env('DO_SPACES_BUCKET'),
-            'endpoint' => env('DO_SPACES_ENDPOINT'),
-            'use_path_style_endpoint' => false,
-            'visibility' => 'public', // Agar file bisa diakses via URL
-        ],
+        // 's3' => [
+        //     'driver' => 's3',
+        //     'key' => env('DO_SPACES_KEY'),
+        //     'secret' => env('DO_SPACES_SECRET'),
+        //     'region' => env('DO_SPACES_REGION'),
+        //     'bucket' => env('DO_SPACES_BUCKET'),
+        //     'endpoint' => env('DO_SPACES_ENDPOINT'),
+        //     'use_path_style_endpoint' => false,
+        //     'visibility' => 'public', // Agar file bisa diakses via URL
+        // ],
 
     ],
 
