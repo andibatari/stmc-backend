@@ -49,8 +49,8 @@ return [
 
         'gcs' => [
             'driver' => 'gcs',
-            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
-            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+            'project_id' => env('project-44d7b574-5b2f-47af-9e5'),
+            'bucket' => env('stmc-health-bucket'),
             'visibility' => 'public', // Agar file bisa diakses
         ],
 
