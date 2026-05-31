@@ -187,12 +187,11 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            // Tampilkan error teknis yang paling detail
-            $debugMessage = 'Error: ' . $e->getMessage() . ' di baris ' . $e->getLine();
-            Log::error('Gagal Upload GCS: ' . $debugMessage);
-            
-            // Ini akan menampilkan pesan asli dari Google ke layar website
-            session()->flash('error', $debugMessage);
+            // 1. Simpan ke log
+            Log::error('Gagal Upload GCS: ' . $e->getMessage());
+
+            // 2. PAKSA TAMPILKAN ERROR KE LAYAR
+            dd($e->getMessage()); 
         }
     }
 
