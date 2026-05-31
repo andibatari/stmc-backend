@@ -164,7 +164,7 @@ class KebugaranForm extends Component
             
             // 2. Simpan ke public 
             // Pastikan visibilitas 'public' agar bisa dibuka melalui URL langsung
-            Storage::disk('gcs')->put($fullPath, $pdf->output());
+            Storage::disk('gcs')->put($fullPath, $pdf->output(), 'public');
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
             // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
