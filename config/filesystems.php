@@ -49,11 +49,10 @@ return [
 
         'gcs' => [
             'driver' => 'gcs',
-            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
-            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
-            'path_prefix' => '',
-            'storage_api_uri' => null, 
-            'visibility' => 'public', 
+            // Masukkan ID project kamu langsung di sini untuk tes
+            'project_id' => 'project-44d7b574-5b2f-47af-9e5', 
+            'bucket' => 'stmc-health-bucket',
+            'visibility' => 'public',
         ],
 
         // 's3' => [
