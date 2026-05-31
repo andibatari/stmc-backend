@@ -162,9 +162,17 @@ class KebugaranForm extends Component
             // 1. Render View ke PDF
             $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
             
-            // 2. Simpan ke public 
-            // Pastikan visibilitas 'public' agar bisa dibuka melalui URL langsung
-            Storage::disk('gcs')->put($fullPath, $pdf->output(), 'public');
+            // 1. Coba upload
+            $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output(), 'public');
+            
+            // 2. CEK APAKAH BENAR-BENAR TERUPLOAD
+            if (Storage::disk('gcs')->exists($fullPath)) {
+                Log::info('SUKSES! File ditemukan di GCS: ' . $fullPath);
+            } else {
+                Log::error('GAGAL! File ti-dak ditemukan di GCS setelah di-upload: ' . $fullPath);
+                session()->flash('error', 'Upload GCS gagal. File tidak tersimpan.');
+                return; // Hentikan proses jika gagal
+            }
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
             // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
