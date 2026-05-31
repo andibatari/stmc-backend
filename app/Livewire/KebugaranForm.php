@@ -187,8 +187,14 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('PDF Kebugaran GCS GAGAL: ' . $e->getMessage());
-            session()->flash('error', 'Gagal menyimpan ke GCS. Cek koneksi internet/konfigurasi public gcp.');
+            // Kita tangkap error aslinya
+            $errorMessage = $e->getMessage();
+            
+            // Log ke file agar tersimpan permanen
+            Log::error('Upload GCS Gagal: ' . $errorMessage);
+            
+            // Tampilkan error aslinya ke layar agar kita tahu penyebabnya
+            session()->flash('error', 'Gagal: ' . $errorMessage);
         }
     }
 
