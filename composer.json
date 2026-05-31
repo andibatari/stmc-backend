@@ -32,7 +32,8 @@
         "pusher/pusher-php-server": "^7.2",
         "setasign/fpdi-tcpdf": "^2.3",
         "smalot/pdfparser": "^2.1",
-        "spatie/browsershot": "^5.0"
+        "spatie/browsershot": "^5.0",
+        "spatie/laravel-google-cloud-storage": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
