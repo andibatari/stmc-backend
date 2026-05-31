@@ -1,183 +1,144 @@
-<div class="py-4 px-2 sm:px-4 md:py-8 md:px-6 lg:max-w-6xl lg:mx-auto"> {{-- Outer Container --}}
-    <div class="flex flex-col lg:flex-row gap-4 md:gap-6">
+<div class="w-full max-w-7xl mx-auto">
+    <div class="flex flex-col lg:flex-row gap-6">
         
-        {{-- Kolom Kiri: Ringkasan & Navigasi --}}
-        <div class="w-full lg:w-1/3">
+        {{-- Kolom Kiri: Ringkasan --}}
+        <div class="w-full lg:w-[350px] shrink-0 space-y-6">
             {{-- KARTU PROFIL --}}
-            <div class="p-4 bg-white rounded-xl shadow-xl border border-gray-100 mb-4">
-                <div class="flex flex-col items-center text-center">
-                    {{-- Foto Profil --}}
-                    <div class="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-full shadow-lg border-4 border-white mb-3">
-                        <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+            <div class="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-blue-600 to-indigo-800 opacity-90 rounded-t-[2rem]"></div>
+                
+                <div class="relative mt-6 mb-4">
+                    <div class="w-24 h-24 mx-auto bg-slate-100 rounded-full p-1 shadow-xl ring-4 ring-white flex items-center justify-center text-slate-300">
+                        <i class="fas fa-user text-4xl"></i>
                     </div>
-                    {{-- Nama Pasien --}}
-                    <h2 class="text-lg font-bold text-gray-800">{{ $pesertaMcu->nama_lengkap }}</h2>
-                    {{-- Detail Pasien --}}
-                    <p class="text-sm text-gray-500">{{ $pesertaMcu->perusahaan_asal ?? 'N/A' }}</p>
-                    <p class="text-xs font-semibold text-red-600">({{ $pesertaMcu->tipe_anggota ?? 'Pasien Umum' }})</p>
                 </div>
-                <div class="mt-4 text-center border-t pt-4">
-                    <p class="text-gray-500 font-semibold text-xs">NIK: <span class="text-gray-900 font-normal">{{ $pesertaMcu->nik_pasien ?? 'N/A' }}</span></p>
-                    <p class="text-gray-500 font-semibold text-xs">No SAP: <span class="text-gray-900 font-normal">{{ $pesertaMcu->no_sap ?? 'N/A' }}</span></p>
+
+                <h2 class="text-xl font-black text-slate-800">{{ $pesertaMcu->nama_lengkap }}</h2>
+                <p class="text-xs font-bold text-blue-600 mt-1 uppercase tracking-widest">{{ $pesertaMcu->tipe_anggota ?? 'Pasien Umum' }}</p>
+                <p class="text-xs font-medium text-slate-500 mt-1">{{ $pesertaMcu->perusahaan_asal ?? 'Umum' }}</p>
+
+                <div class="mt-6 flex flex-col gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400">NIK (KTP)</span>
+                        <span class="text-sm font-mono font-black text-slate-700">{{ $pesertaMcu->nik_pasien ?? '-' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400">SAP / NIP</span>
+                        <span class="text-sm font-mono font-black text-slate-700">{{ $pesertaMcu->no_sap ?? '-' }}</span>
+                    </div>
                 </div>
             </div>
 
-            {{-- KARTU KARYAWAN UTAMA (Hanya muncul jika ini anggota keluarga) --}}
-            <div class="mt-4">
-                @if ($pesertaMcu->karyawan_id)
-                    <h3 class="text-base font-semibold text-gray-800 mb-3 border-b pb-2">Data Karyawan Utama</h3>
-                    <div class="p-4 bg-white rounded-xl shadow-lg border border-gray-100 text-sm space-y-1">
-                        <p class="text-gray-600 font-medium">Nama: <span class="text-gray-900 font-normal">{{ $pesertaMcu->karyawan->nama_karyawan ?? 'N/A' }}</span></p>
-                        <p class="text-gray-600 font-medium">Unit Kerja: <span class="text-gray-900 font-normal">{{ $pesertaMcu->karyawan->unitKerja->nama_unit_kerja ?? 'N/A' }}</span></p>
-                        <p class="text-gray-600 font-medium">No SAP: <span class="text-gray-900 font-normal">{{ $pesertaMcu->karyawan->no_sap ?? 'N/A' }}</span></p>
-                        <a href="{{ route('karyawan.show', ['karyawan' => $pesertaMcu->karyawan_id]) }}" class="mt-3 inline-block text-xs text-red-600 hover:text-red-800 transition-colors duration-200 font-semibold">Lihat Detail Karyawan &raquo;</a>
-                    </div>
-                @endif
+            {{-- KARTU KARYAWAN UTAMA --}}
+            @if ($pesertaMcu->karyawan_id)
+            <div class="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center">
+                    <i class="fas fa-user-tie text-slate-400 mr-2"></i> Karyawan Utama
+                </h3>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Nama Lengkap</p>
+                    <p class="font-bold text-slate-800 text-sm mb-3">{{ $pesertaMcu->karyawan->nama_karyawan ?? 'N/A' }}</p>
+                    
+                    <p class="text-[10px] font-bold text-slate-400 uppercase">Unit / Departemen</p>
+                    <p class="font-bold text-slate-800 text-sm mb-3">{{ $pesertaMcu->karyawan->unitKerja->nama_unit_kerja ?? 'N/A' }}</p>
+                    
+                    <a href="{{ route('karyawan.show', ['karyawan' => $pesertaMcu->karyawan_id]) }}" class="block w-full py-2.5 text-center text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors mt-2">Buka Profil Karyawan</a>
+                </div>
             </div>
+            @endif
         </div>
 
-        {{-- Kolom Kanan: Detail & Riwayat --}}
-        <div class="w-full lg:w-2/3">
-            <div class="p-4 bg-white rounded-xl shadow-2xl border border-gray-100">
-                <div class="bg-gray-50 rounded-xl shadow-md border border-gray-200">
-                    
-                    {{-- Navigasi Tabs --}}
-                    <div class="flex border-b border-gray-200">
-                        <button wire:click="changeTab('data')" @class(['py-3 px-4 font-semibold text-sm transition-colors duration-200', 'bg-white border-b-2 border-red-500 text-red-600' => $activeTab === 'data', 'text-gray-600 hover:text-red-600' => $activeTab !== 'data',])>
-                            Data
-                        </button>
-                        <button wire:click="changeTab('riwayat')" @class(['py-3 px-4 font-semibold text-sm transition-colors duration-200', 'bg-white border-b-2 border-red-500 text-red-600' => $activeTab === 'riwayat', 'text-gray-600 hover:text-red-600' => $activeTab !== 'riwayat',])>
-                            Riwayat MCU
-                        </button>
-                    </div>
+        {{-- Kolom Kanan: TABS & KONTEN --}}
+        <div class="w-full flex-1">
+            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden min-h-[500px]">
+                
+                <div class="flex p-2 m-4 bg-slate-100 rounded-2xl w-max">
+                    <button wire:click="changeTab('data')" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 @if($activeTab === 'data') bg-white text-slate-800 shadow-sm @else text-slate-500 hover:text-slate-700 @endif">
+                        <i class="fas fa-id-card mr-2 opacity-70"></i> Data Lengkap
+                    </button>
+                    <button wire:click="changeTab('riwayat')" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 @if($activeTab === 'riwayat') bg-white text-slate-800 shadow-sm @else text-slate-500 hover:text-slate-700 @endif">
+                        <i class="fas fa-notes-medical mr-2 opacity-70"></i> Histori MCU
+                    </button>
+                </div>
 
-                    <div class="p-4 sm:p-6">
-                        @if ($activeTab === 'data')
-                            @if ($pesertaMcu)
-                                {{-- ASUMSI: FILE INI BERISI CARD VIEW DETAIL DATA PASIEN --}}
+                <div class="p-6 md:p-8 pt-2">
+                    @if ($activeTab === 'data')
+                        @if ($pesertaMcu)
+                            <div class="animate-fade-in">
                                 @include('livewire.partials.keluarga-data-view', ['pesertaMcu' => $pesertaMcu])
-                            @else
-                                <div class="text-center text-gray-500 text-sm">Data tidak ditemukan.</div>
-                            @endif
+                            </div>
                         @endif
-                        
-                        @if ($activeTab === 'riwayat')
-                            @if ($pesertaMcu)
-                                {{-- === FILTER TAHUN === --}}
-                                <div class="mb-4 flex flex-col md:flex-row md:items-center md:space-x-3">
-                                    <label for="filter-year" class="block text-sm font-semibold text-gray-700 mb-1 md:mb-0">Filter Tahun:</label>
-
-                                    <select 
-                                        wire:model.live="selectedYear" 
-                                        id="filter-year" 
-                                        class="mt-1 block w-full md:w-auto rounded-lg border-gray-300 shadow-sm text-sm p-2 focus:border-red-500 focus:ring-red-500"
-                                    >
-                                        {{-- Opsi Default --}}
-                                        <option value="">Semua Tahun</option>
-                                        
-                                        @php
-                                            // Menghasilkan opsi tahun secara dinamis (Anda harus menyediakan daftar tahun yang ada di Livewire PHP)
-                                            $currentYear = date('Y');
-                                            $startYear = 2020; 
-                                        @endphp
-                                        
-                                        {{-- Menghasilkan opsi tahun --}}
-                                        @for ($year = $currentYear; $year >= $startYear; $year--)
-                                            {{-- Nilai yang di-filter harus berupa integer tahun --}}
-                                            <option value="{{ $year }}">{{ $year }}</option>
-                                        @endfor
+                    @endif
+                    
+                    @if ($activeTab === 'riwayat')
+                        <div class="animate-fade-in">
+                            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                                <h3 class="font-black text-lg text-slate-800">Daftar Kunjungan Medical Check-Up</h3>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Tahun:</label>
+                                    <select wire:model.live="selectedYear" class="block rounded-xl border border-slate-200 bg-white shadow-sm text-sm font-bold p-2 focus:border-red-500 focus:ring-red-500 cursor-pointer">
+                                        <option value="">Semua Riwayat</option>
+                                        @for ($year = date('Y'); $year >= 2020; $year--) <option value="{{ $year }}">{{ $year }}</option> @endfor
                                     </select>
                                 </div>
-                                {{-- ====================== --}}
-                                
-                                <div class="space-y-4">
-                                    <h4 class="text-base font-bold text-gray-800 border-b pb-2">Daftar Pemeriksaan</h4>
+                            </div>
 
-                                    {{-- BLOK DESKTOP: Tabel Tradisional --}}
-                                    <div class="hidden md:block overflow-x-auto">
-                                        {{-- RIWAYAT MCU - TABEL --}}
-                                        <table class="min-w-full text-sm bg-white border border-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">No</th>
-                                                    <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Tanggal MCU</th>
-                                                    <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Dokter</th>
-                                                    <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-left">Status</th>
-                                                    <th class="py-3 px-4 text-sm font-semibold text-gray-600 text-center">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="divide-y divide-gray-200">
-                                                @if ($filteredRecords->count() > 0)
-                                                    @foreach ($filteredRecords as $index => $jadwalMcu)
-                                                    <tr>
-                                                        <td class="py-3 px-4 text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
-                                                        <td class="py-3 px-4 text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('Y-m-d') }}</td>
-                                                        <td class="py-3 px-4 text-sm font-medium text-gray-900">{{ $jadwalMcu->dokter->nama_lengkap ?? 'N/A' }}</td>
-                                                        <td class="py-3 px-4 text-sm font-medium text-gray-900">
-                                                            <span class="px-2 py-0.5 rounded-full text-xs font-bold 
-                                                                @if($jadwalMcu->status === 'Scheduled') bg-yellow-100 text-yellow-800
-                                                                @else bg-green-100 text-green-800 @endif">
-                                                                {{ $jadwalMcu->status ?? 'N/A' }}
-                                                            </span>
-                                                        </td>
-                                                        <td class="py-3 px-4 text-sm font-medium text-gray-900 text-center">
-                                                            <a href="{{ route('qr-patient-detail', $jadwalMcu->id) }}" class="text-red-600 hover:text-red-800">Lihat</a>
-                                                        </td>
-                                                    </tr>
-                                                    @endforeach
-                                                @else
-                                                    <tr>
-                                                        <td colspan="5" class="py-4 text-center text-gray-500">
-                                                            Tidak ada riwayat MCU.
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            </tbody>
-                                        </table>
+                            {{-- Desktop Table --}}
+                            <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-2xl">
+                                <table class="min-w-full text-sm bg-white border-collapse text-left">
+                                    <thead class="bg-slate-50 border-b border-slate-100">
+                                        <tr>
+                                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
+                                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tanggal MCU</th>
+                                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Dokter PIC</th>
+                                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Hasil</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-50">
+                                        @forelse ($filteredRecords as $index => $jadwalMcu)
+                                        <tr class="hover:bg-slate-50/50">
+                                            <td class="py-4 px-4 font-medium text-slate-500">{{ $index + 1 }}</td>
+                                            <td class="py-4 px-4 font-bold text-slate-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d M Y') }}</td>
+                                            <td class="py-4 px-4 font-medium text-slate-600">{{ $jadwalMcu->dokter->nama_lengkap ?? 'N/A' }}</td>
+                                            <td class="py-4 px-4">
+                                                <span class="px-3 py-1 rounded-full text-[10px] font-bold border @if($jadwalMcu->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @elseif($jadwalMcu->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @else bg-slate-50 text-slate-600 border-slate-200 @endif">{{ $jadwalMcu->status ?? 'N/A' }}</span>
+                                            </td>
+                                            <td class="py-4 px-4 text-center">
+                                                <a href="{{ route('qr-patient-detail', $jadwalMcu->id) }}" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg">Buka Laporan</a>
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr><td colspan="5" class="py-8 text-center text-slate-400">Tidak ada riwayat.</td></tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            {{-- Mobile Card --}}
+                            <div class="md:hidden space-y-4">
+                                @foreach($filteredRecords as $index => $riwayat)
+                                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+                                        <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                                            <div>
+                                                <span class="text-[10px] font-black uppercase text-slate-400">Tanggal Periksa</span>
+                                                <p class="font-bold text-slate-800 text-sm">{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d F Y') }}</p>
+                                            </div>
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border">{{ $riwayat->status ?? 'N/A' }}</span>
+                                        </div>
+                                        <div class="mb-4">
+                                            <span class="text-[10px] font-black uppercase text-slate-400">Dokter</span>
+                                            <p class="font-medium text-slate-600 text-sm truncate">{{ $riwayat->dokter->nama_lengkap ?? 'N/A' }}</p>
+                                        </div>
+                                        <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="block w-full py-2.5 text-center text-xs font-bold text-white bg-slate-800 rounded-xl">Buka Hasil Lab</a>
                                     </div>
-                                    
-                                    {{-- BLOK MOBILE: Card View --}}
-                                    <div class="md:hidden space-y-3">
-                                        @if($filteredRecords->count() > 0)
-                                            @foreach($filteredRecords as $index => $riwayat)
-                                                <div class="border border-gray-200 bg-white p-3 rounded-lg shadow-sm space-y-1 text-xs">
-                                                    <div class="flex justify-between border-b pb-1">
-                                                        <span class="font-semibold text-gray-600">No:</span>
-                                                        <span class="font-bold text-red-600">{{ $index + 1 }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between border-b pb-1">
-                                                        <span class="font-semibold text-gray-600">Tanggal:</span>
-                                                        <span>{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d F Y') }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between border-b pb-1">
-                                                        <span class="font-semibold text-gray-600">Dokter:</span>
-                                                        <span class="truncate max-w-[50%]">{{ $riwayat->dokter->nama_lengkap ?? 'N/A' }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between items-center pt-1">
-                                                        <span class="font-semibold text-gray-600">Status:</span>
-                                                        <span class="px-2 py-0.5 rounded-full text-xs font-bold 
-                                                            @if($riwayat->status === 'Scheduled') bg-yellow-100 text-yellow-800
-                                                            @else bg-green-100 text-green-800 @endif">
-                                                            {{ $riwayat->status ?? 'N/A' }}
-                                                        </span>
-                                                    </div>
-                                                    <div class="text-right pt-2 border-t mt-2">
-                                                        <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">Lihat Detail &raquo;</a>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @else
-                                            <div class="text-center text-gray-500 text-sm p-4 bg-white rounded-lg">Tidak ada riwayat MCU.</div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @else
-                                <div class="text-center text-gray-500 text-sm">Riwayat tidak ditemukan.</div>
-                            @endif
-                        @endif
-                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+    <style> .animate-fade-in { animation: fadeIn 0.3s ease-in-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } } </style>
 </div>

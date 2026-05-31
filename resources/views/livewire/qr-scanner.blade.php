@@ -1,73 +1,113 @@
 @section('title', 'Pemindai Kode QR')
 
-<div class="flex items-center justify-center bg-gray-100 p-4 lg:p-8">
-    <div class="bg-white rounded-xl shadow-lg border border-gray-200 w-full max-w-md lg:max-w-2xl overflow-hidden">
-        <div class="p-4 sm:p-6">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Pemindai Kode QR Pasien</h2>
-                <p class="text-sm text-gray-500 font-medium">Arahkan kamera Anda ke kode QR pasien untuk memulai proses registrasi.</p>
+{{-- ROOT ELEMENT: Dihapus min-h-screen dan padding bawahnya agar tidak melebihi tinggi layar (over-scroll) --}}
+<div class="flex flex-col items-center justify-center w-full h-full pt-4 md:pt-10">
+    
+    {{-- KARTU UTAMA --}}
+    <div class="bg-white rounded-[2rem] shadow-[0_15px_40px_rgba(0,0,0,0.06)] border border-slate-100 w-full max-w-lg overflow-hidden relative">
+        {{-- Dekorasi Atas --}}
+        <div class="h-1.5 bg-gradient-to-r from-red-600 to-red-800 w-full"></div>
+        
+        <div class="p-5 md:p-6">
+            {{-- Header Scanner --}}
+            <div class="text-center mb-4">
+                <div class="bg-red-50 text-red-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-sm border border-red-100">
+                    <i class="fas fa-qrcode text-xl"></i>
+                </div>
+                <h2 class="text-lg font-black text-slate-800 tracking-tight">Scanner Registrasi</h2>
+                <p class="text-xs text-slate-500 font-medium mt-1">Arahkan kamera ke QR Code pasien.</p>
             </div>
 
-            <div id="qr-reader" class="w-full h-auto rounded-lg overflow-hidden border-2 border-dashed border-gray-300"></div>
+            {{-- Container Kamera: Ideal untuk Webcam Laptop --}}
+            <div class="bg-slate-900 rounded-2xl overflow-hidden shadow-inner p-1.5 relative mx-auto w-full max-w-[450px]">
+                <div class="absolute inset-0 border border-slate-700/50 rounded-2xl pointer-events-none z-10"></div>
+                <div id="qr-reader" class="w-full h-auto rounded-xl overflow-hidden bg-black relative" wire:ignore></div>
+            </div>
             
-            <div class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            {{-- Status Box --}}
+            <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 text-center flex flex-col items-center">
                 @if ($message)
-                    <div class="@if(strpos($message, 'berhasil') !== false) text-green-600 @else text-red-600 @endif font-bold text-sm text-center mb-2 animate-pulse">{{ $message }}</div>
+                    <div class="flex items-center gap-2 @if(strpos($message, 'berhasil') !== false) text-emerald-600 bg-emerald-50 @else text-red-600 bg-red-50 @endif px-3 py-1.5 rounded-lg font-bold text-[11px]">
+                        <i class="fas @if(strpos($message, 'berhasil') !== false) fa-check-circle @else fa-exclamation-circle @endif"></i>
+                        {{ $message }}
+                    </div>
                 @endif
                 
                 @if (!$patient)
-                    <div class="text-center text-gray-400 font-medium text-sm">
-                        <p>Arahkan kamera ke QR Code untuk melihat detail pasien.</p>
+                    <div class="text-slate-400 font-medium text-[11px] flex items-center animate-pulse">
+                        <i class="fas fa-camera text-sm mr-2"></i> Menunggu pindaian kamera...
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
+    {{-- MODAL POPUP MODERN --}}
     @if ($showPopup && $patient && $jadwal)
-    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 text-center">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Pasien Ditemukan!</h3>
-            <p class="text-sm text-gray-700 mb-6">Apakah Anda ingin melanjutkan registrasi untuk pasien <b>{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? $this->jadwal->nama_pasien }}</b> ?</p>
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+        <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-6 md:p-8 text-center transform scale-100 animate-slide-up relative overflow-hidden">
+            <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-emerald-50 rounded-full blur-2xl"></div>
+
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 relative z-10 shadow-sm border border-emerald-200">
+                <i class="fas fa-check text-3xl"></i>
+            </div>
             
-            <div class="bg-gray-100 p-4 rounded-lg text-left mb-6 text-sm">
-                <div class="space-y-2 text-gray-700">
-                    <div>
-                        <strong class="w-24 text-gray-600 inline-block">Nama:</strong>
-                        <span class="font-semibold">{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? $this->jadwal->nama_pasien }}</span>
+            <h3 class="text-xl font-black text-slate-800 mb-1 relative z-10">Data Ditemukan</h3>
+            <p class="text-xs text-slate-500 font-medium mb-5 relative z-10">Lanjutkan proses untuk pasien ini?</p>
+            
+            <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-left mb-6 text-sm relative z-10">
+                <div class="space-y-2.5 text-slate-700">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Nama Pasien</span>
+                        <span class="font-black text-slate-800 text-sm">{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? $this->jadwal->nama_pasien }}</span>
                     </div>
-                    <div>
-                        <strong class="w-24 text-gray-600 inline-block">No. Identitas:</strong>
-                        <span class="font-semibold">{{ $patient->nik_pasien ?? $patient->no_sap }}</span>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Identitas (NIK/SAP)</span>
+                        <span class="font-mono font-bold text-slate-600 text-sm">{{ $patient->nik_pasien ?? $patient->no_sap }}</span>
                     </div>
-                    <div>
-                        <strong class="w-24 text-gray-600 inline-block">Jadwal:</strong>
-                        <span class="font-semibold">{{ \Carbon\Carbon::parse($this->jadwal->tanggal_mcu)->format('d-m-Y') }}</span>
-                    </div>
-                    <div>
-                        <strong class="w-24 text-gray-600 inline-block">Status:</strong>
-                        <span class="font-semibold px-2 py-0.5 rounded-full text-xs @if($this->jadwal->status === 'Scheduled') bg-yellow-200 text-yellow-800 @elseif($this->jadwal->status === 'Present') bg-blue-200 text-blue-800 @else bg-green-200 text-green-800 @endif">
-                            {{ $this->jadwal->status }}
-                        </span>
+                    <div class="grid grid-cols-2 gap-3 border-t border-slate-200 pt-2.5 mt-1">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Tgl Jadwal</span>
+                            <span class="font-bold text-slate-600 bg-white px-2 py-1 rounded-lg border border-slate-200 inline-block w-max text-xs"><i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($this->jadwal->tanggal_mcu)->format('d M') }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Status</span>
+                            <span class="font-bold px-2 py-1 rounded-lg text-[11px] w-max border shadow-sm
+                                @if($this->jadwal->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 
+                                @elseif($this->jadwal->status === 'Present') bg-blue-50 text-blue-600 border-blue-200 
+                                @else bg-emerald-50 text-emerald-600 border-emerald-200 @endif">
+                                {{ $this->jadwal->status }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-center space-x-4">
-                <button 
-                    wire:click="cancelRegistration" 
-                    class="px-5 py-2 rounded-lg font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition duration-300 text-sm">
-                    Batal
+            <div class="flex flex-col gap-2.5 relative z-10">
+                <button wire:click="continueRegistration" class="w-full py-3 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 shadow-lg hover:-translate-y-0.5 transition-all text-xs">
+                    Ya, Lanjutkan Registrasi
                 </button>
-                <button 
-                    wire:click="continueRegistration" 
-                    class="px-5 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition duration-300 text-sm">
-                    Lanjutkan
+                <button wire:click="cancelRegistration" class="w-full py-3 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-800 transition-colors text-xs">
+                    Batalkan
                 </button>
             </div>
         </div>
     </div>
     @endif
+
+    <style>
+        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* PERBAIKAN WARNA TEKS SCANNER */
+        #qr-reader { border: none !important; color: #f8fafc !important; }
+        #qr-reader a { color: #60a5fa !important; text-decoration: none; font-weight: bold; }
+        #qr-reader a:hover { color: #93c5fd !important; text-decoration: underline; }
+        #qr-reader span { color: #cbd5e1 !important; margin-bottom: 5px; display: inline-block; font-size: 0.75rem; text-align: center;}
+        #qr-reader__dashboard_section_csr span { color: #ef4444 !important; } 
+    </style>
 </div>
 
 @push('scripts')
@@ -77,27 +117,29 @@
             html5QrcodeScanner.pause(); 
             Livewire.dispatch('qrCodeScanned', { uuid: decodedText });
         }
-
-        function onScanFailure(error) {
-            console.warn(`Code scan error = ${error}`);
-        }
+        function onScanFailure(error) { /* Diamkan console spam */ }
 
         let html5QrcodeScanner;
-
         function startScanner() {
             html5QrcodeScanner = new Html5QrcodeScanner(
-                "qr-reader", { fps: 10, qrbox: { width: 300, height: 300 }, aspectRatio: 1.777778 });
-            
+                "qr-reader", { 
+                    fps: 10, 
+                    qrbox: { width: 250, height: 250 }, 
+                    aspectRatio: 1.333334 // Rasio 4:3 Webcam
+                });
             html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            
+            setTimeout(() => {
+                const btnStart = document.getElementById('html5-qrcode-button-camera-start');
+                const btnStop = document.getElementById('html5-qrcode-button-camera-stop');
+                const btnFile = document.getElementById('html5-qrcode-button-file-selection');
+                if(btnStart) btnStart.className = "bg-blue-600 text-white font-bold py-1.5 px-3 rounded-lg m-1 text-xs hover:bg-blue-700 transition";
+                if(btnStop) btnStop.className = "bg-red-600 text-white font-bold py-1.5 px-3 rounded-lg m-1 text-xs hover:bg-red-700 transition";
+                if(btnFile) btnFile.className = "bg-slate-700 text-white font-bold py-1.5 px-3 rounded-lg m-1 mt-3 text-xs hover:bg-slate-600 transition block mx-auto";
+            }, 500);
         }
 
-        document.addEventListener('livewire:initialized', () => {
-             startScanner();
-        });
-
-        Livewire.on('qrScanResumed', () => {
-            html5QrcodeScanner.resume();
-        });
-        
+        document.addEventListener('livewire:initialized', () => { startScanner(); });
+        Livewire.on('qrScanResumed', () => { html5QrcodeScanner.resume(); });
     </script>
 @endpush

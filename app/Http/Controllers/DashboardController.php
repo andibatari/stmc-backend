@@ -32,6 +32,54 @@ class DashboardController extends Controller
         $totalPasienHariIni = JadwalMcu::whereDate('tanggal_mcu', $today)->count();
         $totalJadwalMcu = JadwalMcu::count();
 
+        // ========================================================
+        // 🌟 FITUR BARU 1: DATA KINERJA KLINIK HARI INI
+        // ========================================================
+        // Asumsi: Pasien yang sedang MCU hari ini, tetapi kolom 'kategori_resume' nya masih kosong
+        // (GANTI 'kategori_resume' dengan nama kolom yang benar di tabel database jadwal_mcus kamu)
+        $pasienMenungguResume = JadwalMcu::whereDate('tanggal_mcu', $today)
+                                         ->where('status', 'Present') 
+                                         ->whereNull('resume_kategori') // <-- GANTI INI JIKA NAMA KOLOMNYA BEDA
+                                         ->count();
+                                         
+        // Asumsi: Resume selesai = jadwal yang statusnya sudah 'Finished' dan di-update hari ini
+        $resumeSelesaiHariIni = JadwalMcu::whereDate('updated_at', $today)
+                                         ->where('status', 'Finished')
+                                         ->count();
+
+        // ========================================================
+        // 🌟 FITUR BARU 2: DATA GRAFIK KELAYAKAN KERJA (TAHUN BERJALAN)
+        // ========================================================
+        $tahunIni = Carbon::now()->year;
+        
+        // Ambil data kelayakan dari tabel JadwalMcu
+        // (GANTI 'resume_kategori' dengan nama kolom yang benar di database kamu)
+        $kelayakan = JadwalMcu::select('resume_kategori', DB::raw('count(*) as total'))
+            ->whereYear('tanggal_mcu', $tahunIni)
+            ->whereNotNull('resume_kategori')
+            ->groupBy('resume_kategori')
+            ->pluck('total', 'resume_kategori')
+            ->toArray();
+
+        // Memetakan hasil inputan dokter ke dalam 3 kategori utama grafik
+        // Karena dokter menginput teks manual (misal: "Fit With Note (K2)"), 
+        // kita menggunakan simbol ?? untuk menangkap berbagai variasi ketikan dokter.
+        $dataKelayakan = [
+            'Fit To Work (K1)' => 
+                ($kelayakan['Fit To Work (K1)'] ?? 0) + ($kelayakan['Fit to Work'] ?? 0) + ($kelayakan['Fit To Work'] ?? 0),
+                
+            'Fit With Note (K2)' => 
+                ($kelayakan['Fit With Note (K2)'] ?? 0) + ($kelayakan['Fit with Note'] ?? 0) + ($kelayakan['Fit With Note'] ?? 0),
+                
+            'Fit With Restrictive (K3)' => 
+                ($kelayakan['Fit With Restrictive (K3)'] ?? 0),
+                
+            'Temporary Unfit (K4)' => 
+                ($kelayakan['Temporary Unfit (K4)'] ?? 0),
+                
+            'Unfit (K5)' => 
+                ($kelayakan['Unfit (K5)'] ?? 0) + ($kelayakan['Unfit'] ?? 0),
+        ];
 
         // 1. Analitik Data Grafik Tahunan (Perbedaan Karyawan vs Non-Karyawan)
         $analytics = $this->getMcuAnalytics();
@@ -50,7 +98,10 @@ class DashboardController extends Controller
             'totalDokter' => $totalDokter,
             'totalPasienHariIni' => $totalPasienHariIni,
             'totalJadwalMcu' => $totalJadwalMcu,
-            
+            'pasienMenungguResume' => $pasienMenungguResume,
+            'resumeSelesaiHariIni' => $resumeSelesaiHariIni,
+            'dataKelayakan' => $dataKelayakan,
+
             // Data Grafik
             'mcuCountsByYear' => $analytics['mcuCountsByYear'],
             'karyawanCounts' => $analytics['karyawanCounts'],

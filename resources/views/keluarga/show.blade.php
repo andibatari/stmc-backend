@@ -2,8 +2,7 @@
 @section('title', 'Detail Pasien')
 
 @section('content')
-<div class="container mx-auto ">
+<div class="px-2 md:px-4 lg:px-6 py-4 min-h-screen">
     <livewire:peserta-mcu-detail-manager :pesertaMcu="$pesertaMcu" />
 </div>
 @endsection
-

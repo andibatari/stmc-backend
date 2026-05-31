@@ -1,69 +1,90 @@
-@section('title', 'Detail Karyawan')
+@section('title', 'Profil & Riwayat MCU')
 
-{{-- OUTER CONTAINER: Padding vertikal atas (pt-2) & horizontal minimal (px-0) untuk lebar maksimal --}}
-<div class="pt-2 pb-4 px-0 md:pt-8 md:pb-8 md:px-4 lg:max-w-6xl lg:mx-auto"> 
+<div class="w-full max-w-7xl mx-auto"> 
     
-    {{-- LAYOUT UTAMA: Tambahkan px-2 di sini untuk memberikan sedikit ruang di tepi layar --}}
-    <div class="flex flex-col lg:flex-row gap-4 md:gap-6 px-2 sm:px-4"> 
+    {{-- Header Back & Title --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">Profil Pasien</h1>
+            <p class="text-sm font-medium text-slate-500 mt-1">Pusat data identitas dan histori medical check-up.</p>
+        </div>
+        <a href="{{ route('karyawan.index') }}" class="inline-flex items-center justify-center bg-white border border-slate-200 text-slate-600 font-bold py-2.5 px-5 rounded-xl hover:bg-slate-50 hover:-translate-x-1 transition-all text-sm shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar
+        </a>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-6"> 
         
-        {{-- KOLOM KIRI (PROFIL DAN KELUARGA) --}}
-        <div class="w-full lg:w-1/3">
+        {{-- KOLOM KIRI (PROFIL & TANGGUNGAN) --}}
+        <div class="w-full lg:w-[380px] shrink-0 space-y-6">
             
-            {{-- KARTU 1: DATA PROFIL KARYAWAN --}}
-            <div class="p-3 bg-white rounded-xl shadow-xl border border-gray-100 mb-4">
-                <div class="flex flex-col items-center text-center">
-                    {{-- Foto Profil --}}
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 bg-gray-200 flex items-center justify-center rounded-full shadow-lg border-4 border-red-100 mb-3 overflow-hidden">
+            {{-- KARTU 1: IDENTITAS PASIEN AKTIF --}}
+            <div class="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-br from-red-600 to-red-900 opacity-90 rounded-t-[2rem]"></div>
+                
+                <div class="relative mt-6 mb-4">
+                    <div class="w-28 h-28 mx-auto bg-white rounded-full p-1 shadow-xl ring-4 ring-white relative z-10">
                         @if($activeUser->foto_profil)
-                            <img src="{{ Storage::disk('s3')->url($activeUser->foto_profil) }}" 
-                                alt="Profil" class="w-full h-full object-cover">
+                            <img src="{{ Storage::disk('s3')->url($activeUser->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-full">
                         @else
-                            {{-- Ikon Default jika foto tidak ada --}}
-                            <svg class="w-12 h-12 sm:w-14 sm:h-14 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                            </svg>
+                            <div class="w-full h-full bg-slate-100 flex items-center justify-center rounded-full text-slate-300">
+                                <i class="fas fa-user text-4xl"></i>
+                            </div>
                         @endif
                     </div>
-                    {{-- Nama Dinamis --}}
-                    <h2 class="text-base sm:text-lg font-bold text-gray-800">{{ $activeUser->nama_lengkap ?? $activeUser->nama_karyawan }}</h2>
-                    <p class="text-xs sm:text-sm text-gray-500">{{ $activeUser->unitKerja->nama_unit_kerja ?? 'N/A' }}</p>
                 </div>
-                <div class="mt-4 text-center border-t pt-4">
-                    <p class="text-gray-500 font-semibold text-xs">No SAP: <span class="text-gray-900 font-normal">{{ $activeUser->no_sap ?? $activeUser->no_sap }}</span></p>
-                    <p class="text-gray-500 font-semibold text-xs">NIK: <span class="text-gray-900 font-normal">{{ $activeUser->nik_pasien ?? $activeUser->nik_karyawan }}</span></p>
+
+                <h2 class="text-xl font-black text-slate-800">{{ $activeUser->nama_lengkap ?? $activeUser->nama_karyawan }}</h2>
+                <p class="text-xs font-bold text-red-600 mt-1 uppercase tracking-widest">{{ $activeUser->unitKerja->nama_unit_kerja ?? 'PASIEN UMUM / KELUARGA' }}</p>
+
+                <div class="mt-6 flex flex-col gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400">ID / SAP</span>
+                        <span class="text-sm font-mono font-black text-slate-700">{{ $activeUser->no_sap ?? $activeUser->no_sap ?? '-' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-400">NIK (KTP)</span>
+                        <span class="text-sm font-mono font-black text-slate-700">{{ $activeUser->nik_pasien ?? $activeUser->nik_karyawan }}</span>
+                    </div>
                 </div>
             </div>
 
-            {{-- KARTU 2: DATA KELUARGA / NAVIGASI PESERTA --}}
-            <div class="p-3 bg-white rounded-xl shadow-xl border border-gray-100">
-                <h3 class="text-base font-bold text-gray-800 mb-3 flex justify-between items-center border-b pb-2">
-                    Data Keluarga
-                    <a href="{{ route('karyawan.add.keluarga', ['karyawan_id' => $karyawan->id]) }}" class="inline-flex items-center bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2 rounded-full shadow-md transition duration-200 ease-in-out text-xs">
-                        <i class="fas fa-plus h-3 w-3"></i>
+            {{-- KARTU 2: DAFTAR KELUARGA / TANGGUNGAN --}}
+            <div class="bg-white p-6 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+                <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center">
+                        <i class="fas fa-users text-slate-400 mr-2"></i> Data Keluarga
+                    </h3>
+                    <a href="{{ route('karyawan.add.keluarga', ['karyawan_id' => $karyawan->id]) }}" title="Tambah Anggota" class="w-8 h-8 bg-emerald-50 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg flex items-center justify-center transition-colors">
+                        <i class="fas fa-plus text-xs"></i>
                     </a>
-                </h3>
+                </div>
                 
-                <div class="flex flex-wrap gap-2"> 
-                    <button wire:click="selectKaryawan" @class(['inline-flex items-center justify-center font-bold py-1.5 px-2 rounded-lg shadow-md transition duration-200 ease-in-out text-xs flex-grow', 'bg-red-600 hover:bg-red-700 text-white' => $activeUser->id === $karyawan->id, 'bg-gray-200 hover:bg-gray-300 text-gray-700' => $activeUser->id !== $karyawan->id,])>
-                        <i class="fas fa-user-tie h-3 w-3 mr-1"></i> Karyawan
+                <div class="flex flex-col gap-3"> 
+                    <button wire:click="selectKaryawan" class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all font-bold text-sm @if($activeUser->id === $karyawan->id) border-red-500 bg-red-50 text-red-700 shadow-sm @else border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600 @endif">
+                        <div class="flex items-center"><i class="fas fa-user-tie w-6 text-left opacity-70"></i> Data Karyawan (Utama)</div>
+                        @if($activeUser->id === $karyawan->id) <i class="fas fa-check-circle text-red-500"></i> @endif
                     </button>
                     
                     @if ($pesertaIstri)
-                    <button wire:click="selectIstri" @class(['inline-flex items-center justify-center font-bold py-1.5 px-2 rounded-lg shadow-md transition duration-200 ease-in-out text-xs flex-grow', 'bg-red-600 hover:bg-red-700 text-white' => $activeUser->id === $pesertaIstri->id, 'bg-gray-200 hover:bg-gray-300 text-gray-700' => $activeUser->id !== $pesertaIstri->id,])>
-                        <i class="fas fa-heart h-3 w-3 mr-1"></i> Istri
+                    <button wire:click="selectIstri" class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all font-bold text-sm @if($activeUser->id === $pesertaIstri->id) border-red-500 bg-red-50 text-red-700 shadow-sm @else border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600 @endif">
+                        <div class="flex items-center"><i class="fas fa-female w-6 text-left opacity-70"></i> Istri</div>
+                        @if($activeUser->id === $pesertaIstri->id) <i class="fas fa-check-circle text-red-500"></i> @endif
                     </button>
                     @endif
 
                     @if ($pesertaSuami)
-                    <button wire:click="selectSuami" @class(['inline-flex items-center justify-center font-bold py-1.5 px-2 rounded-lg shadow-md transition duration-200 ease-in-out text-xs flex-grow', 'bg-red-600 hover:bg-red-700 text-white' => $activeUser->id === $pesertaSuami->id, 'bg-gray-200 hover:bg-gray-300 text-gray-700' => $activeUser->id !== $pesertaSuami->id,])>
-                        <i class="fas fa-heart h-3 w-3 mr-1"></i> Suami
+                    <button wire:click="selectSuami" class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all font-bold text-sm @if($activeUser->id === $pesertaSuami->id) border-red-500 bg-red-50 text-red-700 shadow-sm @else border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600 @endif">
+                        <div class="flex items-center"><i class="fas fa-male w-6 text-left opacity-70"></i> Suami</div>
+                        @if($activeUser->id === $pesertaSuami->id) <i class="fas fa-check-circle text-red-500"></i> @endif
                     </button>
                     @endif
 
                     @if(isset($pesertaAnak) && $pesertaAnak->count() > 0)
                         @foreach ($pesertaAnak as $index => $anak)
-                        <button wire:click="selectAnak({{ $anak->id }})" @class(['inline-flex items-center justify-center font-bold py-1.5 px-2 rounded-lg shadow-md transition duration-200 ease-in-out text-xs flex-grow', 'bg-red-600 hover:bg-red-700 text-white' => $activeUser->id === $anak->id, 'bg-gray-200 hover:bg-gray-300 text-gray-700' => $activeUser->id !== $anak->id,])>
-                            <i class="fas fa-child h-3 w-3 mr-1"></i> Anak {{ $index + 1 }}
+                        <button wire:click="selectAnak({{ $anak->id }})" class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all font-bold text-sm @if($activeUser->id === $anak->id) border-red-500 bg-red-50 text-red-700 shadow-sm @else border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600 @endif">
+                            <div class="flex items-center"><i class="fas fa-child w-6 text-left opacity-70"></i> Anak Ke-{{ $index + 1 }}</div>
+                            @if($activeUser->id === $anak->id) <i class="fas fa-check-circle text-red-500"></i> @endif
                         </button>
                         @endforeach
                     @endif
@@ -71,119 +92,97 @@
             </div>
         </div>
 
-        {{-- KOLOM KANAN (DATA & RIWAYAT MCU) --}}
-        <div class="w-full lg:w-2/3"> 
-            <div class="bg-white rounded-xl shadow-xl border border-gray-100">
+        {{-- KOLOM KANAN (DATA DIRI & RIWAYAT) --}}
+        <div class="w-full flex-1"> 
+            <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden min-h-[500px]">
                 
-                <div class="bg-gray-50 rounded-xl shadow-md border border-gray-200">
-                    
-                    {{-- Navigasi Tabs --}}
-                    <div class="flex border-b border-gray-200">
-                        <button wire:click="changeTab('data')" @class(['py-3 px-4 md:py-4 md:px-6 font-semibold text-sm transition-colors duration-200', 'bg-white border-b-2 border-red-500 text-red-600' => $activeTab === 'data', 'text-gray-600 hover:text-red-600' => $activeTab !== 'data',])>
-                            Data
-                        </button>
-                        <button wire:click="changeTab('riwayat')" @class(['py-3 px-4 md:py-4 md:px-6 font-semibold text-sm transition-colors duration-200', 'bg-white border-b-2 border-red-500 text-red-600' => $activeTab === 'riwayat', 'text-gray-600 hover:text-red-600' => $activeTab !== 'riwayat',])>
-                            Riwayat MCU
-                        </button>
-                    </div>
+                {{-- Modern Tab Navigation --}}
+                <div class="flex p-2 m-4 bg-slate-100 rounded-2xl w-max">
+                    <button wire:click="changeTab('data')" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 @if($activeTab === 'data') bg-white text-slate-800 shadow-sm @else text-slate-500 hover:text-slate-700 @endif">
+                        <i class="fas fa-id-card mr-2 opacity-70"></i> Data Lengkap
+                    </button>
+                    <button wire:click="changeTab('riwayat')" class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 @if($activeTab === 'riwayat') bg-white text-slate-800 shadow-sm @else text-slate-500 hover:text-slate-700 @endif">
+                        <i class="fas fa-file-medical-alt mr-2 opacity-70"></i> Histori MCU
+                    </button>
+                </div>
 
-                    {{-- Konten Tab --}}
-                    <div class="p-3 sm:p-4 md:p-6">
-                        @if ($activeTab === 'data')
-                            @if ($activeUser)
-                                @include('livewire.partials.user-data', ['user' => $activeUser, 'karyawan' => $karyawan])
-                            @else
-                                <div class="text-center text-gray-500 text-sm">Data tidak ditemukan.</div>
-                            @endif
+                <div class="p-6 md:p-8 pt-2">
+                    {{-- TAB 1: DATA LENGKAP --}}
+                    @if ($activeTab === 'data')
+                        <div class="animate-fade-in">
+                        @if ($activeUser)
+                            @include('livewire.partials.user-data', ['user' => $activeUser, 'karyawan' => $karyawan])
+                        @else
+                            <div class="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100">Data profil tidak ditemukan.</div>
                         @endif
-                        
-                        @if ($activeTab === 'riwayat')
-                            @if ($activeUser)
-                                
-                                {{-- === FILTER TAHUN BARU === --}}
-                                <div class="mb-4 flex flex-col md:flex-row md:items-center md:space-x-3">
-                                    <label for="filter-year" class="block text-sm font-semibold text-gray-700 mb-1 md:mb-0">Filter Tahun:</label>
-                                    
-                                    {{-- Mengikat (binding) ke property Livewire 'selectedYear' --}}
-                                    <select 
-                                        wire:model.live="selectedYear" 
-                                        id="filter-year" 
-                                        class="mt-1 block w-full md:w-auto rounded-lg border-gray-300 shadow-sm text-sm p-2 focus:border-red-500 focus:ring-red-500"
-                                    >
-                                        {{-- Opsi Default --}}
-                                        <option value="">Semua Tahun</option>
-                                        
-                                        @php
-                                            // Menghasilkan opsi tahun secara dinamis (Anda harus menyediakan daftar tahun yang ada di Livewire PHP)
-                                            $currentYear = date('Y');
-                                            $startYear = 2020; 
-                                        @endphp
-                                        
-                                        {{-- Menghasilkan opsi tahun --}}
-                                        @for ($year = $currentYear; $year >= $startYear; $year--)
-                                            {{-- Nilai yang di-filter harus berupa integer tahun --}}
+                        </div>
+                    @endif
+                    
+                    {{-- TAB 2: RIWAYAT MCU --}}
+                    @if ($activeTab === 'riwayat')
+                        <div class="animate-fade-in">
+                        @if ($activeUser)
+                            
+                            {{-- Filter Tahun --}}
+                            <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                                <h3 class="font-black text-lg text-slate-800">Daftar Kunjungan Medical Check-Up</h3>
+                                <div class="flex items-center gap-3">
+                                    <label class="text-xs font-bold text-slate-500 uppercase">Tahun:</label>
+                                    <select wire:model.live="selectedYear" class="block rounded-xl border border-slate-200 bg-white shadow-sm text-sm font-bold p-2 focus:border-red-500 focus:ring-red-500 cursor-pointer">
+                                        <option value="">Semua Riwayat</option>
+                                        @for ($year = date('Y'); $year >= 2020; $year--)
                                             <option value="{{ $year }}">{{ $year }}</option>
                                         @endfor
                                     </select>
                                 </div>
-                                {{-- ========================== --}}
+                            </div>
 
-
-                                {{-- BLOK DESKTOP: Tabel Tradisional (Muncul jika md ke atas) --}}
-                                <div class="hidden md:block">
-                                    {{-- ASUMSI: $activeUser->jadwalMcu di sini sudah DIFILTER oleh Livewire PHP --}}
-                                    @include('livewire.partials.riwayat-mcu-table', ['user' => $activeUser, 'riwayatMcu' => $activeUser->jadwalMcu])
-                                </div>
-                                
-                                {{-- BLOK MOBILE: Card View (Muncul jika di bawah md) --}}
-                                <div class="md:hidden space-y-3">
-                                    <h4 class="text-sm font-bold text-gray-700 border-b pb-2">Riwayat MCU</h4>
-                                    
-                                    @php
-                                        // Variabel ini harusnya sudah terfilter oleh Livewire PHP berdasarkan $selectedYear
-                                        $mobileRiwayat = $filteredRecords;
-                                    @endphp
-                                    
-                                    @if($mobileRiwayat->count() > 0)
-                                        @foreach($mobileRiwayat as $index => $riwayat)
-                                            <div class="border border-gray-200 bg-white p-3 rounded-lg shadow-sm space-y-1 text-xs">
-                                                <div class="flex justify-between border-b pb-1">
-                                                    <span class="font-semibold text-gray-600">No:</span>
-                                                    <span class="font-bold text-red-600">{{ $index + 1 }}</span>
+                            {{-- Tampilan Desktop (Tabel) --}}
+                            <div class="hidden md:block">
+                                @include('livewire.partials.riwayat-mcu-table', ['user' => $activeUser, 'riwayatMcu' => $activeUser->jadwalMcu])
+                            </div>
+                            
+                            {{-- Tampilan Mobile (Card View) --}}
+                            <div class="md:hidden space-y-4">
+                                @if($filteredRecords->count() > 0)
+                                    @foreach($filteredRecords as $index => $riwayat)
+                                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 hover:shadow-md transition-shadow">
+                                            <div class="flex justify-between items-start mb-3 border-b border-slate-100 pb-3">
+                                                <div>
+                                                    <span class="text-[10px] font-black uppercase text-slate-400">Tanggal Periksa</span>
+                                                    <p class="font-bold text-slate-800 text-sm mt-0.5">{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d F Y') }}</p>
                                                 </div>
-                                                <div class="flex justify-between border-b pb-1">
-                                                    <span class="font-semibold text-gray-600">Tanggal:</span>
-                                                    <span>{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d F Y') }}</span>
-                                                </div>
-                                                <div class="flex justify-between border-b pb-1">
-                                                    <span class="font-semibold text-gray-600">Dokter:</span>
-                                                    <span class="truncate max-w-[50%]">{{ $riwayat->dokter->nama_lengkap ?? 'N/A' }}</span>
-                                                </div>
-                                                <div class="flex justify-between items-center pt-1">
-                                                    <span class="font-semibold text-gray-600">Status:</span>
-                                                    <span class="px-2 py-0.5 rounded-full text-xs font-bold 
-                                                        @if($riwayat->status === 'Scheduled') bg-yellow-100 text-yellow-800
-                                                        @else bg-green-100 text-green-800 @endif">
-                                                        {{ $riwayat->status ?? 'N/A' }}
-                                                    </span>
-                                                </div>
-                                                <div class="text-right pt-2 border-t mt-2">
-                                                    <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold text-xs">Lihat Detail &raquo;</a>
-                                                </div>
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border @if($riwayat->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @elseif($riwayat->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @else bg-slate-50 text-slate-600 border-slate-200 @endif">
+                                                    {{ $riwayat->status ?? 'N/A' }}
+                                                </span>
                                             </div>
-                                        @endforeach
-                                    @else
-                                        {{-- Pesan tidak ada riwayat --}}
-                                        <div class="text-center text-gray-500 text-sm p-4 bg-white rounded-lg">Tidak ada riwayat MCU.</div>
-                                    @endif
-                                </div>
-                            @else
-                                <div class="text-center text-gray-500 text-sm">Riwayat tidak ditemukan.</div>
-                            @endif
+                                            <div class="mb-4">
+                                                <span class="text-[10px] font-black uppercase text-slate-400">Dokter PIC</span>
+                                                <p class="font-medium text-slate-600 text-sm mt-0.5 truncate"><i class="fas fa-user-md mr-1.5 opacity-50"></i>{{ $riwayat->dokter->nama_lengkap ?? 'Belum Ditentukan' }}</p>
+                                            </div>
+                                            <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="block w-full py-2.5 text-center text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700 transition-colors">Buka Hasil Lab / Detail</a>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="py-10 bg-slate-50 text-center rounded-2xl border border-slate-100">
+                                        <i class="fas fa-folder-open text-3xl text-slate-300 mb-2"></i>
+                                        <p class="text-sm font-bold text-slate-400">Tidak ada riwayat untuk tahun ini.</p>
+                                    </div>
+                                @endif
+                            </div>
+
+                        @else
+                            <div class="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100">Pilih anggota keluarga terlebih dahulu.</div>
                         @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+
+    <style>
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </div>

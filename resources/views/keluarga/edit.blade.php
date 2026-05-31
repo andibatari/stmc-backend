@@ -1,30 +1,28 @@
 @extends('layouts.app')
-
-@section('title', 'Edit Data Pasien Non Karyawan')
+@section('title', 'Edit Data Pasien Umum')
 
 @section('content')
-<div class="container mx-auto p-2">
-    
+<div class="px-2 md:px-6 py-6 min-h-screen">
     @livewire('keluarga-edit', ['keluarga' => $keluarga])
-
 </div>
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        Livewire.on('keluargaUpdated', () => {
-            Swal.fire({
-                title: 'Berhasil!',
-                text: 'Data berhasil diperbarui.',
-                icon: 'success',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#dc2626'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ route('karyawan.index', $keluarga->karyawan_id) }}";
-                }
-            });
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    Livewire.on('keluargaUpdated', () => {
+        Swal.fire({
+            title: 'Berhasil!',
+            text: 'Data pasien berhasil diperbarui.',
+            icon: 'success',
+            confirmButtonText: 'Lanjutkan',
+            confirmButtonColor: '#dc2626',
+            customClass: { popup: 'rounded-[2rem]' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('karyawan.index', $keluarga->karyawan_id) }}";
+            }
         });
-    </script>
+    });
+</script>
 @endpush
-@endsection
+@endsection.

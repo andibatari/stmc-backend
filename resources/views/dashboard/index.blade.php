@@ -3,172 +3,162 @@
 @section('content')
 
     <div class="bg-gray-100 min-h-screen p-4 lg:p-6">
-        <div class="container mx-auto">
+        {{-- max-w-7xl akan mencegah layar terlalu melar di monitor PC yang lebar --}}
+        <div class="container mx-auto max-w-7xl"> 
             <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-6 lg:mb-8">Dashboard Admin</h1>
 
-            <div class="mb-6 lg:mb-8 grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                
-                {{-- KARTU 1: Karyawan Belum MCU --}}
-                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 flex flex-col justify-center transition-transform duration-200 hover:scale-[1.03] border-t-4 border-red-500">
-                    <p class="text-xs lg:text-sm font-medium text-red-500 mb-1">Karyawan Belum MCU (1 Thn Terakhir)</p>
-                    <p class="text-3xl lg:text-4xl font-bold text-red-700">{{ $karyawanBelumMcu }}</p>
-                    <p class="text-xs lg:text-sm text-gray-500 mt-2">Dari total {{ $totalKaryawan }} Karyawan</p>
-                </div>
-
-                {{-- KARTU 2: Karyawan Sudah MCU --}}
-                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 flex flex-col justify-center transition-transform duration-200 hover:scale-[1.03] border-t-4 border-green-500">
-                    <p class="text-xs lg:text-sm font-medium text-green-500 mb-1">Karyawan Sudah MCU</p>
-                    <p class="text-3xl lg:text-4xl font-bold text-green-700">{{ $karyawanSudahMcu }}</p>
-                    <p class="text-xs lg:text-sm text-gray-500 mt-2">Progress: {{ $persenSelesai }}%</p>
-                </div>
-
-                {{-- KARTU 3: Total Area Bermasalah (Pemantauan Lingkungan) --}}
-                <a href="{{ route('pemantauan.index') }}" 
-                    id="lingkungan-card" 
-                    class="bg-white rounded-xl shadow-lg p-4 lg:p-6 flex flex-col justify-center transition-transform duration-200 hover:scale-[1.03] border-t-4 
-                    {{ $areaBermasalah > 0 ? 'border-orange-500 hover:shadow-orange-200' : 'border-gray-300' }}"
-                >
-                    <p class="text-xs lg:text-sm font-medium {{ $areaBermasalah > 0 ? 'text-orange-500' : 'text-gray-500' }} mb-1">
-                        Total Area Bermasalah
-                    </p>
-                    <p class="text-3xl lg:text-4xl font-bold {{ $areaBermasalah > 0 ? 'text-orange-700' : 'text-gray-600' }}" id="area-count-display">
-                        {{ $areaBermasalah }}
-                    </p>
-                    <p class="text-xs lg:text-sm text-gray-500 mt-2" id="area-name-display">
-                        @if ($areaBermasalah > 0)
-                            Tekan untuk detail Area
-                        @else
-                            Semua area aman dari NAB
-                        @endif
-                    </p>
-                </a>
-                
-                {{-- KARTU 4: Pasien Hari Ini (Gaya yang berbeda di Mobile/Desktop) --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
+            <div class="mb-2 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-700">Operasional Klinik (Hari Ini)</h2>
+            </div>
+            <div class="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                {{-- KARTU: Pasien Hari Ini --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-center justify-between transition-transform hover:-translate-y-1">
                     <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Pasien Hari Ini</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{$totalPasienHariIni}}</p>
+                        <p class="text-sm font-medium text-gray-500 mb-1">Total Pasien Hadir</p>
+                        <p class="text-3xl font-black text-indigo-700">{{$totalPasienHariIni}}</p>
                     </div>
                     <div class="bg-indigo-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                        <svg class="h-7 w-7 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                         </svg>
                     </div>
                 </div>
 
-                {{-- KARTU 5: Total Pengajuan Jadwal --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
+                {{-- KARTU: Menunggu Resume --}}
+                <div class="bg-red-50 rounded-xl shadow-sm border border-red-200 p-5 flex items-center justify-between transition-transform hover:-translate-y-1">
                     <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Total Pengajuan Jadwal</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{$totalJadwalMcu}}</p>
+                        <p class="text-sm font-medium text-red-600 mb-1">Menunggu Resume Dokter</p>
+                        <p class="text-3xl font-black text-red-800">{{ $pasienMenungguResume }} <span class="text-sm font-normal text-red-600">Pasien</span></p>
                     </div>
-                    <div class="bg-pink-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <svg class="h-7 w-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                 </div>
 
-                {{-- KARTU 6: Total Karyawan --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
+                {{-- KARTU: Resume Selesai --}}
+                <div class="bg-green-50 rounded-xl shadow-sm border border-green-200 p-5 flex items-center justify-between transition-transform hover:-translate-y-1">
                     <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Total Karyawan</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ $totalKaryawan }}</p>
-                    </div>
-                    <div class="bg-blue-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-
-                {{-- KARTU 7: Total Non PTST --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
-                    <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Total Non PTST</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{ $totalPesertaMcu }}</p>
+                        <p class="text-sm font-medium text-green-600 mb-1">Resume Selesai</p>
+                        <p class="text-3xl font-black text-green-800">{{ $resumeSelesaiHariIni }} <span class="text-sm font-normal text-green-600">Selesai</span></p>
                     </div>
                     <div class="bg-green-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                    </div>
-                </div>
-
-                {{-- KARTU 8: Unit Kerja Aktif --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
-                    <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Unit Kerja Aktif</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{$totalUnitKerja}}</p>
-                    </div>
-                    <div class="bg-yellow-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m-4 0v-7a1 1 0 011-1h2a1 1 0 011 1v7m-4 0v-7a1 1 0 011-1h2a1 1 0 011 1v7m-4 0h6"></path>
-                        </svg>
-                    </div>
-                </div>
-                
-                {{-- KARTU 9: Departemen Aktif --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
-                    <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Departemen Aktif</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{$totalDepartemen}}</p>
-                    </div>
-                    <div class="bg-purple-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-                        </svg>
-                    </div>
-                </div>
-
-                {{-- KARTU 10: Dokter (Ini adalah duplikat dari Pasien Hari Ini di kode asli, saya asumsikan ini Dokter) --}}
-                <div class="bg-white rounded-xl shadow-md p-4 lg:p-6 flex items-center justify-between transition-transform duration-200 hover:scale-105">
-                    <div>
-                        <p class="text-xs lg:text-sm font-medium text-gray-500 mb-1">Dokter</p>
-                        <p class="text-2xl lg:text-3xl font-bold text-gray-900">{{$totalDokter}}</p>
-                    </div>
-                    <div class="bg-cyan-100 p-3 rounded-full">
-                        <svg class="h-6 w-6 lg:h-8 lg:w-8 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        {{-- Ikon Clipboard Check yang sudah diperbaiki --}}
+                        <svg class="h-7 w-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
                         </svg>
                     </div>
                 </div>
             </div>
-            
-            {{-- BAGIAN BAWAH: GRAFIK & NOTIFIKASI --}}
-            <div class="mt-4 lg:mt-6">
-                <div class="bg-white rounded-xl shadow-lg p-4 lg:p-6 w-full">
-                    <h2 class="text-base lg:text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Analitik & Tren Pasien MCU Tahunan</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-                        {{-- Grafik Kiri --}}
-                        <div>
-                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Total Seluruh Pasien MCU</p>
-                            <div style="height: 300px;"><canvas id="totalMcuChart" class="w-full h-full"></canvas></div>
-                        </div>
 
-                        {{-- Grafik Kanan --}}
-                        <div>
-                            <p class="text-xs lg:text-sm font-medium text-gray-600 mb-2">Perbandingan Karyawan vs Non PTST</p>
-                            <div style="height: 300px;"><canvas id="categoryMcuChart" class="w-full h-full"></canvas></div>
-                        </div>
+            <div class="mb-2 flex items-center justify-between mt-8">
+                <h2 class="text-lg font-bold text-gray-700">Analitik & Tren Karyawan</h2>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                
+                {{-- Grafik Kiri: Kelayakan Kerja (Donut dipindahkan ke sini agar kecil & ramping) --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 border-t-4 border-t-indigo-500 flex flex-col">
+                    <h3 class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wide">Status Kelayakan Kerja</h3>
+                    {{-- Tinggi dibatasi 250px agar proporsional --}}
+                    <div class="relative flex-grow" style="height: 250px; min-height: 250px;">
+                        <canvas id="kelayakanChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                {{-- Grafik Tengah: Total Seluruh Pasien MCU --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col">
+                    <h3 class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wide">Tren Pasien MCU Tahunan</h3>
+                    <div class="relative flex-grow" style="height: 250px; min-height: 250px;">
+                        <canvas id="totalMcuChart" class="w-full h-full"></canvas>
+                    </div>
+                </div>
+
+                {{-- Grafik Kanan: Perbandingan Karyawan --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col">
+                    <h3 class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wide">Karyawan vs Non PTST</h3>
+                    <div class="relative flex-grow" style="height: 250px; min-height: 250px;">
+                        <canvas id="categoryMcuChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
             </div>
+
+            <div class="mb-2 flex items-center justify-between mt-8">
+                <h2 class="text-lg font-bold text-gray-700">Status MCU & Lingkungan</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
+                
+                <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-500">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Karyawan Belum MCU</p>
+                    <p class="text-3xl font-black text-red-600">{{ $karyawanBelumMcu }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Dalam 1 tahun terakhir</p>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-green-500">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Karyawan Sudah MCU</p>
+                    <p class="text-3xl font-black text-green-600">{{ $karyawanSudahMcu }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Progress: {{ $persenSelesai }}%</p>
+                </div>
+
+                <a href="{{ route('pemantauan.index') }}" id="lingkungan-card" 
+                   class="bg-white rounded-xl shadow-sm p-5 border-l-4 transition-colors duration-300 {{ $areaBermasalah > 0 ? 'border-orange-500 bg-orange-50' : 'border-gray-300' }}">
+                    <p class="text-xs font-bold uppercase tracking-wider mb-1 {{ $areaBermasalah > 0 ? 'text-orange-600' : 'text-gray-500' }}">Area Bermasalah (NAB)</p>
+                    <p class="text-3xl font-black {{ $areaBermasalah > 0 ? 'text-orange-700' : 'text-gray-700' }}" id="area-count-display">{{ $areaBermasalah }}</p>
+                    <p class="text-xs mt-1 font-medium {{ $areaBermasalah > 0 ? 'text-orange-600' : 'text-gray-400' }}" id="area-name-display">
+                        @if ($areaBermasalah > 0) Memuat detail... @else Semua aman @endif
+                    </p>
+                </a>
+
+                <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-blue-500">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Karyawan</p>
+                    <p class="text-3xl font-black text-blue-600">{{ $totalKaryawan }}</p>
+                    <p class="text-xs text-gray-400 mt-1">Semen Tonasa</p>
+                </div>
+            </div>
+
+            <div class="mb-2 flex items-center justify-between mt-8">
+                <h2 class="text-lg font-bold text-gray-700">Rekap Data Master</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 lg:gap-4">
+                
+                <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+                    <p class="text-2xl font-bold text-gray-800">{{$totalJadwalMcu}}</p>
+                    <p class="text-xs text-gray-500 uppercase mt-1">Total Jadwal</p>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+                    <p class="text-2xl font-bold text-gray-800">{{ $totalPesertaMcu }}</p>
+                    <p class="text-xs text-gray-500 uppercase mt-1">Non PTST</p>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+                    <p class="text-2xl font-bold text-gray-800">{{$totalUnitKerja}}</p>
+                    <p class="text-xs text-gray-500 uppercase mt-1">Unit Kerja</p>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+                    <p class="text-2xl font-bold text-gray-800">{{$totalDepartemen}}</p>
+                    <p class="text-xs text-gray-500 uppercase mt-1">Departemen</p>
+                </div>
+
+                <div class="bg-white rounded-lg border border-gray-200 p-4 text-center">
+                    <p class="text-2xl font-bold text-gray-800">{{$totalDokter}}</p>
+                    <p class="text-xs text-gray-500 uppercase mt-1">Dokter</p>
+                </div>
+            </div>
+
         </div>
     </div>
+
     {{-- Memuat Library Chart.js --}}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
 <script>
-    // Data dari Laravel Controller (JSON encoding)
     const labels = @json($years);
     const totalData = @json($mcuCountsByYear);
     const karyawanData = @json($karyawanCounts);
     const nonKaryawanData = @json($nonKaryawanCounts);
+    const kelayakanData = @json(array_values($dataKelayakan));
 
-    // Data yang akan menampung daftar nama area
-    let currentAreaNames = @json($lingkunganStatus['areaNames'] ?? []); // Ambil data awal dari Controller
+    let currentAreaNames = @json($lingkunganStatus['areaNames'] ?? []); 
     let areaIndex = 0;
 
     // --- Grafik 1: Total Pasien MCU Tahunan (Line Chart) ---
@@ -179,32 +169,26 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Total Pasien MCU',
+                    label: 'Total Pasien',
                     data: totalData,
-                    borderColor: 'rgb(59, 130, 246)', // Tailwind blue-500
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    tension: 0.3,
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgb(59, 130, 246)',
+                    tension: 0.4,
                     fill: true,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
+                scales: { y: { beginAtZero: true, border: {display: false} }, x: { grid: {display: false} } },
+                plugins: { legend: { display: false } }
             }
         });
     }
 
-    // --- Grafik 2: Perbandingan Karyawan vs Non-Karyawan (Stacked Bar Chart) ---
+    // --- Grafik 2: Perbandingan Karyawan vs Non-Karyawan (Bar Chart) ---
     const categoryMcuCtx = document.getElementById('categoryMcuChart');
     if (categoryMcuCtx) {
         new Chart(categoryMcuCtx, {
@@ -212,58 +196,77 @@
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        label: 'Karyawan',
-                        data: karyawanData,
-                        backgroundColor: 'rgb(220, 38, 38)', // Tailwind red-600
-                    },
-                    {
-                        label: 'Non-Karyawan',
-                        data: nonKaryawanData,
-                        backgroundColor: 'rgb(16, 185, 129)', // Tailwind green-500
-                    }
+                    { label: 'Karyawan', data: karyawanData, backgroundColor: 'rgb(220, 38, 38)', borderRadius: 4 },
+                    { label: 'Non-Karyawan', data: nonKaryawanData, backgroundColor: 'rgb(16, 185, 129)', borderRadius: 4 }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true
+                scales: { x: { stacked: true, grid: {display: false} }, y: { stacked: true, beginAtZero: true, border: {display: false} } },
+                plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: {size: 10} } } }
+            }
+        });
+    }
+    
+    // --- Grafik 3: Kelayakan Kerja (Donut Chart Skala K1-K5) ---
+    const kelayakanCtx = document.getElementById('kelayakanChart');
+    if (kelayakanCtx) {
+        new Chart(kelayakanCtx, {
+            type: 'doughnut',
+            data: {
+                // Label sekarang ada 5 kategori
+                labels: [
+                    'Fit To Work (K1)', 
+                    'Fit With Note (K2)', 
+                    'Fit With Restrictive (K3)', 
+                    'Temporary Unfit (K4)', 
+                    'Unfit (K5)'
+                ],
+                datasets: [{
+                    data: kelayakanData,
+                    backgroundColor: [
+                        'rgb(34, 197, 94)',   // Hijau (K1)
+                        'rgb(234, 179, 8)',   // Kuning (K2)
+                        'rgb(249, 115, 22)',  // Orange (K3)
+                        'rgb(239, 68, 68)',   // Merah Terang (K4)
+                        'rgb(31, 41, 55)'     // Hitam/Abu Tua (K5)
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%', 
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { 
+                            usePointStyle: true, 
+                            padding: 15, 
+                            font: { size: 10, weight: '500' } // Ukuran font diperkecil sedikit agar muat 5 item
+                        }
                     }
                 }
             }
         });
     }
 
-    // Fungsi untuk merotasi nama area setiap 3 detik
+    // --- Logika Refresh Lingkungan (Sama persis) ---
     function rotateAreaNames() {
         const nameDisplay = document.getElementById('area-name-display');
-        
         if (nameDisplay && currentAreaNames.length > 0) {
-            
-            if (areaIndex >= currentAreaNames.length) {
-                areaIndex = 0;
-            }
-
-            const areaName = currentAreaNames[areaIndex];
-            nameDisplay.textContent = `⚠️ Area: ${areaName} (NAB Terlampaui)`; 
-            
+            if (areaIndex >= currentAreaNames.length) areaIndex = 0;
+            nameDisplay.textContent = `⚠️ Area: ${currentAreaNames[areaIndex]}`; 
             areaIndex++;
-
         } else if (nameDisplay) {
             nameDisplay.textContent = "Semua area aman dari NAB";
         }
     }
-
-    // Panggil rotasi setiap 3 detik
     setInterval(rotateAreaNames, 3000); 
 
-    // Fungsi untuk me-refresh data card melalui AJAX
     function autoRefreshCard() {
         const monitoringCard = document.getElementById('lingkungan-card');
         const nameDisplay = document.getElementById('area-name-display');
@@ -273,28 +276,26 @@
             fetch('{{ route('dashboard.data_lingkungan') }}') 
                 .then(response => response.json())
                 .then(data => {
-                    
-                    // 1. Update data array lokal
                     currentAreaNames = data.areaNames; 
-
-                    // 2. Update count display
                     countDisplay.textContent = data.areaBermasalah; 
                     
-                    // 3. Update warna dinamis dan kelas (Logika update class Tailwind perlu ditambahkan di sini jika ada)
-                    const isProblem = data.areaBermasalah > 0;
-                    
-                    // 4. Reset index rotasi dan jalankan rotasi awal
+                    if(data.areaBermasalah > 0) {
+                        monitoringCard.classList.replace('border-gray-300', 'border-orange-500');
+                        monitoringCard.classList.add('bg-orange-50');
+                        countDisplay.classList.replace('text-gray-700', 'text-orange-700');
+                    } else {
+                        monitoringCard.classList.replace('border-orange-500', 'border-gray-300');
+                        monitoringCard.classList.remove('bg-orange-50');
+                        countDisplay.classList.replace('text-orange-700', 'text-gray-700');
+                    }
+
                     areaIndex = 0;
                     rotateAreaNames();
                 })
                 .catch(error => console.error('Error fetching environment data:', error));
         }
     }
-
-    // Refresh data melalui AJAX setiap 5 detik (5000 ms)
     setInterval(autoRefreshCard, 5000); 
-
-    // Jalankan rotasi pertama kali saat halaman dimuat
     rotateAreaNames();
 </script>
 @endsection

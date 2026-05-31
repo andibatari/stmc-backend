@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login STMC</title>
+    <title>Login | STMC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -16,131 +15,104 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-repeat: no-repeat;
         }
-        .btn-red-gradient {
-            background: linear-gradient(to right, #B91C1C, #991B1B);
-            box-shadow: 0 4px 6px rgba(185, 28, 28, 0.3);
-            transition: all 0.2s ease-in-out;
-        }
-        .btn-red-gradient:hover {
-            background: linear-gradient(to right, #991B1B, #B91C1C);
-            box-shadow: 0 6px 10px rgba(185, 28, 28, 0.4);
-        }
-        .input-red-border {
-            border-color: #FECACA;
-        }
-        .input-red-border:focus {
-            border-color: #EF4444;
-            box-shadow: 0 0 0 1px #EF4444;
-        }
-        
-        /* Menyesuaikan posisi ikon mata */
-        #togglePassword {
-            top: 50%; 
-            transform: translateY(-33%); 
-            height: 100%; 
-            /* Hapus style="top: 33px;" inline di HTML, biarkan CSS ini bekerja */
-        }
-        
-        /* Untuk tampilan laptop/desktop (>= 1024px, atau lg) */
-        @media (min-width: 1024px) {
-            .laptop-height {
-                height: 500px; /* Tinggi tetap 500px di layar besar */
-            }
+        /* Efek gelap transparan untuk background agar card login lebih menonjol */
+        .bg-overlay {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(153, 27, 27, 0.6) 100%);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-sm mx-auto md:max-w-4xl bg-white rounded-xl shadow-lg border border-red-300 overflow-hidden lg:laptop-height">
+<body class="min-h-screen flex items-center justify-center bg-overlay p-4">
+    
+    <div class="w-full max-w-4xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[550px]">
         
-        <div class="flex flex-col lg:flex-row h-full">
-            
-            <div class="hidden lg:flex w-1/2 bg-red-50 p-8 flex-col items-center justify-center relative">
-                <div class="absolute top-6 left-6 flex items-center">
-                    <img src="{{ asset('images/LogoStmc.png') }}" alt="STMC Logo" class="h-11 w-11 mr-2 rounded">
-                    <div class="flex flex-col">
-                        <span class="font-bold text-lg text-red-800">STMC</span>
-                        <span class="text-xs text-red-600">Semen Tonasa Medical Centre</span>
-                    </div>
-                </div>
-                <img src="{{ asset('images/ilustrasi_dokter.png')}}" alt="Ilustrasi Dokter" class="max-w-full h-auto">
-            </div>
-
-            <div class="flex-1 p-4 lg:p-8 flex flex-col justify-center">
-                
-                <div class="flex items-center mb-2 justify-center lg:hidden">
-                    <img src="{{ asset('images/LogoStmc.png') }}" alt="STMC Logo" class="h-8 w-8 mr-2 rounded">
-                    <div class="flex flex-col">
-                        <span class="font-bold text-sm text-red-800">STMC</span>
-                        <span class="text-xs text-red-600">Semen Tonasa Medical Centre</span>
-                    </div>
-                </div>
-                
-                <div class="mb-3 text-center p-1 rounded-xl bg-red-50 lg:hidden">
-                    <img src="{{ asset('images/ilustrasi_dokter.png')}}" alt="Ilustrasi Dokter" class="max-w-full h-auto mx-auto w-28 sm:w-32">
-                </div>
-                <div class="text-center mb-3 lg:mb-8">
-                    <h1 class="text-xl lg:text-3xl font-bold text-gray-800">Login</h1>
-                    <p class="mt-1 lg:mt-2 text-xs text-gray-600">Masuk untuk melanjutkan ke dashboard</p>
-                </div>
-                
-                @if ($errors->any())
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="block sm:inline">{{ $errors->first() }}</span>
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}">
-                    @csrf
-
-                    <div class="mb-4">
-                        {{-- Label diubah agar informatif --}}
-                        <label for="login_id" class="block text-sm font-medium text-gray-700 mb-1">Email / NIK / No. SAP</label>
-                        
-                        {{-- Atribut name dan id diubah menjadi login_id --}}
-                        <input type="text" id="login_id" name="login_id" value="{{ old('login_id') }}" required autofocus
-                                class="w-full px-4 py-2 border rounded-md shadow-sm input-red-border focus:ring-red-500 focus:border-red-500 transition duration-150 ease-in-out text-base lg:text-sm"
-                                placeholder="Masukkan Email, NIK, atau No. SAP">
-                    </div>
-
-                    <div class="mb-6 relative">
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password" name="password" required
-                                class="w-full px-4 py-2 border rounded-md shadow-sm input-red-border focus:ring-red-500 focus:border-red-500 transition duration-150 ease-in-out text-base lg:text-sm pr-10"
-                                placeholder="Masukkan Password">
-                        
-                        <button type="button" id="togglePassword" 
-                                class="absolute right-0 flex items-center pr-3 focus:outline-none"
-                        >
-                            <img id="eyeOpen" 
-                                    src="{{ asset('images/eye-open.png') }}" 
-                                    alt="Show" 
-                                    class="h-5 w-5 opacity-75 hover:opacity-100 transition-opacity"
-                            >
-                            
-                            <img id="eyeClosed" 
-                                    src="{{ asset('images/eye-closed.png') }}" 
-                                    alt="Hide" 
-                                    class="h-5 w-5 hidden opacity-75 hover:opacity-100 transition-opacity"
-                            >
-                        </button>
-                    </div>
-
+        {{-- KIRI: Banner / Ilustrasi --}}
+        <div class="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-red-800 to-red-950 p-10 flex-col justify-between relative overflow-hidden text-white">
+            <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-8 bg-white/10 p-3 rounded-2xl w-max backdrop-blur-sm border border-white/10">
+                    <img src="{{ asset('images/LogoStmc.png') }}" alt="STMC Logo" class="h-10 w-10 object-contain bg-white rounded-xl p-1">
                     <div>
-                        <button type="submit"
-                                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-base lg:text-sm font-medium text-white btn-red-gradient focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            Login
+                        <h2 class="font-black text-xl tracking-wide leading-none">STMC</h2>
+                        <p class="text-[10px] uppercase tracking-widest text-red-200">Semen Tonasa Medical Centre</p>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-black mb-4 leading-tight">Layanan<br>Kesehatan<br>Terbaik.</h1>
+                <p class="text-red-200 text-sm font-medium leading-relaxed">Sistem Informasi Medical Check-Up Terpadu PT. Semen Tonasa.</p>
+            </div>
+            <img src="{{ asset('images/ilustrasi_dokter.png')}}" alt="Ilustrasi" class="relative z-10 w-4/5 mx-auto mt-4 drop-shadow-2xl hover:scale-105 transition-transform duration-500">
+        </div>
+
+        {{-- KANAN: Form Login --}}
+        <div class="w-full lg:w-7/12 p-8 sm:p-12 flex flex-col justify-center bg-white relative">
+            
+            {{-- Header Mobile --}}
+            <div class="flex items-center justify-center gap-3 mb-8 lg:hidden bg-red-50 py-4 rounded-2xl border border-red-100">
+                <img src="{{ asset('images/LogoStmc.png') }}" alt="STMC Logo" class="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm">
+                <div>
+                    <h2 class="font-black text-xl text-red-800 leading-none">STMC</h2>
+                    <p class="text-[10px] uppercase tracking-widest text-red-500 font-bold">Medical Centre</p>
+                </div>
+            </div>
+            
+            <div class="mb-8 text-center lg:text-left">
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800 mb-2">Selamat Datang! 👋</h2>
+                <p class="text-sm font-medium text-slate-500">Silakan masuk menggunakan kredensial Anda.</p>
+            </div>
+            
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl flex items-center mb-6 text-sm font-medium shadow-sm">
+                    <svg class="w-5 h-5 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                @csrf
+                <div>
+                    <label for="login_id" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Email / NIK / No. SAP</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <input type="text" id="login_id" name="login_id" value="{{ old('login_id') }}" required autofocus
+                            class="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
+                            placeholder="Masukkan identitas Anda">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="password" class="text-xs font-bold text-slate-600 uppercase tracking-wide">Kata Sandi</label>
+                        <a href="#" class="text-xs font-bold text-red-600 hover:text-red-800 transition-colors">Lupa sandi?</a>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <input type="password" id="password" name="password" required
+                            class="block w-full pl-11 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:border-red-500 focus:ring-4 focus:ring-red-500/10 transition-all"
+                            placeholder="••••••••">
+                        <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-red-600 focus:outline-none transition-colors">
+                            <img id="eyeOpen" src="{{ asset('images/eye-open.png') }}" alt="Show" class="h-5 w-5 opacity-70">
+                            <img id="eyeClosed" src="{{ asset('images/eye-closed.png') }}" alt="Hide" class="h-5 w-5 hidden opacity-70">
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-red-600/30 text-sm font-black text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 hover:-translate-y-0.5 transition-all duration-300">
+                        Masuk ke Dashboard <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </form>
+            
+            <p class="text-center text-xs text-slate-400 font-medium mt-8">
+                &copy; {{ date('Y') }} PT. Semen Tonasa Medical Centre.<br>Dilindungi oleh sistem keamanan.
+            </p>
         </div>
     </div>
-
-    <footer class="w-full text-center p-4 text-xs font-medium bg-red-700 text-white fixed bottom-0 lg:absolute">
-        &copy; {{ date('Y') }} STMC - Semen Tonasa Medical Centre. All rights reserved.
-    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -149,17 +121,14 @@
             const eyeOpen = document.getElementById('eyeOpen');
             const eyeClosed = document.getElementById('eyeClosed');
             
-            // Logika untuk menampilkan/menyembunyikan password
             if (togglePassword && passwordInput) {
                 togglePassword.addEventListener('click', function() {
-                    const isPassword = passwordInput.getAttribute('type') === 'password';
-                    
-                    if (isPassword) {
-                        passwordInput.setAttribute('type', 'text');
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
                         eyeOpen.classList.add('hidden');
                         eyeClosed.classList.remove('hidden');
                     } else {
-                        passwordInput.setAttribute('type', 'password');
+                        passwordInput.type = 'password';
                         eyeOpen.classList.remove('hidden');
                         eyeClosed.classList.add('hidden');
                     }

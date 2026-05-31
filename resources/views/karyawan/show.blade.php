@@ -1,10 +1,6 @@
 @extends('layouts.app')
-
-{{-- @section('title', 'Manajemen Pasien / Daftar Pasien / Detail Karyawan') --}}
-
 @section('content')
-<div class="container mx-auto p-1">
+<div class="px-2 md:px-4 lg:px-6 py-4 min-h-screen">
     <livewire:employee-detail-manager :karyawan="$karyawan" />
 </div>
 @endsection
-

@@ -1,84 +1,109 @@
-<div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tipe Anggota</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->tipe_anggota ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">NIK</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->nik_pasien ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Jenis Kelamin</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->jenis_kelamin ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tanggal Lahir</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->tanggal_lahir ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Umur</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->umur ?? 'N/A' }}</p>
+<div class="space-y-8 animate-fade-in">
+    {{-- 1. IDENTITAS & DEMOGRAFI --}}
+    <div>
+        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center border-b border-slate-100 pb-2">
+            <div class="w-6 h-6 rounded bg-blue-50 text-blue-500 flex items-center justify-center mr-2"><i class="fas fa-id-card"></i></div> Identitas Pasien
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipe Pasien</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->tipe_anggota ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">NIK (Nomor Induk KTP)</span>
+                <p class="text-sm font-black text-slate-800 font-mono">{{ $pesertaMcu->nik_pasien ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pekerjaan</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->pekerjaan ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Agama</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->agama ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover:border-blue-200 transition-colors">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pendidikan</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->pendidikan ?? 'N/A' }}</p>
+            </div>
+        </div>
     </div>
 
-    {{-- Tambahkan baris baru untuk Tinggi dan Berat Badan --}}
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tinggi Badan (cm)</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->tinggi_badan ?? 'N/A' }}</p>
+    {{-- 2. FISIK & KELAHIRAN --}}
+    <div>
+        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center border-b border-slate-100 pb-2">
+            <div class="w-6 h-6 rounded bg-emerald-50 text-emerald-500 flex items-center justify-center mr-2"><i class="fas fa-heartbeat"></i></div> Biometrik & Kelahiran
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tanggal Lahir</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->tanggal_lahir ? \Carbon\Carbon::parse($pesertaMcu->tanggal_lahir)->format('d M Y') : 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tempat Lahir</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->tempat_lahir ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Umur</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->umur ?? 'N/A' }} Thn</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Jenis Kelamin</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->jenis_kelamin ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tinggi Badan</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->tinggi_badan ?? '-' }} cm</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Berat Badan</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->berat_badan ?? '-' }} kg</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Golongan Darah</span>
+                <p class="text-sm font-black text-red-600">{{ $pesertaMcu->golongan_darah ?? '-' }}</p>
+            </div>
+        </div>
     </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Berat Badan (kg)</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->berat_badan ?? 'N/A' }}</p>
+
+    {{-- 3. ALAMAT & KONTAK --}}
+    <div>
+        <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center border-b border-slate-100 pb-2">
+            <div class="w-6 h-6 rounded bg-amber-50 text-amber-500 flex items-center justify-center mr-2"><i class="fas fa-map-marker-alt"></i></div> Domisili & Kontak
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Provinsi</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->provinsi->nama_provinsi ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kabupaten/Kota</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->nama_kabupaten ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kecamatan</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->nama_kecamatan ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alamat Lengkap</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->alamat ?? 'N/A' }}</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Nomor Handphone</span>
+                <p class="text-sm font-black text-slate-800 font-mono">{{ $pesertaMcu->no_hp ?? 'N/A' }}</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Email Akses</span>
+                <p class="text-sm font-black text-slate-800">{{ $pesertaMcu->email ?? 'N/A' }}</p>
+            </div>
+        </div>
     </div>
     
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pendidikan</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->pendidikan ?? 'N/A' }}</p>
+    {{-- Tombol Edit --}}
+    <div class="pt-6 border-t border-slate-100 flex justify-end">
+        <a href="{{ route('keluarga.edit', ['keluarga' => $pesertaMcu->id]) }}" class="inline-flex items-center px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">
+            <i class="fas fa-edit mr-2"></i> Edit Data Pasien
+        </a>
     </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tempat Lahir</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->tempat_lahir ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Golongan Darah</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->golongan_darah ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pekerjaan</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->pekerjaan ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Agama</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->agama ?? 'N/A' }}</p>
-    </div>
-    {{-- PERUBAHAN UNTUK LOKASI DI BLOK $pesertaMcu --}}
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Provinsi</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->provinsi->nama_provinsi ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kabupaten</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->nama_kabupaten ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Kecamatan</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->nama_kecamatan ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Alamat Lengkap</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->alamat ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->email ?? 'N/A' }}</p>
-    </div>
-    <div class="bg-white p-4 rounded-lg border border-gray-200">
-        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Nomor HP</label>
-        <p class="text-base font-medium text-gray-900">{{ $pesertaMcu->no_hp ?? 'N/A' }}</p>
-    </div>
-</div>
-<div class="mt-8 flex justify-end">
-    <a href="{{ route('keluarga.edit', ['keluarga' => $pesertaMcu->id]) }}" class="inline-flex items-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full shadow-lg transition duration-200 ease-in-out">
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-2.121 2.121L2.828 13.586a2 2 0 00-.573 1.054L2 17.5a1 1 0 001 1l2.859-.255a2 2 0 001.054-.573L14.586 8.414l-2.828-2.828z"></path></svg>
-        Edit Data
-    </a>
 </div>
