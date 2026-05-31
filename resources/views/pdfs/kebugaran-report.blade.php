@@ -4,135 +4,312 @@
     <meta charset="UTF-8">
     <title>Laporan Kebugaran Jasmani - {{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'Pasien' }}</title>
     <style>
+        /* Definisi Warna Baru */
         :root {
-            --color-primary: #1e293b; /* Slate 800 */
-            --color-accent: #dc2626; /* Red 600 */
-            --color-light: #f1f5f9; /* Slate 100 */
-            --color-text: #334155; 
-            --color-text-light: #64748b;
+            --color-primary: #2F4F4F; /* Biru Tua Gelap (Dark Slate Gray) */
+            --color-accent: #4682B4; /* Biru Baja (Steel Blue) */
+            --color-light: #E6F0F5; 
+            --color-text: #2F4F4F; 
+            --color-text-light: #6A7F8F;
         }
 
-        @page { size: A4; margin: 40px; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; line-height: 1.5; color: var(--color-text); font-size: 10pt;}
+        @page { size: A4; margin: 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.6; 
+            color: var(--color-text); 
+            position: relative;
+        }
         
-        /* HEADER */
-        .header-table { width: 100%; border-collapse: collapse; border-bottom: 3px solid var(--color-primary); padding-bottom: 15px; margin-bottom: 25px; }
-        .header-table td { vertical-align: middle; }
-        .logo-cell { width: 15%; text-align: center; }
-        .text-cell { width: 70%; text-align: center; }
-        .logo-box { width: 65px; height: 65px; display: inline-block; }
-        .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+        /* Hapus elemen page-strip dari CSS */
         
-        .header-text h1 { color: var(--color-primary); margin: 0 0 5px 0; font-size: 16pt; font-weight: 900; }
-        .header-text .sub-title { font-size: 11pt; font-weight: bold; color: var(--color-accent); margin: 0; letter-spacing: 1px;}
-        .header-text .company { font-size: 9pt; color: var(--color-text-light); margin: 2px 0 0 0; }
+        /* --- HEADER (TATA LETAK BERBASIS TABLE) --- */
+        .header {
+            /* Padding vertikal diperbesar untuk spacing yang lebih baik */
+            padding: 20px 30px; 
+            border-bottom: 4px solid var(--color-primary);
+            margin-bottom: 20px;
+        }
+        
+        /* Tabel untuk penyejajaran vertikal logo dan teks */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .header-table td {
+            padding: 0;
+            vertical-align: middle; /* KRITIS: Menyejajarkan semua konten ke tengah vertikal */
+            /* Hapus line-height: 1.2 dari sini */
+        }
 
-        /* PATIENT INFO */
-        .patient-box { background-color: var(--color-light); border-radius: 8px; padding: 15px; margin-bottom: 30px; }
-        .patient-table { width: 100%; border-collapse: collapse; font-size: 10pt; }
-        .patient-table td { padding: 4px 0; vertical-align: top; }
-        .label-col { width: 25%; font-weight: bold; color: var(--color-primary); }
-        .colon-col { width: 2%; font-weight: bold;}
-        .data-col { width: 23%; font-weight: bold;}
+        .logo-cell-left { width: 12%; text-align: left; }
+        .text-cell { width: 76%; text-align: center; }
+        .logo-cell-right { width: 12%; text-align: right; }
 
-        /* CONTENT */
-        .section-title { text-align: center; font-size: 14pt; font-weight: 900; margin-bottom: 25px; color: var(--color-primary); text-transform: uppercase; text-decoration: underline;}
-        .result-group-title { font-size: 12pt; margin-bottom: 15px; font-weight: bold; color: var(--color-accent); border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+        .logo-box {
+            width: 55px; 
+            height: 55px;
+            display: inline-block;
+        }
         
-        .result-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; margin-left: 10px;}
-        .result-table td { padding: 8px 0; border-bottom: 1px dashed #e2e8f0; font-size: 11pt;}
-        .result-table .lbl { width: 60%; color: var(--color-text);}
-        .result-table .val { width: 40%; font-weight: bold; color: var(--color-primary); text-align: right; padding-right: 20px;}
+        /* CSS KRITIS UNTUK MENJAGA UKURAN LOGO */
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; 
+        }
 
-        /* KESIMPULAN BOX */
-        .category-box { margin-top: 40px; padding: 25px; background-color: #f8fafc; border: 2px dashed var(--color-accent); border-radius: 12px; text-align: center; }
-        .category-box h3 { margin: 0 0 15px 0; color: var(--color-primary); font-size: 14pt; }
-        .category-result { font-size: 20pt; font-weight: 900; color: var(--color-accent); display: block; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;}
+        .header-text h1 { 
+            color: var(--color-primary); 
+            margin: 0; 
+            /* Font size diperbesar */
+            font-size: 20px; 
+            font-weight: 700; 
+            line-height: 1.5;
+        }
+        .header-text p { 
+            font-size: 10px; 
+            color: var(--color-text-light); 
+            margin: 0; 
+            line-height: 1.5;
+        }
         
-        /* SIGNATURE */
-        .signer-box { width: 100%; margin-top: 60px; }
-        .signer-table { width: 100%; border-collapse: collapse; }
-        .signer-table td { width: 50%; vertical-align: bottom; text-align: right; padding-right: 20px;}
-        .signer-text { font-size: 11pt; margin: 0; }
-        .doctor-name { font-weight: bold; text-decoration: underline; margin-top: 80px; margin-bottom: 0;}
+        /* --- INFORMASI PASIEN (TATA LETAK BERBASIS TABLE) --- */
+        .patient-info {
+            padding: 0 30px 20px 30px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--color-light); 
+            margin-bottom: 30px;
+        }
+        .patient-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .patient-table td {
+            padding: 0;
+            vertical-align: top;
+            width: 50%;
+        }
+        .patient-row {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .patient-label {
+            width: 120px;
+            font-weight: bold;
+            color: var(--color-text);
+            display: inline-block;
+        }
+        
+        /* --- KONTEN HASIL --- */
+        .content { padding: 0 30px; }
+        .section-title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 30px; color: var(--color-primary); text-transform: uppercase; }
+        .result-group-title { font-size: 16px; margin-bottom: 15px; font-weight: bold; color: var(--color-accent); border-bottom: 2px solid var(--color-light); padding-bottom: 5px; }
+        
+        .result-item { 
+            clear: both;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .result-label { float: left; width: 380px; color: var(--color-text-light); padding-right: 10px; }
+        .result-value-container { overflow: hidden; font-weight: bold; color: var(--color-text); }
+        .result-colon { float: left; width: 10px; }
+        .result-value-span { float: left; width: 50px; }
+        .result-unit-span { overflow: hidden; }
+
+        /* --- KATEGORI HASIL AKHIR --- */
+        .category-box { margin-top: 30px; padding: 20px; background-color: var(--color-light); border: 2px solid var(--color-primary); border-radius: 8px; text-align: center; }
+        .category-box h3 { margin: 0 0 10px 0; color: var(--color-primary); font-size: 18px; }
+        .category-result { font-size: 24px; font-weight: 900; color: var(--color-primary); display: block; }
+        
+        /* --- PENANDATANGAN --- */
+        .signer { 
+            margin-top: 80px; 
+            padding-right: 30px; 
+            text-align: right; 
+            font-size: 13px; 
+            /* Tambahkan jarak di bawah sebelum footer */
+            margin-bottom: 40px; 
+        }
+        .signer p { margin: 0; }
+        
+        /* --- FOOTER UNIK STMC (Elemen Diagonal/Strip Kiri) --- */
+        .footer-left-strip { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 20px; /* Diperbesar sedikit */
+        }
+        .footer-shape-main { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 45%; /* Diperlebar */
+            height: 20px; 
+            background-color: var(--color-primary); 
+            clip-path: polygon(0 0, 100% 100%, 0 100%); 
+        }
+        .footer-shape-accent { 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 35%; /* Diperlebar */
+            height: 15px; 
+            background-color: var(--color-accent); 
+            clip-path: polygon(0 0, 100% 100%, 0 100%); 
+        }
+        .footer-info { 
+            position: absolute; 
+            bottom: 5px; 
+            right: 30px; 
+            font-size: 9px; 
+            color: var(--color-text); /* Diubah ke warna gelap agar terbaca */
+        }
     </style>
 </head>
 <body>
-    <table class="header-table">
-        <tr>
-            <td class="logo-cell">
-                <div class="logo-box"><img src="{{ public_path('images/logo-semen-tonasa.png') }}" alt="Logo Kiri"></div>
-            </td>
-            <td class="text-cell">
-                <div class="header-text">
-                    <h1>SEMEN TONASA MEDICAL CENTRE</h1>
-                    <p class="sub-title">MEDICAL CHECK UP REPORT</p>
-                    <p class="company">PT SEMEN TONASA</p>
-                </div>
-            </td>
-            <td class="logo-cell">
-                <div class="logo-box"><img src="{{ public_path('images/logo-stmc.png') }}" alt="Logo Kanan"></div>
-            </td>
-        </tr>
-    </table>
 
-    <div class="patient-box">
-        <table class="patient-table">
-            <tr>
-                <td class="label-col">Nama Pasien</td><td class="colon-col">:</td><td class="data-col">{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'N/A' }}</td>
-                <td class="label-col">NIK / SAP</td><td class="colon-col">:</td><td class="data-col">{{ $patient->nik_pasien ?? $patient->no_sap ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">Tgl Lahir / Umur</td><td class="colon-col">:</td><td class="data-col">{{ \Carbon\Carbon::parse($patient->tanggal_lahir)->format('d-m-Y') }} ({{ \Carbon\Carbon::parse($patient->tanggal_lahir)->age }} Thn)</td>
-                <td class="label-col">Jenis Kelamin</td><td class="colon-col">:</td><td class="data-col">{{ $patient->jenis_kelamin ?? 'N/A' }}</td>
-            </tr>
-            <tr>
-                <td class="label-col">Perusahaan / Unit</td><td class="colon-col">:</td><td colspan="4" class="data-col">{{ $instansiPasien ?? 'N/A' }}</td>
-            </tr>
-        </table>
-    </div>
+    {{-- HAPUS ELEMEN VERTIKAL SISI KERTAS --}}
 
-    <div class="section-title">Hasil Pemeriksaan Kesegaran Jasmani</div>
-    <h3 class="result-group-title">Rincian Uji Kebugaran</h3>
-    
-    <table class="result-table">
-        <tr>
-            <td class="lbl">Lama Pemeriksaan</td>
-            <td class="val">{{ $kebugaranResult->durasi_menit }} Menit</td>
-        </tr>
-        <tr>
-            <td class="lbl">Beban Latihan</td>
-            <td class="val">{{ $kebugaranResult->beban_latihan }} Level</td>
-        </tr>
-        <tr>
-            <td class="lbl">Jumlah Denyut Nadi (per menit terakhir)</td>
-            <td class="val">{{ $kebugaranResult->denyut_nadi }} x/mnt</td>
-        </tr>
-        <tr>
-            <td class="lbl" style="border-bottom: none;">Kebutuhan VO2 Maksimal (Volume Oksigen)</td>
-            <td class="val" style="border-bottom: none;">{{ number_format($kebugaranResult->vo2_max, 2) }} Liter/mnt</td>
-        </tr>
-    </table>
-
-    <div class="category-box">
-        <h3>Indeks Kesimpulan Kesegaran Jasmani</h3>
-        <span class="category-result">
-            {{ number_format($kebugaranResult->indeks_kebugaran, 2) }} kg/m/min <br>
-            <span style="font-size: 16pt; color: #475569; display: block; margin-top: 5px;">Kategori: {{ strtoupper($kebugaranResult->kategori) }}</span>
-        </span>
-    </div>
-
-    <div class="signer-box">
-        <table class="signer-table">
+    <div class="header">
+        {{-- MENGGUNAKAN TABEL UNTUK MENJAMIN KESEJAJARAN VERTIKAL --}}
+        <table class="header-table">
             <tr>
-                <td></td>
-                <td>
-                    <p class="signer-text">Pangkep, {{ \Carbon\Carbon::now()->format('d F Y') }}</p>
-                    <p class="signer-text">Dokter Pemeriksa,</p>
-                    <p class="signer-text doctor-name">(________________________)</p>
+                {{-- LOGO KIRI --}}
+                <td class="logo-cell-left">
+                    <div class="logo-box">
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-semen-tonasa.png'))) }}" alt="Logo Kiri" style="width: 100%; height: 100%;">
+                    </div>
+                </td>
+                
+                {{-- TEKS TENGAH --}}
+                <td class="text-cell">
+                    <div class="header-text">
+                        <h1>SEMEN TONASA MEDICAL CENTRE (STMC)</h1>
+                        <p style="font-size: 13px; font-weight: bold; color: var(--color-primary);">MEDICAL CHECK UP REPORT</p>
+                        <p style="font-size: 11px;">PT SEMEN TONASA</p>
+                    </div>
+                </td>
+
+                {{-- LOGO KANAN --}}
+                <td class="logo-cell-right">
+                    <div class="logo-box">
+                        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-stmc.png'))) }}" alt="Logo Kanan" style="width: 100%; height: 100%;">
+                    </div>
                 </td>
             </tr>
         </table>
+    </div>
+
+    <div class="patient-info">
+        <table class="patient-table">
+            <tr>
+                <td>
+                    <div class="patient-row">
+                        <span class="patient-label">Nama Pasien</span>
+                        <span style="margin-right: 5px;">:</span>
+                        <span class="patient-data">{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'N/A' }}</span> 
+                    </div>
+                    <div class="patient-row">
+                        <span class="patient-label">Tgl. Lahir / Umur</span>
+                        <span style="margin-right: 5px;">:</span>
+                        <span class="patient-data">{{ \Carbon\Carbon::parse($patient->tanggal_lahir)->format('d M Y') }} / {{ \Carbon\Carbon::parse($patient->tanggal_lahir)->age }} Thn</span>
+                    </div>
+                    <div class="patient-row">
+                        <span class="patient-label">Perusahaan/Unit</span>
+                        <span style="margin-right: 5px;">:</span>
+                        <span class="patient-data">{{ $instansiPasien ?? 'N/A' }}</span>
+                    </div>
+                </td>
+                <td>
+                    <div class="patient-row">
+                        <span class="patient-label">NIK / No. SAP</span>
+                        <span style="margin-right: 5px;">:</span>
+                        <span class="patient-data">{{ $patient->nik_pasien ?? $patient->no_sap ?? 'N/A' }}</span>
+                    </div>
+                    <div class="patient-row">
+                        <span class="patient-label">Jenis Kelamin</span>
+                        <span style="margin-right: 5px;">:</span>
+                        <span class="patient-data">{{ $patient->jenis_kelamin ?? 'N/A' }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="content">
+        <div class="section-title">
+            HASIL PEMERIKSAAN KESEGARAN JASMANI
+        </div>
+
+        <h3 class="result-group-title">DATA UJI KEBUGARAN</h3>
+        
+        <div style="padding-left: 15px;">
+            {{-- Lama Pemeriksaan --}}
+            <div class="result-item">
+                <span class="result-label">Lama Pemeriksaan</span>
+                <span class="result-colon">:</span>
+                <div class="result-value-container">
+                    <span class="result-value-span">{{ $kebugaranResult->durasi_menit }}</span>
+                    <span class="result-unit-span">Menit</span>
+                </div>
+            </div>
+
+            {{-- Beban Latihan --}}
+            <div class="result-item">
+                <span class="result-label">Beban Latihan</span>
+                <span class="result-colon">:</span>
+                <div class="result-value-container">
+                    <span class="result-value-span">{{ $kebugaranResult->beban_latihan }}</span>
+                    <span class="result-unit-span">Level</span>
+                </div>
+            </div>
+
+            {{-- Jumlah denyut nadi --}}
+            <div class="result-item">
+                <span class="result-label">Jumlah denyut nadi per menit terakhir</span>
+                <span class="result-colon">:</span>
+                <div class="result-value-container">
+                    <span class="result-value-span">{{ $kebugaranResult->denyut_nadi }}</span>
+                    <span class="result-unit-span">x/menit</span>
+                </div>
+            </div>
+
+            {{-- Kebutuhan VO2 Maksimal --}}
+            <div class="result-item">
+                <span class="result-label">Kebutuhan VO2 Maksimal (Volume Oksigen Maksimal)</span>
+                <span class="result-colon">:</span>
+                <div class="result-value-container">
+                    <span class="result-value-span">{{ number_format($kebugaranResult->vo2_max, 2) }}</span>
+                    <span class="result-unit-span">Liter / menit</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-box">
+            <h3>KESIMPULAN INDEKS KESEGARAN JASMANI:</h3>
+            {{-- Indeks Kebugaran Jasmani (hasil perhitungan) --}}
+            <span class="category-result">
+                {{ number_format($kebugaranResult->indeks_kebugaran, 2) }} kg/m/min (Kategori: {{ strtoupper($kebugaranResult->kategori) }})
+            </span>
+        </div>
+
+        <div class="signer">
+            <p>Pangkep, {{ \Carbon\Carbon::now()->format('d F Y') }}</p>
+            <p>Hormat kami,</p>
+            <br><br><br><br>
+            <p style="border-bottom: 1px solid var(--color-text); display: inline-block; padding-bottom: 2px;">(Nama Petugas / Dokter)</p>
+        </div>
+    </div>
+
+    {{-- FOOTER UNIK STMC (Elemen Diagonal/Strip Kiri) --}}
+    <div class="footer-left-strip">
+        <div class="footer-shape-main"></div>
+        <div class="footer-shape-accent"></div>
+        <div class="footer-info">STMC - KESEGARAN JASMANI</div>
     </div>
 </body>
 </html>
