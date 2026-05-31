@@ -163,7 +163,7 @@ class KebugaranForm extends Component
             $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
             
             // 1. Coba upload
-            $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output(), 'public');
+            $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output());
             
             // 2. CEK APAKAH BENAR-BENAR TERUPLOAD
             if (Storage::disk('gcs')->exists($fullPath)) {
