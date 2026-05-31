@@ -165,13 +165,8 @@ class KebugaranForm extends Component
             // 1. Coba upload
             $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output());
             
-            // 2. CEK APAKAH BENAR-BENAR TERUPLOAD
-            if (Storage::disk('gcs')->exists($fullPath)) {
-                Log::info('SUKSES! File ditemukan di GCS: ' . $fullPath);
-            } else {
-                Log::error('GAGAL! File ti-dak ditemukan di GCS setelah di-upload: ' . $fullPath);
-                session()->flash('error', 'Upload GCS gagal. File tidak tersimpan.');
-                return; // Hentikan proses jika gagal
+            if (!$uploadSuccess) {
+                throw new \Exception('Gagal mengirim file ke Google Cloud.');
             }
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
@@ -187,11 +182,10 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            // 1. Simpan ke log
-            Log::error('Gagal Upload GCS: ' . $e->getMessage());
-
-            // 2. PAKSA TAMPILKAN ERROR KE LAYAR
-            dd($e->getMessage()); 
+            // --- TAMPILKAN ERROR ASLI DARI GOOGLE ---
+            // Hapus pesan buatan kita, ganti dengan pesan error asli supaya kita tahu masalahnya
+            Log::error('Error GCS: ' . $e->getMessage());
+            session()->flash('error', 'Error dari GCS: ' . $e->getMessage());
         }
     }
 
