@@ -294,7 +294,7 @@ class PoliGigiForm extends Component
             Storage::disk('gcs')->put($storagePath, $pdf->output());
                         
             // 3. SIMPAN PATH FILE KE DATABASE POLI_GIGI_RESULTS
-            $this->poliGigiResult->file_path = $fileName;
+            $this->poliGigiResult->file_path = $storagePath;
             $this->poliGigiResult->save(); // Simpan hasil pemeriksaan dan path file ke tabel poli_gigi_results
 
             // KRITIS: Simpan path LENGKAP ke database
