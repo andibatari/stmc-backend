@@ -165,8 +165,16 @@ class KebugaranForm extends Component
             // 1. Coba upload
             $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output());
             
-            if (!$uploadSuccess) {
-                throw new \Exception('Gagal mengirim file ke Google Cloud.');
+            // 2. CEK APAKAH BENAR-BENAR TERUPLOAD
+            if ($uploadSuccess) {
+                Log::info('SUKSES! File ditemukan di GCS: ' . $fullPath);
+            } else {
+                // KITA GANTI PESAN INI AGAR SISTEM MENUNJUKKAN ERRORNYA
+                // Coba log error yang sebenarnya
+                $errorDetail = "Upload GCS mengembalikan false (Gagal).";
+                Log::error($errorDetail);
+                session()->flash('error', $errorDetail);
+                return;
             }
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
