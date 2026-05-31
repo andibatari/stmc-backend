@@ -164,7 +164,7 @@ class KebugaranForm extends Component
             
             // 2. Simpan ke public 
             // Pastikan visibilitas 'public' agar bisa dibuka melalui URL langsung
-            Storage::disk('public')->put($fullPath, $pdf->output(), 'public');
+            Storage::disk('gcs')->put($fullPath, $pdf->output());
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
             // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
@@ -179,8 +179,8 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('PDF Kebugaran public GAGAL: ' . $e->getMessage());
-            session()->flash('error', 'Gagal menyimpan ke public. Cek koneksi internet/konfigurasi public gcp.');
+            Log::error('PDF Kebugaran GCS GAGAL: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menyimpan ke GCS. Cek koneksi internet/konfigurasi public gcp.');
         }
     }
 

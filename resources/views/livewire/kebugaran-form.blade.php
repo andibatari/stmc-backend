@@ -109,10 +109,10 @@
 
                     @if($kebugaranDataId && isset($kebugaranResult->file_path))
                         <div class="w-full lg:w-auto">
-                            <a href="{{ Storage::disk('public')->url($kebugaranResult->file_path) }}" target="_blank"
+                            <a href="{{ Storage::disk('gcs')->url($kebugaranResult->file_path) }}" target="_blank"
                                 class="flex items-center justify-center px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-bold transition-all backdrop-blur-sm group">
                                 <i class="fas fa-cloud-download-alt text-lg mr-3 group-hover:text-blue-400 transition-colors"></i> 
-                                Akses Laporan Public
+                                Akses Laporan PDF 
                             </a>
                         </div>
                     @endif

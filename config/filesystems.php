@@ -47,6 +47,13 @@ return [
             'report' => false,
         ],
 
+        'gcs' => [
+            'driver' => 'gcs',
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+            'visibility' => 'public', // Agar file bisa diakses
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('DO_SPACES_KEY'),
