@@ -162,19 +162,12 @@ class KebugaranForm extends Component
             // 1. Render View ke PDF
             $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
             
-            // 1. Coba upload
-            $uploadSuccess = Storage::disk('gcs')->put($fullPath, $pdf->output());
+            $disk = Storage::disk('gcs');
+            $result = $disk->put($fullPath, $pdf->output());
             
-            // 2. CEK APAKAH BENAR-BENAR TERUPLOAD
-            if ($uploadSuccess) {
-                Log::info('SUKSES! File ditemukan di GCS: ' . $fullPath);
-            } else {
-                // KITA GANTI PESAN INI AGAR SISTEM MENUNJUKKAN ERRORNYA
-                // Coba log error yang sebenarnya
-                $errorDetail = "Upload GCS mengembalikan false (Gagal).";
-                Log::error($errorDetail);
-                session()->flash('error', $errorDetail);
-                return;
+            if ($result === false) {
+                // Jika false, kita pancing agar dia memberi tahu alasannya
+                throw new \Exception("GCS menolak upload. Periksa Service Account & Permissions.");
             }
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
@@ -190,10 +183,10 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            // --- TAMPILKAN ERROR ASLI DARI GOOGLE ---
-            // Hapus pesan buatan kita, ganti dengan pesan error asli supaya kita tahu masalahnya
-            Log::error('Error GCS: ' . $e->getMessage());
-            session()->flash('error', 'Error dari GCS: ' . $e->getMessage());
+            // Tampilkan pesan error asli (tanpa disaring)
+            $errorMsg = $e->getMessage();
+            Log::error('Upload GCS Gagal: ' . $errorMsg);
+            session()->flash('error', 'Error Detail: ' . $errorMsg);
         }
     }
 

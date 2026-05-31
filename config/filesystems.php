@@ -49,10 +49,9 @@ return [
 
         'gcs' => [
             'driver' => 'gcs',
-            // Masukkan ID project kamu langsung di sini untuk tes
-            'project_id' => 'project-44d7b574-5b2f-47af-9e5', 
-            'bucket' => 'stmc-health-bucket',
-            'visibility' => 'public',
+            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+            'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'), // Pastikan ini ada dan path-nya benar!
         ],
 
         // 's3' => [
