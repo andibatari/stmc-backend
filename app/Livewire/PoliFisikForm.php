@@ -332,10 +332,10 @@ class PoliFisikForm extends Component
             Storage::disk('gcs')->put($storagePath, $pdf->output());
 
             // KRITIS: Simpan path LENGKAP ke database
-            $this->poliData->file_path = $storagePath; // Hasil: pdf_reports/Hasil_Pemeriksaan_...pdf
+            $this->fisikResult->file_path = $storagePath; 
             $this->fisikResult->save();
 
-            $this->poliData->file_path = $fileName;
+            $this->poliData->file_path = $storagePath;
             $this->poliData->status = 'Done';
             $this->poliData->save();
 
