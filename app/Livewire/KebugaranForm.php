@@ -149,7 +149,7 @@ class KebugaranForm extends Component
         
         $folderPath = 'mcu_results'; 
         $fileName = 'Hasil_Kebugaran_' . $safeIdentifier . '_' . time() . '.pdf';
-        $fullPath = $folderPath . '/' . $fileName; // Path lengkap untuk S3
+        $fullPath = $folderPath . '/' . $fileName; 
 
         try {
             $reportData = [
@@ -162,9 +162,9 @@ class KebugaranForm extends Component
             // 1. Render View ke PDF
             $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
             
-            // 2. Simpan ke S3 (DigitalOcean Spaces)
+            // 2. Simpan ke public 
             // Pastikan visibilitas 'public' agar bisa dibuka melalui URL langsung
-            Storage::disk('s3')->put($fullPath, $pdf->output(), 'public');
+            Storage::disk('public')->put($fullPath, $pdf->output(), 'public');
             
             // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
             // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
@@ -179,8 +179,8 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
 
         } catch (\Exception $e) {
-            Log::error('PDF Kebugaran S3 GAGAL: ' . $e->getMessage());
-            session()->flash('error', 'Gagal menyimpan ke S3. Cek koneksi internet/konfigurasi S3.');
+            Log::error('PDF Kebugaran public GAGAL: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menyimpan ke public. Cek koneksi internet/konfigurasi public gcp.');
         }
     }
 
