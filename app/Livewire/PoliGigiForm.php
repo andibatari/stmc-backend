@@ -291,7 +291,7 @@ class PoliGigiForm extends Component
 
             // Simpan ke S3 atau Public Disk (Pilih salah satu)
             // Jika Anda ingin digabungkan ke laporan utama (S3), gunakan 's3'
-            Storage::disk('s3')->put($storagePath, $pdf->output());
+            Storage::disk('gcs')->put($storagePath, $pdf->output());
                         
             // 3. SIMPAN PATH FILE KE DATABASE POLI_GIGI_RESULTS
             $this->poliGigiResult->file_path = $fileName;

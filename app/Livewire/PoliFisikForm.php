@@ -329,7 +329,7 @@ class PoliFisikForm extends Component
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-fisik-report', $reportData);
             // Simpan ke S3 atau Public Disk (Pilih salah satu)
             // Jika Anda ingin digabungkan ke laporan utama (S3), gunakan 's3'
-            Storage::disk('s3')->put($storagePath, $pdf->output());
+            Storage::disk('gcs')->put($storagePath, $pdf->output());
 
             // KRITIS: Simpan path LENGKAP ke database
             $this->poliData->file_path = $storagePath; // Hasil: pdf_reports/Hasil_Pemeriksaan_...pdf
