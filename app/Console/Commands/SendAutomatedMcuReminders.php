@@ -35,7 +35,7 @@ class SendAutomatedMcuReminders extends Command
                 Log::info("DEBUG DATA KARYAWAN: " . json_encode($karyawan->toArray()));
                 // ----------------------------------------
                 $title = "Pengingat Jadwal MCU";
-                $body = "Halo " . ($karyawan->nama_lengkap ?? 'Karyawan') . ", jangan lupa jadwal MCU kamu besok ya!";
+                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal MCU kamu besok ya!";
 
                 // Panggil Service FCM kita
                 $isSent = \App\Services\FCMService::sendPushNotification(
@@ -46,9 +46,9 @@ class SendAutomatedMcuReminders extends Command
 
                 if ($isSent) {
                     $successCount++;
-                    Log::info("CRON: Notifikasi berhasil dikirim ke " . $karyawan->nama_lengkap);
+                    Log::info("CRON: Notifikasi berhasil dikirim ke " . $karyawan->nama_karyawan);
                 } else {
-                    Log::error("CRON: Gagal kirim notifikasi ke " . $karyawan->nama_lengkap);
+                    Log::error("CRON: Gagal kirim notifikasi ke " . $karyawan->nama_karyawan);
                 }
             } else {
                 Log::warning("CRON: Karyawan tidak ditemukan atau Token FCM kosong untuk Jadwal ID: " . $jadwal->id);
