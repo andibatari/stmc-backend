@@ -99,24 +99,129 @@
             </div>
             
             <div class="p-6 flex flex-col items-center">
-                {{-- RENDER SVG PETA GIGI --}}
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                    @include('livewire.components.dental-chart-svg')
+                
+                {{-- RENDER PETA GIGI (KEMBALI MENGGUNAKAN TAILWIND) --}}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 w-full max-w-4xl overflow-x-auto">
+                    <table class="w-full border-collapse min-w-[600px]">
+                        <thead class="text-center font-bold text-slate-400">
+                            <tr>
+                                @for ($i = 8; $i >= 1; $i--) <td class="py-2 px-1 text-xs">{{ $i }}</td> @endfor
+                                <td class="w-2"></td> {{-- Spacer Garis Tengah --}}
+                                @for ($i = 1; $i <= 8; $i++) <td class="py-2 px-1 text-xs">{{ $i }}</td> @endfor
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                {{-- Kuadran 1 (Atas Kanan) --}}
+                                @for ($i = 8; $i >= 1; $i--)
+                                    @php $gigiId = '1' . $i; $status = $gigiKlinis[$gigiId] ?? 'Normal'; @endphp
+                                    <td class="p-1">
+                                        <div id="gigi-{{ $gigiId }}" wire:click.prevent="toggleGigiKlinis('{{ $gigiId }}')" 
+                                            class="relative w-full h-12 flex items-center justify-center border-2 rounded-lg transition duration-200 cursor-pointer shadow-sm
+                                                @if($status === 'Caries') bg-red-600 border-red-700 text-white 
+                                                @elseif($status === 'Missing') bg-slate-500 border-slate-600 text-white 
+                                                @elseif($status === 'Tambal') bg-emerald-500 border-emerald-600 text-white
+                                                @else bg-slate-50 border-slate-300 hover:bg-blue-100 hover:border-blue-400 text-slate-700 @endif">
+                                            
+                                            <span class="text-[10px] font-bold z-10 opacity-50 absolute top-1 left-1.5">{{ $gigiId }}</span>
+                                            
+                                            @if($status === 'Caries') <span class="text-xl font-black z-20">O</span>
+                                            @elseif($status === 'Missing') <span class="text-xl font-black z-20">X</span>
+                                            @elseif($status === 'Tambal') <span class="text-lg font-black z-20">T</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endfor
+                                
+                                <td class="w-2 bg-blue-900 rounded-full"></td> {{-- Garis Tengah Vertikal (Salib) --}}
+                                
+                                {{-- Kuadran 2 (Atas Kiri) --}}
+                                @for ($i = 1; $i <= 8; $i++)
+                                    @php $gigiId = '2' . $i; $status = $gigiKlinis[$gigiId] ?? 'Normal'; @endphp
+                                    <td class="p-1">
+                                        <div id="gigi-{{ $gigiId }}" wire:click.prevent="toggleGigiKlinis('{{ $gigiId }}')" 
+                                            class="relative w-full h-12 flex items-center justify-center border-2 rounded-lg transition duration-200 cursor-pointer shadow-sm
+                                                @if($status === 'Caries') bg-red-600 border-red-700 text-white 
+                                                @elseif($status === 'Missing') bg-slate-500 border-slate-600 text-white 
+                                                @elseif($status === 'Tambal') bg-emerald-500 border-emerald-600 text-white
+                                                @else bg-slate-50 border-slate-300 hover:bg-blue-100 hover:border-blue-400 text-slate-700 @endif">
+                                            
+                                            <span class="text-[10px] font-bold z-10 opacity-50 absolute top-1 right-1.5">{{ $gigiId }}</span>
+                                            
+                                            @if($status === 'Caries') <span class="text-xl font-black z-20">O</span>
+                                            @elseif($status === 'Missing') <span class="text-xl font-black z-20">X</span>
+                                            @elseif($status === 'Tambal') <span class="text-lg font-black z-20">T</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endfor
+                            </tr>
+                            
+                            {{-- Garis Pembatas Horizontal (Salib) --}}
+                            <tr><td colspan="17" class="py-2"><div class="h-1.5 w-full bg-blue-900 rounded-full"></div></td></tr>
+                            
+                            <tr>
+                                {{-- Kuadran 4 (Bawah Kanan) --}}
+                                @for ($i = 8; $i >= 1; $i--)
+                                    @php $gigiId = '4' . $i; $status = $gigiKlinis[$gigiId] ?? 'Normal'; @endphp
+                                    <td class="p-1">
+                                        <div id="gigi-{{ $gigiId }}" wire:click.prevent="toggleGigiKlinis('{{ $gigiId }}')" 
+                                            class="relative w-full h-12 flex items-center justify-center border-2 rounded-lg transition duration-200 cursor-pointer shadow-sm
+                                                @if($status === 'Caries') bg-red-600 border-red-700 text-white 
+                                                @elseif($status === 'Missing') bg-slate-500 border-slate-600 text-white 
+                                                @elseif($status === 'Tambal') bg-emerald-500 border-emerald-600 text-white
+                                                @else bg-slate-50 border-slate-300 hover:bg-blue-100 hover:border-blue-400 text-slate-700 @endif">
+                                            
+                                            <span class="text-[10px] font-bold z-10 opacity-50 absolute bottom-1 left-1.5">{{ $gigiId }}</span>
+                                            
+                                            @if($status === 'Caries') <span class="text-xl font-black z-20">O</span>
+                                            @elseif($status === 'Missing') <span class="text-xl font-black z-20">X</span>
+                                            @elseif($status === 'Tambal') <span class="text-lg font-black z-20">T</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endfor
+                                
+                                <td class="w-2 bg-blue-900 rounded-full"></td> {{-- Garis Tengah Vertikal --}}
+                                
+                                {{-- Kuadran 3 (Bawah Kiri) --}}
+                                @for ($i = 1; $i <= 8; $i++)
+                                    @php $gigiId = '3' . $i; $status = $gigiKlinis[$gigiId] ?? 'Normal'; @endphp
+                                    <td class="p-1">
+                                        <div id="gigi-{{ $gigiId }}" wire:click.prevent="toggleGigiKlinis('{{ $gigiId }}')" 
+                                            class="relative w-full h-12 flex items-center justify-center border-2 rounded-lg transition duration-200 cursor-pointer shadow-sm
+                                                @if($status === 'Caries') bg-red-600 border-red-700 text-white 
+                                                @elseif($status === 'Missing') bg-slate-500 border-slate-600 text-white 
+                                                @elseif($status === 'Tambal') bg-emerald-500 border-emerald-600 text-white
+                                                @else bg-slate-50 border-slate-300 hover:bg-blue-100 hover:border-blue-400 text-slate-700 @endif">
+                                            
+                                            <span class="text-[10px] font-bold z-10 opacity-50 absolute bottom-1 right-1.5">{{ $gigiId }}</span>
+                                            
+                                            @if($status === 'Caries') <span class="text-xl font-black z-20">O</span>
+                                            @elseif($status === 'Missing') <span class="text-xl font-black z-20">X</span>
+                                            @elseif($status === 'Tambal') <span class="text-lg font-black z-20">T</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                @endfor
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                {{-- Keterangan Simbol --}}
+                {{-- Keterangan Simbol Legenda (Sama seperti PDF) --}}
                 <div class="flex flex-wrap justify-center gap-4 text-xs font-bold">
-                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <span class="w-5 h-5 bg-slate-100 border border-slate-300 rounded mr-2"></span> <span class="text-slate-600">Normal</span>
+                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
+                        <span class="w-5 h-5 bg-slate-100 border border-slate-300 rounded mr-2"></span> <span class="text-slate-600">Sehat (Normal)</span>
                     </div>
-                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <span class="flex items-center justify-center w-5 h-5 bg-red-500 border border-red-700 text-white rounded mr-2 text-[10px]">⚫</span> <span class="text-red-600">Caries</span>
+                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
+                        <span class="flex items-center justify-center w-5 h-5 bg-red-600 border border-red-700 text-white rounded mr-2 text-[12px]">O</span> <span class="text-red-700">Berlubang (Caries)</span>
                     </div>
-                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <span class="flex items-center justify-center w-5 h-5 bg-slate-400 border border-slate-600 text-black rounded mr-2 text-[12px]">X</span> <span class="text-slate-700">Missing</span>
+                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
+                        <span class="flex items-center justify-center w-5 h-5 bg-emerald-500 border border-emerald-600 text-white rounded mr-2 text-[12px]">T</span> <span class="text-emerald-700">Ditambal</span>
                     </div>
-                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-100">
-                        <span class="flex items-center justify-center w-5 h-5 bg-green-500 border border-green-700 text-white rounded mr-2 text-[10px]">T</span> <span class="text-green-700">Tambal</span>
+                    <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
+                        <span class="flex items-center justify-center w-5 h-5 bg-slate-500 border border-slate-600 text-white rounded mr-2 text-[12px]">X</span> <span class="text-slate-700">Hilang / Cabut</span>
                     </div>
                 </div>
             </div>
