@@ -6,6 +6,8 @@ use Livewire\Component;
 use App\Models\Karyawan;
 use App\Models\PesertaMcu;
 use App\Models\JadwalMcu;
+use App\Models\Setting;
+use Carbon\Carbon;
 
 class QrScanner extends Component
 {
@@ -73,8 +75,33 @@ class QrScanner extends Component
         }
     }
 
+    public function checkPendaftaranStatus()
+    {
+        // 1. Cek Maintenance
+        $isMaintenance = Setting::where('key', 'maintenance_mode')->value('value') == '1';
+        if ($isMaintenance) abort(503, 'Sistem Pendaftaran sedang dalam pemeliharaan.');
+
+        // 2. Cek Jam Buka
+        $jamBuka = Setting::where('key', 'jam_buka')->value('value') ?? '08:00';
+        $jamTutup = Setting::where('key', 'jam_tutup')->value('value') ?? '15:00';
+        $jamSekarang = now()->format('H:i');
+
+        if ($jamSekarang < $jamBuka || $jamSekarang > $jamTutup) {
+            abort(403, "Pendaftaran ditutup. Jam buka: {$jamBuka} - {$jamTutup} WITA.");
+        }
+
+        // 3. Cek Kuota
+        $kuotaHarian = Setting::where('key', 'kuota_harian')->value('value') ?? 50;
+        $jumlahPasienHariIni = JadwalMcu::whereDate('tanggal_mcu', Carbon::today())->count();
+
+        if ($jumlahPasienHariIni >= $kuotaHarian) {
+            abort(403, "Kuota pendaftaran hari ini penuh (Maks: {$kuotaHarian}).");
+        }
+    }
+
     public function render()
     {
+        $this->checkPendaftaranStatus();
         return view('livewire.qr-scanner')
             ->layout('layouts.app');
     }

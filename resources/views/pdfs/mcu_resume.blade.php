@@ -66,6 +66,20 @@
             margin-bottom: 5px; 
             font-size: 11pt;
         }
+        .greeting {
+            margin-top: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-size: 10pt;
+            text-align: justify;
+            color: #334155;
+        }
+        .greeting strong {
+            font-size: 11pt;
+            color: #0f172a;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -75,9 +89,9 @@
         
         <div class="header-cell header-left">
             {{-- LOGO SIG --}}
-            <img class="header-logo" src="{{ public_path('images/logo-stmc.png') }}" alt="Logo SIG">
+            <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
             {{-- LOGO TONASA --}}
-            <img class="header-logo" src="{{ public_path('images/logo-semen-tonasa.png') }}" alt="Logo Tonasa">
+            <img class="header-logo" src="{{ public_path($setting_logo_tonasa) }}" alt="Logo Tonasa">
         </div>
         
         <div class="header-cell header-center">
@@ -128,9 +142,9 @@
     </div>
 
     {{-- ... (Konten Hormat dan Hasil Pemeriksaan Tetap Sama) ... --}}
-    <div class="content-section">
-        Dengan Hormat,
-        <p>Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>{{ $tanggal_mcu }}</b>, ternyata Bapak/Ibu/Sdr (i) harus memperhatikan hal-hal sebagai berikut:</p>
+    <div class="greeting">
+        <strong>Dengan Hormat,</strong><br>
+        {!! $setting_disclaimer !!}
     </div>
 
     {{-- ... (Blok PHP Parsing Resume Data) ... --}}
@@ -205,7 +219,7 @@
             // Asumsi $doctor_data memiliki 'nama' dan 'nip' yang dimuat dari Livewire
             $doctorName = $doctor_data['nama'] ?? '(Nama Dokter)';
         @endphp
-        <p style="font-weight: bold;">({{ $doctor_data['nama'] ?? 'Dokter Tidak Ditunjuk' }})</p>
+        <p>({{ $setting_kepala_klinik }})</p>
         <p style="margin: 0;">{{ $doctor_data['nip'] ?? 'NIP. XXXXXXXXXXXXX' }}</p>    </div>
 
 </body>

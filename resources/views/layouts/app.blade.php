@@ -261,7 +261,7 @@
                                 <li><a href="{{ route('admin.create') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.create') ? 'active' : '' }}">Kelola Admin</a></li>
                                 <li><a href="{{ route('admin.tambah-dokter') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.tambah-dokter') ? 'active' : '' }}">Kelola Dokter</a></li>
                                 <li><a href="{{ route('paket-poli') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('paket-poli') ? 'active' : '' }}">Paket & Poli MCU</a></li>
-                                <li><a href="{{ route('admin.laporan.pemeriksaan') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.laporan.pemeriksaan') ? 'active' : '' }}">Laporan Cetak</a></li>
+                                <li><a href="{{ route('admin.laporan.pemeriksaan') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.laporan.pemeriksaan') ? 'active' : '' }}">Rekap & Ekspor</a></li>
                             </ul>
                         </li>
                         @endif
@@ -372,14 +372,14 @@
                             <a href="{{ route('admin.profile.edit') }}" class="flex items-center px-5 py-3.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
                                 <i class="fas fa-user-circle w-5 text-center mr-2 text-slate-400"></i> Profil Saya
                             </a>
-                            <a href="#" class="flex items-center px-5 py-3.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
-                                <i class="fas fa-cog w-5 text-center mr-2 text-slate-400"></i> Pengaturan
+                            <a href="{{ route('admin.settings') }}" class="flex items-center px-5 py-3.5 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
+                                <i class="fas fa-cog w-5 text-center mr-2 text-slate-400"></i> Pengaturan Sistem
                             </a>
                             <div class="border-t border-slate-100">
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
                                     <button type="submit" class="flex items-center w-full text-left px-5 py-3.5 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors">
-                                        <i class="fas fa-sign-out-alt w-5 text-center mr-2"></i> Keluar Sistem
+                                        <i class="fas fa-sign-out-alt w-5 text-center mr-2"></i> Keluar 
                                     </button>
                                 </form>
                             </div>

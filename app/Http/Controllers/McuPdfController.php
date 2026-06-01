@@ -75,6 +75,17 @@ class McuPdfController extends Controller
             $doctorNip = $doctor->nip ?? 'NIP. XXXXXXXXXXXXX';
         }
 
+        $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
+
+        $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
+        $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>, ternyata Bapak/Ibu/Sdr (i) harus memperhatikan hal-hal sebagai berikut:';
+        
+        // Replace [TANGGAL] secara otomatis
+        $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
+
+        $logoStmc = \App\Models\Setting::where('key', 'logo_stmc')->value('value') ?? 'images/logo-stmc.png';
+        $logoTonasa = \App\Models\Setting::where('key', 'logo_tonasa')->value('value') ?? 'images/logo-semen-tonasa.png';
+        
         $data = [
             'jadwal' => $jadwal,
             'patient' => $patient,
@@ -96,7 +107,12 @@ class McuPdfController extends Controller
                 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
                 'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A',
                 'nab_suhu_kerja' => 28.0 
-            ]
+            ],
+            // 2. MASUKKAN DATA PENGATURAN KE DALAM ARRAY UNTUK DIKIRIM KE PDF
+            'setting_kepala_klinik' => $namaKepalaKlinik,
+            'setting_disclaimer'  => $teksDisclaimerFinal,
+            'setting_logo_stmc'   => $logoStmc,
+            'setting_logo_tonasa' => $logoTonasa,
         ];
 
         // Memuat view Blade khusus untuk PDF Resume
@@ -146,12 +162,12 @@ class McuPdfController extends Controller
         $pdfFilesToMerge[] = $tempResumePath;
         $tempFiles[] = $tempResumePath;
 
-        // 3. AMBIL FILE DARI LOCAL STORAGE (GCP)
+        // 3. AMBIL FILE DARI GOOGLE CLOUD STORAGE (GCP)
         foreach ($jadwal->jadwalPoli as $jp) {
-            if ($jp->file_path && Storage::disk('public')->exists($jp->file_path)) {
+            if ($jp->file_path && Storage::disk('gcs')->exists($jp->file_path)) {
                 try {
-                    // Ambil isi file dari disk lokal public
-                    $fileContent = Storage::disk('public')->get($jp->file_path);
+                    // KRITIS: Ambil isi file dari disk GCS
+                    $fileContent = Storage::disk('gcs')->get($jp->file_path);
                     
                     // Simpan sementara di server lokal agar bisa dibaca FPDI
                     $localTempPoli = $tempDirFullPath . '/poli_' . $jp->id . '_' . time() . '.pdf';
@@ -160,9 +176,9 @@ class McuPdfController extends Controller
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
                     
-                    \Log::info("Local File Retrieved: " . $jp->file_path);
+                    \Log::info("GCS File Retrieved: " . $jp->file_path);
                 } catch (\Exception $e) {
-                    \Log::error("Gagal mengambil file lokal: " . $jp->file_path . " Error: " . $e->getMessage());
+                    \Log::error("Gagal mengambil file GCS: " . $jp->file_path . " Error: " . $e->getMessage());
                 }
             }
         }
