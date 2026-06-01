@@ -35,7 +35,7 @@ class SendAutomatedMcuReminders extends Command
                 Log::info("DEBUG DATA KARYAWAN: " . json_encode($karyawan->toArray()));
                 // ----------------------------------------
                 $title = "Pengingat Jadwal MCU";
-                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal MCU kamu besok ya!";
+                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal Medical Check Up kamu besok ya! Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
 
                 // Panggil Service FCM kita
                 $isSent = \App\Services\FCMService::sendPushNotification(

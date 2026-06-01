@@ -257,19 +257,24 @@ class NotificationDashboard extends Component
             return;
         }
 
+        // Buat log awal dengan default 0
         $log = \App\Models\NotificationLog::create([
             'scheduled_date' => $this->specificDate ?? Carbon::now()->toDateString(),
             'mode' => 'manual',
             'total_targets' => $recipientsCount,
+            'fcm_success' => 0, // Inisialisasi awal
+            'email_success' => 0,
             'admin_users_id' => Auth::id(),
         ]);
         
         if ($this->notificationMode === 'scheduled') {
-            ProcessMcuReminders::dispatch($this->selectedRecipients, $log);
-            session()->flash('message', "{$recipientsCount} pengingat jadwal sedang diproses.");
+            // GANTI MENGGUNAKAN dispatchSync
+            ProcessMcuReminders::dispatchSync($this->selectedRecipients, $log);
+            session()->flash('message', "{$recipientsCount} pengingat jadwal berhasil dikirim.");
         } elseif ($this->notificationMode === 'submission') {
-            ProcessSubmissionReminders::dispatch($this->selectedRecipients, $log);
-            session()->flash('message', "{$recipientsCount} pengingat pengajuan jadwal sedang diproses.");
+            // GANTI MENGGUNAKAN dispatchSync
+            ProcessSubmissionReminders::dispatchSync($this->selectedRecipients, $log);
+            session()->flash('message', "{$recipientsCount} pengingat pengajuan jadwal berhasil dikirim.");
         }
 
         $this->reset(['selectedRecipients', 'searchQuery']);
