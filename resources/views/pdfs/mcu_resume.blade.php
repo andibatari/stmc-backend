@@ -8,10 +8,9 @@
         
         /* CONTAINER UTAMA HEADER */
         .header-container {
-            /* Menggunakan table layout untuk stabilitas di Dompdf */
             width: 100%;
             display: table; 
-            border-bottom: 2px solid #000; /* Garis hitam */
+            border-bottom: 2px solid #000; 
         }
         .header-cell {
             display: table-cell;
@@ -21,7 +20,7 @@
         
         /* SEL KIRI: LOGO */
         .header-left {
-            width: 30%; /* Memberi ruang lebih untuk logo dan teks di tengah */
+            width: 30%; 
             text-align: left;
         }
         /* SEL TENGAH: TEKS */
@@ -32,12 +31,10 @@
             line-height: 1.5;
         }
         
-        /* FUNGSI UNTUK GAMBAR (Memastikan path benar dan ukuran sesuai) */
         .header-logo {
-            /* Menaikkan ukuran logo */
             height: 70px; 
             width: auto;
-            margin-right: 5px; /* Jarak antar logo */
+            margin-right: 5px; 
         }
         
         /* TEKS */
@@ -50,7 +47,6 @@
         .data-pasien table { width: 100%; border-collapse: collapse; }
         .data-pasien td { padding: 2px 0; vertical-align: top; font-size: 10pt; }
 
-        /* KRITIS: Lebar kolom untuk table data pasien */
         .data-pasien .label-col { width: 15%; padding-right: 5px; }
         .data-pasien .colon-col { width: 1%; }
         .data-pasien .value-col { width: 37%; }
@@ -66,6 +62,8 @@
             margin-bottom: 5px; 
             font-size: 11pt;
         }
+        
+        /* STYLE UNTUK PARAGRAF PEMBUKA */
         .greeting {
             margin-top: 15px;
             margin-bottom: 20px;
@@ -88,9 +86,7 @@
     <div class="header-container">
         
         <div class="header-cell header-left">
-            {{-- LOGO SIG --}}
             <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
-            {{-- LOGO TONASA --}}
             <img class="header-logo" src="{{ public_path($setting_logo_tonasa) }}" alt="Logo Tonasa">
         </div>
         
@@ -102,6 +98,7 @@
         
     </div>
     <hr style="border: none; border-bottom: 0.5px solid #000; margin-top: 0; margin-bottom: 15px;">    
+
     <div class="data-pasien">
         <table>
             <tr>
@@ -139,21 +136,20 @@
                 <td></td>
                 <td></td>
             </tr>
+        </table> {{-- PENUTUP TABEL YANG SEBELUMNYA HILANG --}}
     </div>
 
-    {{-- ... (Konten Hormat dan Hasil Pemeriksaan Tetap Sama) ... --}}
+    {{-- KATA PENGANTAR --}}
     <div class="greeting">
         <strong>Dengan Hormat,</strong><br>
         {!! $setting_disclaimer !!}
     </div>
 
-    {{-- ... (Blok PHP Parsing Resume Data) ... --}}
+    {{-- BLOK PHP PARSING DATA RESUME --}}
     @php
-    // Pastikan $resume_body_raw adalah string dan tidak null/kosong sebelum di-decode
     $resumeData = ($resume_body_raw && is_string($resume_body_raw)) ? json_decode($resume_body_raw, true) : null; 
     $resumeText = '';
     
-    // Jika data resume ditemukan (berhasil di-parse)
     if ($resumeData) {
         $resumeMap = [
             'bmi' => 'BMI', 'laboratorium' => 'Hasil Laboratorium', 'ecg' => 'Hasil Pemeriksaan EKG / Rekam Jantung',
@@ -165,36 +161,31 @@
         $i = 1;
         foreach ($resumeMap as $key => $label) {
             $value = $resumeData[$key] ?? '—'; 
-            // Menggunakan tag <p> dan styling number agar rapi di Dompdf
             $resumeText .= "<p style='margin:0; padding-left: 15px; text-indent: -15px;'>{$i}. {$label} : <b>{$value}</b></p>";
             $i++;
         }
     }
     
-    // LOGIKA PERBAIKAN SARAN KE POIN-POIN
     $saranArray = [];
     if ($resume_saran) {
-        // Coba pisahkan berdasarkan baris baru (\n) atau koma (,)
-        // Kemudian trim setiap item
         $saranTemp = preg_split("/[\r\n,]+/", $resume_saran, -1, PREG_SPLIT_NO_EMPTY);
         $saranArray = array_map('trim', $saranTemp);
-        $saranArray = array_filter($saranArray); // Hapus elemen kosong
+        $saranArray = array_filter($saranArray); 
     }
     @endphp
 
+    {{-- HASIL PEMERIKSAAN (RESUME BODY) --}}
     <div class="content-section">
-        {{-- HASIL PEMERIKSAAN (RESUME BODY) --}}
         @if ($resumeText)
-            {{-- Menggunakan div agar Dompdf dapat merender list dari p tag yang kita buat --}}
             <div style="font-size: 11pt; line-height: 1.5;">{!! $resumeText !!}</div> 
         @else
             <pre class="pre-wrap" style="font-size: 11pt; line-height: 1.5;">Data hasil pemeriksaan (Butir 1-9) belum diisi.</pre>
         @endif
     </div>
     
+    {{-- SARAN --}}
     <div class="content-section">
         <h4 style="border-bottom: 1px solid #000; padding-bottom: 5px;">Saran:</h4>
-        {{-- SARAN DOKTER (MENJADI LIST BERBUTIR) --}}
         @if (!empty($saranArray))
             <ul class="saran-list">
                 @foreach ($saranArray as $saran)
@@ -206,21 +197,28 @@
         @endif
     </div>
     
+    {{-- KATEGORI AKHIR --}}
     <div class="content-section">
-        <h4 style="margin-bottom: 5px;">Kategori</h4>
-        {{-- KATEGORI AKHIR (RESUME KATEGORI) --}}
+        <h4 style="margin-bottom: 5px;">Kategori Akhir</h4>
         <p style="font-weight: bold; font-size: 12pt;">{{ $resume_kategori ?? 'N/A' }}</p>
     </div>
     
-    <div style="margin-top: 5px; text-align: right;">
-        <p>Pangkep, {{ $tanggal_cetak }}</p>
-        <p style="margin-bottom: 70px;">Dokter Pemeriksa,</p>
-        @php
-            // Asumsi $doctor_data memiliki 'nama' dan 'nip' yang dimuat dari Livewire
-            $doctorName = $doctor_data['nama'] ?? '(Nama Dokter)';
-        @endphp
-        <p>({{ $setting_kepala_klinik }})</p>
-        <p style="margin: 0;">{{ $doctor_data['nip'] ?? 'NIP. XXXXXXXXXXXXX' }}</p>    </div>
+    {{-- TANDA TANGAN GANDA --}}
+    <table style="width: 100%; margin-top: 40px; text-align: center; border-collapse: collapse;">
+        <tr>
+            <td style="width: 50%; vertical-align: top;">
+                <p style="margin: 0; color: white;">.</p>
+                <p style="margin-bottom: 70px;">Mengetahui,<br>Kepala Klinik STMC,</p>
+                <p style="font-weight: bold; text-decoration: underline; margin: 0;">{{ $setting_kepala_klinik }}</p>
+            </td>
+            <td style="width: 50%; vertical-align: top;">
+                <p style="margin: 0;">Pangkep, {{ $tanggal_cetak }}</p>
+                <p style="margin-bottom: 70px;">Dokter Pemeriksa,</p>
+                <p style="font-weight: bold; text-decoration: underline; margin: 0;">{{ $doctor_data['nama'] ?? '(Nama Dokter)' }}</p>
+                <p style="margin: 0; font-size: 9pt;">{{ $doctor_data['nip'] ?? 'NIP. -' }}</p>
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>
