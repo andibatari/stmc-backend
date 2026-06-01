@@ -31,6 +31,9 @@ class SendAutomatedMcuReminders extends Command
             $karyawan = $jadwal->karyawan; // Sesuaikan dengan nama relasi di model JadwalMcu
 
             if ($karyawan && !empty($karyawan->fcm_token)) {
+                // --- TAMBAHKAN BARIS INI UNTUK DEBUG ---
+                Log::info("DEBUG DATA KARYAWAN: " . json_encode($karyawan->toArray()));
+                // ----------------------------------------
                 $title = "Pengingat Jadwal MCU";
                 $body = "Halo " . ($karyawan->nama_lengkap ?? 'Karyawan') . ", jangan lupa jadwal MCU kamu besok ya!";
 
