@@ -17,6 +17,7 @@ class SendAutomatedMcuReminders extends Command
         $besok = Carbon::tomorrow()->toDateString();
         $jadwalBesok = JadwalMcu::whereDate('tanggal_mcu', $besok)
                                 ->where('status', 'Scheduled')
+                                ->with('patient') // Pastikan relasi 'patient' (atau karyawan) sudah benar
                                 ->get();
 
         if ($jadwalBesok->isEmpty()) {
@@ -26,9 +27,29 @@ class SendAutomatedMcuReminders extends Command
 
         $successCount = 0;
         foreach ($jadwalBesok as $jadwal) {
-            // CATATAN: Panggil API Firebase / Email Karyawan di sini
-            // ...
-            $successCount++;
+            // Ambil data karyawan/pasien dari relasi
+            $karyawan = $jadwal->patient; // Sesuaikan dengan nama relasi di model JadwalMcu
+
+            if ($karyawan && !empty($karyawan->fcm_token)) {
+                $title = "Pengingat Jadwal MCU";
+                $body = "Halo " . ($karyawan->nama_lengkap ?? 'Karyawan') . ", jangan lupa jadwal MCU kamu besok ya!";
+
+                // Panggil Service FCM kita
+                $isSent = \App\Services\FCMService::sendPushNotification(
+                    $karyawan->fcm_token,
+                    $title,
+                    $body
+                );
+
+                if ($isSent) {
+                    $successCount++;
+                    Log::info("CRON: Notifikasi berhasil dikirim ke " . $karyawan->nama_lengkap);
+                } else {
+                    Log::error("CRON: Gagal kirim notifikasi ke " . $karyawan->nama_lengkap);
+                }
+            } else {
+                Log::warning("CRON: Karyawan tidak ditemukan atau Token FCM kosong untuk Jadwal ID: " . $jadwal->id);
+            }
         }
 
         \App\Models\NotificationLog::create([
@@ -37,10 +58,9 @@ class SendAutomatedMcuReminders extends Command
             'total_targets' => $jadwalBesok->count(),
             'fcm_success' => $successCount,
             'email_success' => 0,
-            // admin_users_id dikosongkan karena dieksekusi otomatis oleh sistem
         ]);
 
         $this->info("CRON SUKSES: Mengirim {$successCount} pengingat otomatis.");
-        Log::info("CRON: Mengirim {$successCount} pengingat MCU H-1.");
+        Log::info("CRON: Selesai. Total sukses: {$successCount}");
     }
 }

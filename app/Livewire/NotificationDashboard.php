@@ -107,44 +107,67 @@ class NotificationDashboard extends Component
     // ==========================================
     public function sendBroadcast()
     {
+        // 1. Validasi Input
         $this->validate([
-            'broadcastTitle' => 'required|string|max:100',
+            'broadcastTitle' => 'required|string|max:255',
             'broadcastMessage' => 'required|string',
+            'broadcastTargetType' => 'required|in:all,dept,individual',
         ]);
 
-        if ($this->broadcastTargetType === 'dept' && empty($this->broadcastTargetDeptId)) {
-            $this->addError('broadcastTargetDeptId', 'Pilih departemen tujuan.');
-            return;
-        }
-        
-        if ($this->broadcastTargetType === 'individual' && empty($this->selectedIndividualEmployees)) {
-            $this->addError('selectedIndividualEmployees', 'Pilih minimal satu karyawan tujuan.');
-            return;
-        }
+        $targets = collect();
+        $totalTarget = 0;
 
-        // Menghitung jumlah target untuk keperluan Log
-        $totalTargets = 0;
+        // 2. Tentukan Siapa Targetnya
         if ($this->broadcastTargetType === 'all') {
-            $totalTargets = Karyawan::count();
+            $targets = \App\Models\Karyawan::whereNotNull('fcm_token')->get();
         } elseif ($this->broadcastTargetType === 'dept') {
-            $totalTargets = Karyawan::where('departemens_id', $this->broadcastTargetDeptId)->count();
+            $this->validate(['broadcastTargetDeptId' => 'required']);
+            $targets = \App\Models\Karyawan::where('departemen_id', $this->broadcastTargetDeptId)
+                                           ->whereNotNull('fcm_token')->get();
         } elseif ($this->broadcastTargetType === 'individual') {
-            $totalTargets = count($this->selectedIndividualEmployees);
+            $this->validate(['selectedIndividualEmployees' => 'required|array|min:1']);
+            // Ambil ID dari array pilihan
+            $ids = array_column($this->selectedIndividualEmployees, 'id');
+            $targets = \App\Models\Karyawan::whereIn('id', $ids)->get();
         }
 
-        // CATATAN: Eksekusi pengiriman Firebase/Email di sini
-        // ...
+        $fcmSuccessCount = 0;
+        $totalTarget = $targets->count();
 
+        if ($totalTarget === 0) {
+            session()->flash('error', 'Gagal dikirim: Target tidak ditemukan atau belum memiliki Token HP (Belum login di Aplikasi).');
+            return;
+        }
+
+        // 3. Tembakkan Notifikasi ke HP Karyawan (Satu per satu)
+        foreach ($targets as $karyawan) {
+            if (!empty($karyawan->fcm_token)) {
+                $statusFCM = \App\Services\FCMService::sendPushNotification(
+                    $karyawan->fcm_token,
+                    $this->broadcastTitle,
+                    $this->broadcastMessage
+                );
+
+                if ($statusFCM) {
+                    $fcmSuccessCount++;
+                }
+            }
+        }
+
+        // 4. Catat ke Tabel Riwayat
         \App\Models\NotificationLog::create([
             'mode' => 'broadcast',
-            'scheduled_date' => Carbon::now()->toDateString(),
-            'total_targets' => $totalTargets,
-            'admin_users_id' => Auth::id(),
+            'scheduled_date' => null, // Broadcast tidak punya target tanggal
+            'total_targets' => $totalTarget,
+            'email_success' => 0,
+            'fcm_success' => $fcmSuccessCount,
+            'admin_id' => auth()->id() ?? 1,
         ]);
 
-        // Bersihkan Form
-        $this->reset(['broadcastTitle', 'broadcastMessage', 'broadcastTargetType', 'broadcastTargetDeptId', 'searchEmployeeQuery', 'employeeSearchResults', 'selectedIndividualEmployees']);
-        session()->flash('message', 'Broadcast pengumuman berhasil dikirim ke aplikasi karyawan!');
+        // 5. Bersihkan Form dan Tampilkan Pesan Sukses
+        session()->flash('message', "Broadcast Selesai! Berhasil terkirim ke $fcmSuccessCount perangkat HP.");
+        $this->reset(['broadcastTitle', 'broadcastMessage', 'selectedIndividualEmployees', 'searchEmployeeQuery']);
+        $this->broadcastTargetType = 'individual';
     }
     
     // ==========================================
