@@ -17,7 +17,7 @@ class SendAutomatedMcuReminders extends Command
         $besok = Carbon::tomorrow()->toDateString();
         $jadwalBesok = JadwalMcu::whereDate('tanggal_mcu', $besok)
                                 ->where('status', 'Scheduled')
-                                ->with('patient') // Pastikan relasi 'patient' (atau karyawan) sudah benar
+                                ->with('karyawan') // Pastikan relasi 'patient' (atau karyawan) sudah benar
                                 ->get();
 
         if ($jadwalBesok->isEmpty()) {
@@ -28,7 +28,7 @@ class SendAutomatedMcuReminders extends Command
         $successCount = 0;
         foreach ($jadwalBesok as $jadwal) {
             // Ambil data karyawan/pasien dari relasi
-            $karyawan = $jadwal->patient; // Sesuaikan dengan nama relasi di model JadwalMcu
+            $karyawan = $jadwal->karyawan; // Sesuaikan dengan nama relasi di model JadwalMcu
 
             if ($karyawan && !empty($karyawan->fcm_token)) {
                 $title = "Pengingat Jadwal MCU";
