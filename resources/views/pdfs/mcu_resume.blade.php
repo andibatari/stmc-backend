@@ -14,15 +14,15 @@
         
         /* LOGO & JUDUL DIPADATKAN */
         .header-logo { height: 50px; width: auto; margin-right: 5px; }
-        .text-title { font-size: 14pt; margin: 0; font-weight: 900;}
-        .text-subtitle { font-size: 11pt; margin: 0; text-decoration: underline; font-weight: bold;}
-        .text-priority { font-size: 9pt; margin: 0; color: #cc3333; font-weight: bold; }
+        .text-title { font-size: 18pt; margin: 0; font-weight: 900;}
+        .text-subtitle { font-size: 16pt; margin: 0; text-decoration: underline; font-weight: bold;}
+        .text-priority { font-size: 14pt; margin: 0; color: #cc3333; font-weight: bold; }
         
         /* DATA PASIEN */
-        .data-pasien { margin-top: 5px; margin-bottom: 5px; }
+        .data-pasien { margin-top: 7px; margin-bottom: 7px; }
         .data-pasien table { width: 100%; border-collapse: collapse; }
         .data-pasien td { padding: 1px 0; vertical-align: top; font-size: 10pt; }
-        .data-pasien .label-col { width: 15%; padding-right: 5px; font-weight: bold;}
+        .data-pasien .label-col { width: 18%; padding-right: 5px; font-weight: bold;}
         .data-pasien .colon-col { width: 1%; }
         .data-pasien .value-col { width: 37%; }
 
@@ -36,8 +36,8 @@
         .greeting strong { font-size: 10.5pt; color: #000; display: inline-block; margin-bottom: 2px; }
 
         /* KONTEN HASIL & SARAN */
-        .content-section { margin-top: 8px; }
-        .content-section h4 { margin: 0 0 2px 0; font-size: 10.5pt; border-bottom: 1px solid #000; padding-bottom: 2px; }
+        .content-section { margin-top: 10px; }
+        .content-section h4 { margin: 0 0 2px 0; font-size: 11pt; border-bottom: 1px solid #000; padding-bottom: 2px; }
         
         .saran-list { margin: 2px 0 2px 0; padding-left: 15px; list-style-type: disc; }
         .saran-list li { margin-bottom: 2px; line-height: 1.3; font-size: 10pt;}
