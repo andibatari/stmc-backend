@@ -3,57 +3,40 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use App\Models\JadwalMcu; // Pastikan model Jadwal Anda sudah ada
+use App\Models\JadwalMcu; 
 
 class NotificationHeader extends Component
 {
-    /**
-     * Properti publik untuk menyimpan jumlah notifikasi yang belum dibaca.
-     * Nilai ini akan diakses oleh livewire/notification-header.blade.php.
-     */
     public $unreadNotificationsCount = 0;
+    public $latestNotifications = []; // Variabel baru untuk menampung daftar notifikasi
 
-    /**
-     * Lifecycle hook Livewire: dijalankan saat komponen dimuat.
-     */
     public function mount()
     {
         $this->checkNotifications();
     }
     
-    /**
-     * Metode untuk menghitung jumlah jadwal pasien baru yang statusnya pending.
-     */
     public function checkNotifications()
     {
-        // Cari di database (asumsi ada kolom 'status' di tabel 'jadwal')
-        $this->unreadNotificationsCount = JadwalMcu::where('status', 'pending')->count();
+        // 1. Hitung totalnya untuk angka di Lonceng (Badge)
+        $this->unreadNotificationsCount = JadwalMcu::where('status', 'Pending')->count();
+
+        // 2. Ambil 5 data terbaru beserta relasi karyawannya untuk ditampilkan di dropdown
+        if ($this->unreadNotificationsCount > 0) {
+            $this->latestNotifications = JadwalMcu::with('karyawan') // Pastikan relasinya benar
+                ->where('status', 'Pending')
+                ->latest('created_at') // Urutkan dari yang paling baru
+                ->take(5) // Ambil 5 saja agar dropdown tidak kepanjangan
+                ->get();
+        } else {
+            $this->latestNotifications = [];
+        }
     }
 
-    /**
-     * Metode ini dipanggil saat tombol lonceng diklik.
-     * Tujuannya bisa untuk mereset tampilan badge.
-     * Dalam kasus ini, kita hanya akan memanggil checkNotifications() lagi untuk memastikan
-     * badge merefleksikan data terkini, namun tidak mereset data di DB.
-     */
     public function markNotificationsAsRead()
     {
-        // Logika sederhana: Muat ulang hitungan dari database.
-        // Jika Anda ingin badge hilang setelah diklik, Anda perlu menambahkan 
-        // kolom 'is_read_by_admin' pada tabel Jadwal dan mengupdatenya di sini.
-        
         $this->checkNotifications(); 
-
-        // Contoh jika ingin badge langsung hilang:
-        // $this->unreadNotificationsCount = 0;
-        
-        // Catatan: Karena notifikasi ini mewakili data live (pending schedules),
-        // badge akan muncul kembali saat halaman di-refresh jika masih ada data 'pending'.
     }
 
-    /**
-     * Metode render Livewire.
-     */
     public function render()
     {
         return view('livewire.notification-header');

@@ -251,14 +251,21 @@ class PemantauanLingkunganIndex extends Component
             $this->isEditing = true;
             $this->editingDataId = $id;
             
+            // PENGAMANAN DATA JSON
+            $dataPemantauanAsli = is_string($data->data_pemantauan) ? json_decode($data->data_pemantauan, true) : $data->data_pemantauan;
+            $dataPemantauanAman = is_array($dataPemantauanAsli) ? array_merge($this->getDefaultPemantauanData(), $dataPemantauanAsli) : $this->getDefaultPemantauanData();
+            
             $this->editingData = [
                 'id' => $data->id,
                 'departemens_id' => $data->departemens_id, 
                 'unit_kerjas_id' => $data->unit_kerjas_id, 
                 'area' => $data->area,
                 'lokasi' => $data->lokasi,
-                'tanggal_pemantauan' => Carbon::parse($data->tanggal_pemantauan)->format('Y-m-d'),
-                'data_pemantauan' => $data->data_pemantauan,
+                
+                // PENGAMANAN TANGGAL
+                'tanggal_pemantauan' => $data->tanggal_pemantauan ? Carbon::parse($data->tanggal_pemantauan)->format('Y-m-d') : '',
+                
+                'data_pemantauan' => $dataPemantauanAman,
                 'nab_cahaya' => $data->nab_cahaya,
                 'nab_bising' => $data->nab_bising,
                 'nab_debu' => $data->nab_debu,

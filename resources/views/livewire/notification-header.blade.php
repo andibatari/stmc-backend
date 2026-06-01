@@ -1,14 +1,15 @@
-<div x-data="{ open: false }" class="relative">
+{{-- Tambahkan wire:poll agar mengecek database otomatis setiap 10 detik --}}
+<div x-data="{ open: false }" wire:poll.10s="checkNotifications" class="relative">
+    
     {{-- Tombol Lonceng Notifikasi --}}
-    {{-- Klik tombol akan memicu markNotificationsAsRead untuk mereset counter --}}
-    <button @click="open = !open; @this.markNotificationsAsRead()" 
-            class="p-2 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors duration-150 relative focus:outline-none">
+    <button @click="open = !open; $wire.markNotificationsAsRead()" 
+            class="p-2 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150 relative focus:outline-none">
         
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        <i class="fas fa-bell text-xl"></i> {{-- Menggunakan FontAwesome agar senada dengan desain web kamu --}}
         
         {{-- Badge Notifikasi Aktif --}}
         @if ($unreadNotificationsCount > 0)
-            <span class="absolute top-0 right-0 h-5 w-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center -mt-1 -mr-1 shadow-md">
+            <span class="absolute top-0 right-0 h-5 w-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center -mt-1 -mr-1 shadow-md animate-pulse">
                 {{ $unreadNotificationsCount > 9 ? '9+' : $unreadNotificationsCount }}
             </span>
         @endif
@@ -18,32 +19,66 @@
     <div x-show="open" 
          @click.away="open = false" 
          x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:enter-start="opacity-0 scale-95 transform -translate-y-2"
+         x-transition:enter-end="opacity-100 scale-100 transform translate-y-0"
          x-transition:leave="transition ease-in duration-75"
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-95"
-         class="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl overflow-hidden z-20 border border-gray-200"
+         class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-[0_10px_40px_rgb(0,0,0,0.1)] overflow-hidden z-50 border border-slate-100"
          style="display: none;">
          
-         <div class="p-4 border-b bg-gray-50">
-             <h4 class="text-sm font-bold text-gray-800">Permintaan Jadwal Baru ({{ $unreadNotificationsCount }})</h4>
+         <div class="p-4 border-b border-slate-100 bg-slate-50/80 flex justify-between items-center">
+             <h4 class="text-sm font-black text-slate-700">Permintaan Jadwal</h4>
+             <span class="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded-md">{{ $unreadNotificationsCount }} Baru</span>
          </div>
          
-         {{-- Daftar Notifikasi Placeholder --}}
-         <div class="max-h-64 overflow-y-auto">
+         {{-- ISI NOTIFIKASI INDIVIDU --}}
+         <div class="max-h-72 overflow-y-auto custom-scrollbar">
              @if ($unreadNotificationsCount > 0)
-                 <div class="p-4 text-center text-sm text-gray-600 border-b">
-                    Terdapat **{{ $unreadNotificationsCount }}** pasien yang mengajukan jadwal.
+                 <div class="flex flex-col divide-y divide-slate-50">
+                     @foreach ($latestNotifications as $notif)
+                         {{-- Link mengarah ke jadwal dengan pencarian otomatis --}}
+                         <a href="{{ route('jadwal.index') }}?search={{ $notif->karyawan->no_sap ?? '' }}" class="p-4 hover:bg-blue-50/50 transition-colors flex items-start gap-3 group">
+                             
+                             {{-- Ikon Lonceng Kecil --}}
+                             <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm">
+                                 <i class="fas fa-bell text-xs animate-wiggle"></i>
+                             </div>
+                             
+                             {{-- Teks Notifikasi --}}
+                             <div class="flex-1">
+                                 <p class="text-xs text-slate-600 leading-relaxed">
+                                     <span class="font-bold text-slate-900">{{ $notif->karyawan->nama_karyawan ?? 'Karyawan' }}</span> baru saja mengajukan jadwal MCU untuk tanggal <span class="font-bold text-slate-900">{{ \Carbon\Carbon::parse($notif->tanggal_mcu)->format('d M Y') }}</span>.
+                                 </p>
+                                 
+                                 <div class="flex items-center justify-between mt-2">
+                                     <p class="text-[9px] text-slate-400 font-medium">
+                                         <i class="far fa-clock mr-1"></i> {{ $notif->created_at->diffForHumans() }}
+                                     </p>
+                                     <p class="text-[10px] text-blue-600 font-bold flex items-center gap-1 group-hover:text-blue-800 transition-colors">
+                                         Lihat <i class="fas fa-arrow-right text-[8px]"></i>
+                                     </p>
+                                 </div>
+                             </div>
+                         </a>
+                     @endforeach
                  </div>
-                 <a href="{{ route('jadwal.index') }}" class="block px-4 py-3 hover:bg-red-50 text-sm font-semibold text-red-600 text-center">
-                    Tinjau Sekarang
-                 </a>
              @else
-                 <div class="p-4 text-center text-sm text-gray-500">
-                     Tidak ada permintaan jadwal baru.
+                 <div class="p-8 text-center flex flex-col items-center justify-center">
+                     <i class="fas fa-check-circle text-4xl text-slate-200 mb-3"></i>
+                     <p class="text-sm font-bold text-slate-500">Semua jadwal sudah diproses.</p>
+                     <p class="text-xs text-slate-400 mt-1">Tidak ada pengajuan baru.</p>
                  </div>
              @endif
          </div>
+
+         {{-- FOOTER --}}
+         @if ($unreadNotificationsCount > 0)
+         <div class="p-3 border-t border-slate-100 bg-slate-50 text-center">
+             <a href="{{ route('jadwal.index') }}" class="inline-block text-[11px] font-bold text-slate-500 hover:text-blue-600 transition-colors uppercase tracking-wider">
+                 Buka Manajemen Jadwal <i class="fas fa-external-link-square-alt ml-1"></i>
+             </a>
+         </div>
+         @endif
     </div>
 </div>

@@ -1,5 +1,4 @@
 @section('title', 'Pemantauan Lingkungan')
-<meta http-equiv="refresh" content="10">
 {{-- ROOT ELEMENT LIVEWIRE: Semua elemen WAJIB berada di dalam div ini --}}
 <div>
     <div class="px-2 md:px-4 py-4 min-h-screen">
@@ -168,7 +167,7 @@
                                         </td>
                                     </tr>
                                     @foreach ($lokasis as $data)
-                                        <tr class="hover:bg-slate-50/50 transition-colors duration-150">
+                                        <tr wire:key="row-{{ $data->id }}" class="hover:bg-slate-50/50 transition-colors duration-150">
                                             <td class="px-4 py-3 text-sm font-medium text-slate-500">{{ ++$globalIndex }}</td>
                                             <td class="px-4 py-3 text-sm font-bold text-slate-800">{{ $data->lokasi }}</td>
                                             <td class="px-4 py-3 text-sm text-slate-600 font-semibold whitespace-nowrap">{{ \Carbon\Carbon::parse($data->tanggal_pemantauan)->format('d M Y') }}</td>

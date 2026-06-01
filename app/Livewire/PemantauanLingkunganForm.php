@@ -132,6 +132,7 @@ class PemantauanLingkunganForm extends Component
             'nabCahaya', 'nabBising', 'nabDebu', 'nabSuhu', 'kesimpulan'
         ]);
         $this->mount();
+        return redirect()->route('pemantauan.index');
     }
 
     public function render()
