@@ -17,15 +17,18 @@ class NotificationHeader extends Component
     
     public function checkNotifications()
     {
-        // 1. Hitung totalnya untuk angka di Lonceng (Badge)
-        $this->unreadNotificationsCount = JadwalMcu::where('status', 'Pending')->count();
+        // Kita gunakan array agar sistem menangkap semua variasi kata status
+        $statusPencarian = ['pending', 'Pending', 'waiting', 'Waiting'];
 
-        // 2. Ambil 5 data terbaru beserta relasi karyawannya untuk ditampilkan di dropdown
+        // 1. Hitung totalnya
+        $this->unreadNotificationsCount = JadwalMcu::whereIn('status', $statusPencarian)->count();
+
+        // 2. Ambil 5 data terbaru
         if ($this->unreadNotificationsCount > 0) {
-            $this->latestNotifications = JadwalMcu::with('karyawan') // Pastikan relasinya benar
-                ->where('status', 'Pending')
-                ->latest('created_at') // Urutkan dari yang paling baru
-                ->take(5) // Ambil 5 saja agar dropdown tidak kepanjangan
+            $this->latestNotifications = JadwalMcu::with('karyawan') 
+                ->whereIn('status', $statusPencarian)
+                ->latest('created_at') 
+                ->take(5) 
                 ->get();
         } else {
             $this->latestNotifications = [];
