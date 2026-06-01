@@ -1,5 +1,4 @@
 @extends('layouts.app')
-<meta http-equiv="refresh" content="5">
 @section('title', 'Daftar Jadwal')
 
 @section('content')
@@ -32,39 +31,41 @@
             </div>
 
             {{-- FILTER SECTION --}}
+            {{-- AREA FILTER - Tambahkan kolom baru di form filter --}}
             <form method="GET" action="{{ route('jadwal.index') }}" class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 flex flex-col md:flex-row md:items-end gap-4 shadow-sm">
-                <div class="w-full md:w-1/3">
+                
+                {{-- Input Filter SAP Baru --}}
+                <div class="w-full md:w-1/4">
+                    <label for="search_sap" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cari No. SAP</label>
+                    <input type="text" name="search_sap" id="search_sap" value="{{ $search_sap ?? '' }}" placeholder="Contoh: 12345678"
+                        class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors">
+                </div>
+
+                <div class="w-full md:w-1/4">
                     <label for="tanggal_filter" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filter Tanggal</label>
                     <div class="flex items-center gap-2">
                         <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" 
-                            class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors" onchange="this.form.submit()">
-                        <button type="button" onclick="document.getElementById('tanggal_filter').value = ''; this.closest('form').submit();"
-                            class="px-4 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 hover:text-slate-800 transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
+                            class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors">
                     </div>
                 </div>
 
-                <div class="w-full md:w-1/3">
-                    <label for="status_jadwal" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status Pemeriksaan</label>
-                    <select id="status_jadwal" name="status" onchange="this.form.submit()"
+                <div class="w-full md:w-1/4">
+                    <label for="status_jadwal" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
+                    <select id="status_jadwal" name="status"
                         class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors cursor-pointer">
-                        <option value="" @if(!$status) selected @endif>Semua Status</option>
-                        <option value="Pending" @if($status == 'Pending') selected @endif>Menunggu (Pending)</option>
-                        <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Terjadwal (Scheduled)</option>
-                        <option value="Present" @if($status == 'Present') selected @endif>Hadir (Present)</option>
-                        <option value="Finished" @if($status == 'Finished') selected @endif>Selesai (Finished)</option>
-                        <option value="Canceled" @if($status == 'Canceled') selected @endif>Batal (Canceled)</option>
+                        <option value="">Semua Status</option>
+                        <option value="Pending" @if($status == 'Pending') selected @endif>Menunggu</option>
+                        <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Terjadwal</option>
+                        <option value="Present" @if($status == 'Present') selected @endif>Hadir</option>
+                        <option value="Finished" @if($status == 'Finished') selected @endif>Selesai</option>
+                        <option value="Canceled" @if($status == 'Canceled') selected @endif>Batal</option>
                     </select>
                 </div>
 
-                <div class="w-full md:w-auto ml-auto">
-                    <button type="button" onclick="window.location.href = '{{ route('jadwal.index') }}';"
-                        class="w-full md:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 border-2 border-slate-200 bg-white rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all">
-                        Reset Filter
-                    </button>
+                <div class="flex gap-2">
+                    <button type="submit" class="px-6 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-all">Cari</button>
+                    <a href="{{ route('jadwal.index') }}" class="px-6 py-2.5 text-sm font-bold text-slate-600 border border-slate-200 bg-white rounded-xl hover:bg-slate-50 transition-all">Reset</a>
                 </div>
-                <noscript><button type="submit" class="hidden">Filter</button></noscript>
             </form>
 
             {{-- TABLE SECTION --}}

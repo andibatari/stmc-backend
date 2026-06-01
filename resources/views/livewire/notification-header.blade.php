@@ -16,7 +16,6 @@
     </button>
 
     {{-- Dropdown Panel Notifikasi --}}
-    {{-- Dropdown Panel Notifikasi --}}
     <div x-show="open" 
          @click.away="open = false" 
          x-transition:enter="transition ease-out duration-200"
@@ -39,26 +38,36 @@
          </div>
          
          {{-- ISI NOTIFIKASI --}}
-         <div class="max-h-72 overflow-y-auto">
+         <div class="max-h-72 overflow-y-auto custom-scrollbar">
              @if ($unreadNotificationsCount > 0)
-                 {{-- Menampilkan Ringkasan Jadwal (Angka Dinamis) --}}
-                 <a href="{{ route('jadwal.index') }}" class="p-4 hover:bg-slate-50 transition-colors flex items-start gap-3">
-                     <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                         <i class="fas fa-calendar-check text-sm"></i>
-                     </div>
-                     <div>
-                         <p class="text-sm font-bold text-slate-800">
-                             {{ $unreadNotificationsCount }} Permintaan Jadwal Baru!
-                         </p>
-                         <p class="text-xs text-slate-500 mt-1">
-                             {{-- Mengambil waktu dari data yang paling baru masuk --}}
-                             {{ $latestNotifications->first() ? $latestNotifications->first()->created_at->diffForHumans() : 'Baru saja' }}
-                         </p>
-                     </div>
-                 </a>
-                 
-                 <div class="p-4 text-center border-t border-slate-50">
-                     <p class="text-[11px] text-slate-400">Tidak ada notifikasi lain.</p>
+                 <div class="flex flex-col divide-y divide-slate-100">
+                     {{-- Looping data satu per satu --}}
+                     @foreach ($latestNotifications as $notif)
+                        <a href="{{ route('jadwal.index') }}?search_sap={{ $notif->karyawan->no_sap ?? '' }}" class="p-4 hover:bg-red-50/50 transition-colors flex items-start gap-3 group cursor-pointer">
+    
+                            {{-- Ikon Bulat --}}
+                            <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fas fa-calendar-check text-sm"></i> {{-- Saya ganti ikonnya ke calendar-check karena sudah otomatis disetujui --}}
+                            </div>
+                            
+                            {{-- Teks Notifikasi --}}
+                            <div class="flex-1">
+                                <p class="text-[13px] text-slate-600 leading-relaxed">
+                                    <span class="font-black text-slate-800">{{ $notif->karyawan->nama_karyawan ?? 'Karyawan' }}</span> baru saja mengambil antrean MCU untuk tanggal <span class="font-bold text-slate-800">{{ \Carbon\Carbon::parse($notif->tanggal_mcu)->translatedFormat('d F Y') }}</span>.
+                                </p>
+                                
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="text-[10px] text-slate-400 font-medium">
+                                        <i class="far fa-clock mr-1"></i> {{ $notif->created_at->diffForHumans() }}
+                                    </p>
+                                    {{-- TEKS DI SINI KITA UBAH --}}
+                                    <p class="text-[10px] font-bold text-red-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-300">
+                                        Lihat Jadwal <i class="fas fa-arrow-right ml-0.5"></i>
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                     @endforeach
                  </div>
              @else
                  {{-- Tampilan saat 0 Notifikasi --}}
@@ -71,8 +80,8 @@
 
          {{-- FOOTER --}}
          <div class="p-4 border-t border-slate-100 bg-white text-center">
-             <a href="{{ route('jadwal.index') }}" class="inline-block text-xs font-bold text-red-600 hover:text-red-700 transition-colors">
-                 Lihat Semua Notifikasi <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
+             <a href="{{ route('jadwal.index') }}" class="inline-block text-[11px] font-bold text-slate-500 hover:text-red-600 transition-colors uppercase tracking-wider">
+                 Buka Manajemen Jadwal <i class="fas fa-arrow-right ml-1 text-[10px]"></i>
              </a>
          </div>
     </div>

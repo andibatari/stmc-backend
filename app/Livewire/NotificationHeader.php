@@ -18,7 +18,7 @@ class NotificationHeader extends Component
     public function checkNotifications()
     {
         // Kita gunakan array agar sistem menangkap semua variasi kata status
-        $statusPencarian = ['pending', 'Pending', 'waiting', 'Waiting'];
+        $statusPencarian = ['scheduled', 'Scheduled'];
 
         // 1. Hitung totalnya
         $this->unreadNotificationsCount = JadwalMcu::whereIn('status', $statusPencarian)->count();

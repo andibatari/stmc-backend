@@ -18,45 +18,47 @@ class JadwalMcuController extends Controller
     {
         $tanggal_filter = $request->input('tanggal_filter');
         $status = $request->input('status');
+        // 1. Tambahkan variabel untuk menangkap input search_sap
+        $search_sap = $request->input('search_sap');
 
-        // 1. QUERY UNTUK DAFTAR JADWAL UTAMA
-        // Pastikan relasi 'dokter' sudah dimuat di model JadwalMcu.
-        $query = JadwalMcu::with('dokter', 'paketMcu');
+        $query = JadwalMcu::with('dokter', 'paketMcu', 'karyawan'); // Pastikan relasi karyawan dimuat
 
-        // Apply date filter if present
+        // Apply date filter
         if (!empty($tanggal_filter)) {
             $query->whereDate('tanggal_mcu', $tanggal_filter);
         }
 
-        // Apply status filter if present
+        // Apply status filter
         if (!empty($status)) {
             $query->where('status', $status);
         }
+
+        // 2. Apply search filter untuk SAP
+        if (!empty($search_sap)) {
+            $query->where('no_sap', 'like', '%' . $search_sap . '%');
+        }
         
-        // Sort all results from newest to oldest by creation date
+        // Sort all results
         $jadwals = $query->orderBy('created_at', 'desc')->paginate(10); 
 
-        // 2. QUERY UNTUK CARD ANTREAN POLI (HARI INI)
+        // 3. QUERY UNTUK CARD ANTREAN POLI (HARI INI)
         $polis = \App\Models\Poli::with(['jadwalPoli' => function ($query) {
-            // Hanya ambil antrean yang statusnya 'Pending' di poli tersebut
             $query->where('status', 'Waiting')
                   ->whereHas('jadwalMcu', function ($qJadwal) {
-                      // HANYA pasien yang sudah 'Present' (hadir) pada HARI INI
                       $qJadwal->where('status', 'Present')
                               ->whereDate('tanggal_mcu', \Carbon\Carbon::today());
                   })
-                  // Muat relasi untuk mengambil nama pasien dan SAP nantinya
                   ->with(['jadwalMcu.karyawan', 'jadwalMcu.pesertaMcu'])
-                  // Urutkan dari yang paling lama mengantre ke yang paling baru
                   ->orderBy('created_at', 'asc'); 
         }])->get();
 
-        // 3. KIRIM SEMUA DATA KE VIEW
+        // 4. Kirimkan $search_sap ke view agar nilai tetap ada di input setelah cari
         return view('jadwal.index', [
             'jadwals' => $jadwals,
             'tanggal_filter' => $tanggal_filter, 
             'status' => $status,
-            'polis' => $polis, // Variabel baru dikirim ke Blade
+            'search_sap' => $search_sap, // <--- Tambahkan ini
+            'polis' => $polis,
         ]);
     }
 
