@@ -1,5 +1,5 @@
 @section('title', 'Pemantauan Lingkungan')
-
+<meta http-equiv="refresh" content="10">
 {{-- ROOT ELEMENT LIVEWIRE: Semua elemen WAJIB berada di dalam div ini --}}
 <div>
     <div class="px-2 md:px-4 py-4 min-h-screen">
@@ -31,11 +31,56 @@
         <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
             <div class="p-6 md:p-8">
                 
+                {{-- SUMMARY CARDS (DASHBOARD MINI) --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex items-center shadow-sm">
+                        <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center text-xl shadow-inner mr-4"><i class="fas fa-clipboard-list"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-0.5">Total Pemantauan</p>
+                            <h3 class="text-2xl font-black text-slate-800">{{ $totalData }} <span class="text-xs font-medium text-slate-500">Data</span></h3>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-center shadow-sm">
+                        <div class="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xl shadow-inner mr-4"><i class="fas fa-shield-alt"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider mb-0.5">Aman (Di Bawah NAB)</p>
+                            <h3 class="text-2xl font-black text-slate-800">{{ $lokasiAman }} <span class="text-xs font-medium text-slate-500">Lokasi</span></h3>
+                        </div>
+                    </div>
+                    <div class="bg-red-50 border border-red-100 rounded-2xl p-5 flex items-center shadow-sm">
+                        <div class="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center text-xl shadow-inner mr-4"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div>
+                            <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-0.5">Bahaya (Di Atas NAB)</p>
+                            <h3 class="text-2xl font-black text-slate-800">{{ $lokasiBahaya }} <span class="text-xs font-medium text-slate-500">Lokasi</span></h3>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- FILTER DATA --}}
                 <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 mb-8">
                     <h3 class="text-sm font-bold text-slate-700 mb-4 border-b border-slate-200 pb-3 flex items-center">
                         <i class="fas fa-filter text-blue-500 mr-2"></i> Filter Data Lokasi
                     </h3>
+
+                    {{-- FILTER PENCARIAN & TANGGAL (BARU) --}}
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 pb-4 border-b border-slate-200 border-dashed">
+                        <div class="md:col-span-6 lg:col-span-6">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cari Lokasi Spesifik</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-search text-slate-400"></i></div>
+                                <input type="text" wire:model.live.debounce.500ms="searchQuery" placeholder="Ketik nama lokasi..." class="block w-full pl-10 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:border-red-500 focus:ring-red-500 p-2.5">
+                            </div>
+                        </div>
+                        <div class="md:col-span-3 lg:col-span-3">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Dari Tanggal</label>
+                            <input type="date" wire:model.live="startDate" class="block w-full rounded-xl border border-slate-200 bg-white text-xs font-medium focus:border-red-500 focus:ring-red-500 p-2.5">
+                        </div>
+                        <div class="md:col-span-3 lg:col-span-3">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Sampai Tanggal</label>
+                            <input type="date" wire:model.live="endDate" class="block w-full rounded-xl border border-slate-200 bg-white text-xs font-medium focus:border-red-500 focus:ring-red-500 p-2.5">
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Departemen</label>
@@ -158,6 +203,12 @@
                             </tbody>
                         </table>
                     </div>
+                    {{-- NAVIGASI PAGINASI --}}
+                    @if ($paginator->hasPages())
+                        <div class="mt-6">
+                            {{ $paginator->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl py-12 flex flex-col items-center justify-center">
                         <i class="fas fa-box-open text-4xl text-slate-300 mb-4"></i>
@@ -272,7 +323,11 @@
                     {{-- Kesimpulan --}}
                     <div>
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">D. Catatan & Kesimpulan</h4>
-                        <textarea wire:model.defer="{{ $isEditing ? 'editingData.kesimpulan' : 'newLocationData.kesimpulan' }}" rows="3" placeholder="Tambahkan catatan khusus di sini..." class="block w-full rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-3.5 resize-none"></textarea>
+                        @if($isEditing)
+                            <textarea wire:model="editingData.kesimpulan" rows="3" placeholder="Tambahkan catatan khusus di sini..." class="block w-full rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-3.5 resize-none"></textarea>
+                        @else
+                            <textarea wire:model="newLocationData.kesimpulan" rows="3" placeholder="Tambahkan catatan khusus di sini..." class="block w-full rounded-xl border border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 p-3.5 resize-none"></textarea>
+                        @endif
                     </div>
                 </form>
             </div>

@@ -10,9 +10,13 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\PemantauanLingkunganExport; 
 use App\Models\Departemen; 
 use App\Models\UnitKerja; 
+use Livewire\WithPagination; 
+use Illuminate\Pagination\LengthAwarePaginator; 
 
 class PemantauanLingkunganIndex extends Component
 {
+    use WithPagination; // Aktifkan pagination untuk tabel
+    
     // Properti utama untuk menampung semua data
     public $pemantauanLingkungan;
 
@@ -47,6 +51,18 @@ class PemantauanLingkunganIndex extends Component
     public $filterNabDebu = '';
     public $filterNabSuhuIsbb = ''; // Menggabungkan ISBB Indoor dan Outdoor
 
+    // --- Properti Filter Tanggal & Pencarian ---
+    public $searchQuery = '';
+    public $startDate = '';
+    public $endDate = '';
+
+    // Reset paginasi jika filter diketik/diubah
+    public function updatingSearchQuery() { $this->resetPage(); }
+    public function updatingStartDate() { $this->resetPage(); }
+    public function updatingEndDate() { $this->resetPage(); }
+    public function updatingFilterDepartemen() { $this->resetPage(); }
+    public function updatingFilterArea() { $this->resetPage(); }
+
     // Lifecycle hook to handle Department change in EDIT modal
     public function updatedEditingDataDepartemensId($value) 
     {
@@ -71,16 +87,12 @@ class PemantauanLingkunganIndex extends Component
     // --- FUNGSI BARU UNTUK MERESET SEMUA FILTER SECARA EKSPLISIT ---
     public function resetFilters()
     {
-        // Menggunakan $this->reset() adalah cara paling bersih di Livewire
         $this->reset([
-            'filterArea', 
-            'filterDepartemen', 
-            'filterUnitKerja', 
-            'filterNabCahaya', 
-            'filterNabBising', 
-            'filterNabDebu',
-            'filterNabSuhuIsbb' // Tambahkan properti NAB baru di sini
+            'filterArea', 'filterDepartemen', 'filterUnitKerja', 
+            'filterNabCahaya', 'filterNabBising', 'filterNabDebu', 'filterNabSuhuIsbb',
+            'searchQuery', 'startDate', 'endDate' // Tambahan baru
         ]);
+        $this->resetPage();
     }
     
     protected function getDefaultPemantauanData()
@@ -156,8 +168,34 @@ class PemantauanLingkunganIndex extends Component
     // --- Metode Baru untuk Menerapkan Filter Query ---
     protected function applyFilters($query)
     {
-        // Eager load relasi untuk tampilan
         $query->with(['departemen', 'unitKerja']);
+
+        // Filter Pencarian (Cari berdasarkan Lokasi)
+        if ($this->searchQuery) {
+            $query->where('lokasi', 'like', '%' . $this->searchQuery . '%');
+        }
+
+        // Filter Rentang Waktu (Date Range)
+        if ($this->startDate && $this->endDate) {
+            $query->whereBetween('tanggal_pemantauan', [$this->startDate, $this->endDate]);
+        } elseif ($this->startDate) {
+            $query->whereDate('tanggal_pemantauan', '>=', $this->startDate);
+        } elseif ($this->endDate) {
+            $query->whereDate('tanggal_pemantauan', '<=', $this->endDate);
+        }
+
+        // Filter Dropdown Lama
+        if ($this->filterArea) {
+            $query->where('area', $this->filterArea);
+        }
+        if ($this->filterDepartemen) {
+            $query->where('departemens_id', $this->filterDepartemen);
+        }
+        if ($this->filterUnitKerja) {
+            $query->where('unit_kerjas_id', $this->filterUnitKerja);
+        }
+        
+        $allData = $query->latest('tanggal_pemantauan')->get();
 
         if ($this->filterArea) {
             $query->where('area', $this->filterArea);
@@ -170,18 +208,6 @@ class PemantauanLingkunganIndex extends Component
         if ($this->filterUnitKerja) {
             $query->where('unit_kerjas_id', $this->filterUnitKerja);
         }
-        
-        // --- LOGIKA FILTER NAB BARU (PENTING) ---
-        // Karena logika NAB melibatkan data JSON/Mutator dan perbandingan run-time, 
-        // cara paling andal di Livewire adalah dengan memfilter Collection setelah query dasar selesai.
-        // **Ubah PemantauanLingkungan::query() menjadi PemantauanLingkungan::all() dan filter**
-
-        // **Catatan Penting:** Untuk membuat filter ini bekerja dengan $query builder secara efisien,
-        // kita perlu akses ke kolom 'data_pemantauan' yang merupakan JSON dan 'nab_cahaya', dll.
-        // Jika data terlalu besar, ini bisa menjadi lambat. Mari kita gunakan filter pada Collection.
-
-        // 1. Ambil semua data (setelah filter Departemen/Unit/Area)
-        $allData = $query->get();
 
         // 2. Filter Collection berdasarkan status NAB
         $filteredData = $allData->filter(function ($data) {
@@ -377,15 +403,43 @@ class PemantauanLingkunganIndex extends Component
         $this->mount();
     }
 
+    public function isBahaya($data)
+    {
+        return $this->checkNabStatus($data, 'cahaya', 'nab_cahaya') ||
+               $this->checkNabStatus($data, 'bising', 'nab_bising') ||
+               $this->checkNabStatus($data, 'debu', 'nab_debu') ||
+               $this->checkNabStatus($data, 'isbb_indoor', 'nab_suhu') ||
+               $this->checkNabStatus($data, 'isbb_outdoor', 'nab_suhu');
+    }
+
     public function render()
     {
-        // Panggil query dengan filter yang sekarang mengembalikan Collection
-        $pemantauanLingkungan = $this->applyFilters(PemantauanLingkungan::query()); // applyFilters sekarang mengembalikan Collection
+        $filteredCollection = $this->applyFilters(PemantauanLingkungan::query());
         
-        // Grouping data yang sudah difilter (tetap menggunakan Collection)
-        $pemantauanLingkunganGrouped = $pemantauanLingkungan->groupBy('area');
+        // 1. Hitung Data untuk Summary Cards
+        $totalData = $filteredCollection->count();
+        $lokasiBahaya = 0;
+        foreach ($filteredCollection as $data) {
+            if ($this->isBahaya($data)) {
+                $lokasiBahaya++;
+            }
+        }
+        $lokasiAman = $totalData - $lokasiBahaya;
 
-        // Filter daftar Unit Kerja berdasarkan Departemen yang dipilih (untuk filter view)
+        // 2. Paginasi Manual untuk Collection (15 Data per halaman)
+        $perPage = 15;
+        $page = $this->getPage();
+        $paginatedItems = new LengthAwarePaginator(
+            $filteredCollection->forPage($page, $perPage),
+            $totalData,
+            $perPage,
+            $page,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+        );
+
+        // 3. Grouping data yang SUDAH di-paginate
+        $pemantauanLingkunganGrouped = collect($paginatedItems->items())->groupBy('area');
+
         $filteredUnits = $this->unitKerjas;
         if ($this->filterDepartemen) {
             $filteredUnits = $this->unitKerjas->where('departemens_id', $this->filterDepartemen);
@@ -393,9 +447,13 @@ class PemantauanLingkunganIndex extends Component
 
         return view('livewire.pemantauan-lingkungan-index', [
             'pemantauanLingkunganGrouped' => $pemantauanLingkunganGrouped,
+            'paginator' => $paginatedItems, // Kirim paginator ke view
+            'totalData' => $totalData,
+            'lokasiAman' => $lokasiAman,
+            'lokasiBahaya' => $lokasiBahaya,
             'departments' => $this->departments, 
             'unitKerjas' => $this->unitKerjas,   
-            'filteredUnits' => $filteredUnits, // Kirim unit yang sudah difilter
+            'filteredUnits' => $filteredUnits, 
         ])->layout('layouts.app');
     }
 }
