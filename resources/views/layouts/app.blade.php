@@ -297,43 +297,7 @@
                 <div class="flex items-center space-x-3 md:space-x-5">
                     
                     {{-- DROPDOWN NOTIFIKASI --}}
-                    <div class="relative">
-                        <button id="notificationDropdownButton" class="p-2.5 rounded-full text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition-all relative focus:outline-none bg-slate-50 border border-slate-100">
-                            <i class="far fa-bell text-lg"></i>
-                            @if (isset($unreadNotificationsCount) && $unreadNotificationsCount > 0)
-                                <span class="absolute top-0 right-0 h-4 w-4 md:h-5 md:w-5 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm transform translate-x-1 -translate-y-1">
-                                    {{ $unreadNotificationsCount }}
-                                </span>
-                            @else
-                                <span class="absolute top-1 right-1 h-2 w-2 bg-brand-500 rounded-full border-2 border-white"></span>
-                            @endif
-                        </button>
-
-                        <div id="notificationDropdownMenu" class="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] overflow-hidden z-50 border border-slate-100 hidden transform origin-top-right transition-all">
-                            <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                                <h4 class="text-sm font-bold text-slate-800">Notifikasi Terbaru</h4>
-                                <span class="bg-brand-100 text-brand-600 text-[10px] font-bold px-2 py-0.5 rounded-full">Baru</span>
-                            </div>
-                            
-                            <div class="max-h-72 overflow-y-auto">
-                                {{-- Placeholder Notifikasi --}}
-                                <a href="#" class="block px-5 py-4 border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                                    <div class="flex items-start">
-                                        <div class="bg-brand-100 text-brand-600 rounded-full p-2 mr-3"><i class="fas fa-calendar-check text-xs"></i></div>
-                                        <div>
-                                            <p class="font-bold text-sm text-slate-700">5 Permintaan Jadwal Baru!</p>
-                                            <p class="text-xs text-slate-500 mt-0.5">10 menit yang lalu</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <div class="px-5 py-6 text-center text-xs font-medium text-slate-400">Tidak ada notifikasi lain.</div>
-                            </div>
-                            
-                            <div class="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                                <a href="{{ route('jadwal.index') }}" class="text-xs font-bold text-brand-600 hover:text-brand-800 transition-colors">Lihat Semua Notifikasi <i class="fas fa-arrow-right ml-1 text-[10px]"></i></a>
-                            </div>
-                        </div>
-                    </div>
+                    <livewire:notification-header />
 
                     <div class="h-6 w-px bg-slate-200 hidden md:block"></div>
 
