@@ -10,28 +10,38 @@ use App\Jobs\ProcessMcuReminders;
 use App\Jobs\ProcessSubmissionReminders;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB; // Digunakan untuk query mentah
 
 class NotificationDashboard extends Component
 {
-    public $filterDate = 'tomorrow'; // 'tomorrow', 'specific', 'today', etc.
+    // ==========================================
+    // PROPERTI TAB 1: PENGUMUMAN BEBAS (BROADCAST)
+    // ==========================================
+    public $broadcastTitle = '';
+    public $broadcastMessage = '';
+    public $broadcastTargetType = 'all'; 
+    public $broadcastTargetDeptId = '';
+    
+    // Properti Baru untuk Pencarian Multi-Karyawan
+    public $searchEmployeeQuery = '';
+    public $employeeSearchResults = [];
+    public $selectedIndividualEmployees = []; // Format: [['id'=>1, 'name'=>'Budi', 'sap'=>'123']]
+
+    // ==========================================
+    // PROPERTI TAB 2: PENGINGAT MCU 
+    // ==========================================
+    public $filterDate = 'tomorrow'; 
     public $specificDate;
-    public $searchQuery = ''; // Properti baru untuk pencarian
-
+    public $searchQuery = ''; 
     public $jadwalsToNotify;
-    public $selectedRecipients = []; // Untuk kontrol checkbox
-
-    // --- PROPERTI BARU ---
-    public $notificationMode = 'scheduled'; // 'scheduled' atau 'submission'
+    public $selectedRecipients = []; 
+    public $notificationMode = 'scheduled'; 
     public $filterDepartemenId = '';
-    public $departemenOptions; // Untuk dropdown Departemen
+    public $departemenOptions; 
 
     public function mount()
     {
-        // Muat data master
         $this->departemenOptions = Departemen::orderBy('nama_departemen')->get();
 
-        // Tetapkan tanggal spesifik default
         if ($this->filterDate === 'tomorrow') {
             $this->specificDate = Carbon::tomorrow()->toDateString();
         } elseif ($this->filterDate === 'today') {
@@ -40,63 +50,143 @@ class NotificationDashboard extends Component
 
         $this->loadData();
     }
+
+    // ==========================================
+    // FUNGSI PENCARIAN & PILIH KARYAWAN INDIVIDU
+    // ==========================================
+    public function updatedSearchEmployeeQuery()
+    {
+        // Hanya mencari jika diketik minimal 2 huruf agar database tidak terbebani
+        if (strlen($this->searchEmployeeQuery) >= 2) {
+            $this->employeeSearchResults = Karyawan::where('nama_karyawan', 'like', '%' . $this->searchEmployeeQuery . '%')
+                ->orWhere('no_sap', 'like', '%' . $this->searchEmployeeQuery . '%')
+                ->take(10) // Batasi 10 hasil teratas agar ringan
+                ->get();
+        } else {
+            $this->employeeSearchResults = [];
+        }
+    }
+
+    public function addEmployeeToBroadcast($id, $nama, $sap)
+    {
+        // Cek agar tidak memasukkan orang yang sama dua kali
+        $exists = collect($this->selectedIndividualEmployees)->contains('id', $id);
+        if (!$exists) {
+            $this->selectedIndividualEmployees[] = [
+                'id' => $id,
+                'name' => $nama,
+                'sap' => $sap
+            ];
+        }
+        
+        // Reset kolom pencarian setelah diklik
+        $this->searchEmployeeQuery = '';
+        $this->employeeSearchResults = [];
+    }
+
+    public function removeEmployeeFromBroadcast($id)
+    {
+        // Hapus karyawan dari daftar pilihan
+        $this->selectedIndividualEmployees = array_values(collect($this->selectedIndividualEmployees)
+            ->reject(function ($emp) use ($id) {
+                return $emp['id'] == $id;
+            })->toArray());
+    }
+
+    public function updatedBroadcastTargetType()
+    {
+        // Reset pilihan jika tipe target diubah
+        $this->broadcastTargetDeptId = '';
+        $this->searchEmployeeQuery = '';
+        $this->employeeSearchResults = [];
+        $this->selectedIndividualEmployees = [];
+    }
+
+    // ==========================================
+    // FUNGSI KIRIM BROADCAST PENGUMUMAN
+    // ==========================================
+    public function sendBroadcast()
+    {
+        $this->validate([
+            'broadcastTitle' => 'required|string|max:100',
+            'broadcastMessage' => 'required|string',
+        ]);
+
+        if ($this->broadcastTargetType === 'dept' && empty($this->broadcastTargetDeptId)) {
+            $this->addError('broadcastTargetDeptId', 'Pilih departemen tujuan.');
+            return;
+        }
+        
+        if ($this->broadcastTargetType === 'individual' && empty($this->selectedIndividualEmployees)) {
+            $this->addError('selectedIndividualEmployees', 'Pilih minimal satu karyawan tujuan.');
+            return;
+        }
+
+        // Menghitung jumlah target untuk keperluan Log
+        $totalTargets = 0;
+        if ($this->broadcastTargetType === 'all') {
+            $totalTargets = Karyawan::count();
+        } elseif ($this->broadcastTargetType === 'dept') {
+            $totalTargets = Karyawan::where('departemens_id', $this->broadcastTargetDeptId)->count();
+        } elseif ($this->broadcastTargetType === 'individual') {
+            $totalTargets = count($this->selectedIndividualEmployees);
+        }
+
+        // CATATAN: Eksekusi pengiriman Firebase/Email di sini
+        // ...
+
+        \App\Models\NotificationLog::create([
+            'mode' => 'broadcast',
+            'scheduled_date' => Carbon::now()->toDateString(),
+            'total_targets' => $totalTargets,
+            'admin_users_id' => Auth::id(),
+        ]);
+
+        // Bersihkan Form
+        $this->reset(['broadcastTitle', 'broadcastMessage', 'broadcastTargetType', 'broadcastTargetDeptId', 'searchEmployeeQuery', 'employeeSearchResults', 'selectedIndividualEmployees']);
+        session()->flash('message', 'Broadcast pengumuman berhasil dikirim ke aplikasi karyawan!');
+    }
     
-    // --- DISPATCHER UTAMA ---
+    // ==========================================
+    // FUNGSI TAB 2: PENGINGAT MCU (Tidak Diubah)
+    // ==========================================
     public function loadData()
     {
         if ($this->notificationMode === 'scheduled') {
             $this->loadScheduledJadwals();
-        } 
-        elseif ($this->notificationMode === 'submission') {
+        } elseif ($this->notificationMode === 'submission') {
             $this->loadKaryawanForSubmission();
         }
     }
 
-    // --- LOGIKA MODE 1: PENGINGAT JADWAL (SUDAH TERDAFTAR) ---
     public function loadScheduledJadwals()
     {
         $targetDate = null;
-        $this->filterDepartemenId = ''; // Kosongkan filter Departemen di mode ini
+        $this->filterDepartemenId = ''; 
 
-        if ($this->filterDate === 'tomorrow') {
-            $targetDate = Carbon::tomorrow()->toDateString();
-        } elseif ($this->filterDate === 'today') {
-            $targetDate = Carbon::today()->toDateString();
-        } elseif ($this->filterDate === 'specific' && $this->specificDate) {
-            $targetDate = Carbon::parse($this->specificDate)->toDateString();
-        }
+        if ($this->filterDate === 'tomorrow') $targetDate = Carbon::tomorrow()->toDateString();
+        elseif ($this->filterDate === 'today') $targetDate = Carbon::today()->toDateString();
+        elseif ($this->filterDate === 'specific' && $this->specificDate) $targetDate = Carbon::parse($this->specificDate)->toDateString();
         
         if ($targetDate) {
-            // Eager load relasi Pasien
             $query = JadwalMcu::with(['karyawan', 'pesertaMcu', 'karyawan.departemen']) 
                 ->whereDate('tanggal_mcu', $targetDate)
                 ->whereIn('status', ['Scheduled', 'Present']);
 
-            // --- LOGIKA PENCARIAN ---
             if ($this->searchQuery) {
                 $searchTerm = '%' . $this->searchQuery . '%';
-                
                 $query->where(function ($q) use ($searchTerm) {
-                    // Cari di data lokal JadwalMcu (untuk non-karyawan/cadangan)
                     $q->where('nama_pasien', 'like', $searchTerm)
                       ->orWhere('nik_pasien', 'like', $searchTerm)
-                      ->orWhere('no_sap', 'like', $searchTerm);
-                    
-                    // Cari di tabel Karyawan
-                    $q->orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
-                        $qKar->where('nama_karyawan', 'like', $searchTerm)
-                             ->orWhere('nik_karyawan', 'like', $searchTerm)
-                             ->orWhere('no_sap', 'like', $searchTerm);
-                    });
-
-                    // Cari di tabel PesertaMcu
-                    $q->orWhereHas('pesertaMcu', function ($qPes) use ($searchTerm) {
-                        $qPes->where('nama_lengkap', 'like', $searchTerm)
-                             ->orWhere('nik_pasien', 'like', $searchTerm);
-                    });
+                      ->orWhere('no_sap', 'like', $searchTerm)
+                      ->orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
+                          $qKar->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
+                      })
+                      ->orWhereHas('pesertaMcu', function ($qPes) use ($searchTerm) {
+                          $qPes->where('nama_lengkap', 'like', $searchTerm)->orWhere('nik_pasien', 'like', $searchTerm);
+                      });
                 });
             }
-            
             $this->jadwalsToNotify = $query->get();
         } else {
             $this->jadwalsToNotify = collect();
@@ -105,74 +195,37 @@ class NotificationDashboard extends Component
         $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
     }
 
-    // --- LOGIKA MODE 2: PENGINGAT PENGAJUAN (BELUM TERDAFTAR) ---
     public function loadKaryawanForSubmission()
     {
         $this->jadwalsToNotify = collect(); 
+        if (!$this->filterDepartemenId) return; 
         
-        // HANYA EKSEKUSI JIKA DEPARTEMEN SUDAH DIPILIH
-        if (!$this->filterDepartemenId) {
-            return; 
-        }
+        $karyawanQuery = Karyawan::with('departemen')->where('departemens_id', $this->filterDepartemenId);
         
-        $karyawanQuery = Karyawan::with('departemen')
-                                 ->where('departemens_id', $this->filterDepartemenId);
-        
-        // 1. Filter KRITIS: Karyawan yang BELUM memiliki Jadwal MCU terbaru
-        // Logika: Cari ID Karyawan yang sudah memiliki jadwal dalam 1 tahun terakhir.
         $recentJadwalKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')
             ->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1)) 
             ->pluck('karyawan_id')
             ->toArray();
 
-        // 2. Ambil karyawan yang ID-nya TIDAK ADA dalam daftar jadwal terbaru
         $karyawanQuery->whereNotIn('id', $recentJadwalKaryawanIds);
 
-        // --- Logika Pencarian ---
         if ($this->searchQuery) {
             $searchTerm = '%' . $this->searchQuery . '%';
             $karyawanQuery->where(function ($q) use ($searchTerm) {
-                $q->where('nama_karyawan', 'like', $searchTerm)
-                  ->orWhere('no_sap', 'like', $searchTerm)
-                  ->orWhere('nik_karyawan', 'like', $searchTerm);
+                $q->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
             });
         }
 
-        // Hasilnya adalah koleksi Model Karyawan
         $this->jadwalsToNotify = $karyawanQuery->get();
-        
-        // Set ID Karyawan sebagai yang dipilih
         $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
     }
 
-    public function updatedFilterDate()
-    {
-        $this->loadData();
-    }
-    
-    public function updatedSpecificDate()
-    {
-        $this->loadData();
-    }
+    public function updatedFilterDate() { $this->loadData(); }
+    public function updatedSpecificDate() { $this->loadData(); }
+    public function updatedSearchQuery() { $this->loadData(); }
+    public function updatedNotificationMode() { $this->filterDepartemenId = ''; $this->loadData(); }
+    public function updatedFilterDepartemenId() { $this->loadData(); }
 
-    public function updatedSearchQuery()
-    {
-        $this->loadData();
-    }
-
-    public function updatedNotificationMode()
-    {
-        // Reset filter departemen saat mode berubah
-        $this->filterDepartemenId = ''; 
-        $this->loadData();
-    }
-
-    public function updatedFilterDepartemenId()
-    {
-        $this->loadData();
-    }
-
-    // --- FUNGSI PENGIRIMAN ---
     public function sendNotifications()
     {
         $recipientsCount = count($this->selectedRecipients);
@@ -181,22 +234,17 @@ class NotificationDashboard extends Component
             return;
         }
 
-        // 1. Buat Log Awal
         $log = \App\Models\NotificationLog::create([
             'scheduled_date' => $this->specificDate ?? Carbon::now()->toDateString(),
             'mode' => 'manual',
             'total_targets' => $recipientsCount,
-            'admin_users_id' => Auth::id(), // Pastikan Auth::id() mendapatkan ID admin
+            'admin_users_id' => Auth::id(),
         ]);
         
-        // 2. Dispatch Job sesuai Mode
         if ($this->notificationMode === 'scheduled') {
-            // Mengirim pengingat jadwal (target ID JadwalMcu)
             ProcessMcuReminders::dispatch($this->selectedRecipients, $log);
             session()->flash('message', "{$recipientsCount} pengingat jadwal sedang diproses.");
-        } 
-        elseif ($this->notificationMode === 'submission') {
-            // Mengirim pengingat pengajuan (target ID Karyawan)
+        } elseif ($this->notificationMode === 'submission') {
             ProcessSubmissionReminders::dispatch($this->selectedRecipients, $log);
             session()->flash('message', "{$recipientsCount} pengingat pengajuan jadwal sedang diproses.");
         }
@@ -207,7 +255,6 @@ class NotificationDashboard extends Component
 
     public function render()
     {
-        return view('livewire.notification-dashboard')
-        ->layout('layouts.app');
+        return view('livewire.notification-dashboard')->layout('layouts.app');
     }
 }

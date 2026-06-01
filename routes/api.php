@@ -5,6 +5,10 @@ use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\JadwalMcuApiController;
 use App\Http\Controllers\Api\LingkunganApiController;
 
+// IMPORT BARU UNTUK KEBUTUHAN FCM
+use Illuminate\Http\Request;
+use App\Models\Karyawan;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,6 +17,27 @@ use App\Http\Controllers\Api\LingkunganApiController;
 
 Route::post('/login', [ApiAuthController::class, 'login']);
 Route::get('/jadwal-mcu/download-laporan-gabungan/{id}', [JadwalMcuApiController::class, 'downloadLaporanGabungan']);
+
+/**
+ * ===============================
+ * ROUTE UNTUK UPDATE FCM TOKEN (FLUTTER)
+ * ===============================
+ */
+Route::post('/update-fcm-token', function (Request $request) {
+    $request->validate([
+        'karyawan_id' => 'required',
+        'fcm_token' => 'required'
+    ]);
+
+    Karyawan::where('id', $request->karyawan_id)
+            ->update(['fcm_token' => $request->fcm_token]);
+
+    return response()->json([
+        'status' => 'success', 
+        'message' => 'FCM Token berhasil diperbarui'
+    ]);
+});
+
 
 /**
  * ===============================
@@ -26,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
     Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); 
+    
     // PEMANTAUAN LINGKUNGAN
     Route::get('/lingkungan', [LingkunganApiController::class, 'index']);
     Route::post('/jadwal-poli/checkin', [\App\Http\Controllers\Api\JadwalMcuApiController::class, 'checkInPoli']);
