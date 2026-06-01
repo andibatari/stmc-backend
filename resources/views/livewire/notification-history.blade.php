@@ -44,7 +44,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-bold {{ $log->fcm_success > 0 ? 'text-green-600' : 'text-gray-400' }}">{{ $log->fcm_success }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $log->admin->name ?? 'SYSTEM' }}</td>
                             </tr>
-                        @endempty
+                        @empty
                             @if($logs->isEmpty())
                             <tr>
                                 <td colspan="7" class="px-6 py-4 text-center text-gray-500">
@@ -52,6 +52,7 @@
                                 </td>
                             </tr>
                             @endif
+                        @endforelse
                     </tbody>
                 </table>
             </div>
