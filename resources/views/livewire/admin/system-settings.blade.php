@@ -31,16 +31,19 @@
     {{-- TAB 1: LAPORAN --}}
     <div x-show="activeTab === 'laporan'" class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100" x-transition>
         <h3 class="text-lg font-bold text-slate-800 mb-6 border-b pb-2">Kustomisasi Template PDF</h3>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
             <div>
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Nama Kepala Klinik</label>
                 <input type="text" wire:model.defer="nama_kepala_klinik" class="w-full border-slate-200 rounded-xl focus:border-red-500 focus:ring-red-500 text-sm">
             </div>
             <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Teks Disclaimer PDF</label>
-                <textarea wire:model.defer="teks_disclaimer" rows="3" class="w-full border-slate-200 rounded-xl focus:border-red-500 focus:ring-red-500 text-sm"></textarea>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Teks Pengantar PDF (Gunakan [TANGGAL])</label>
+                <textarea wire:model.defer="teks_disclaimer" rows="3" class="w-full border-slate-200 rounded-xl focus:border-red-500 focus:ring-red-500 text-sm" placeholder="Contoh: Pada tanggal [TANGGAL], kami melakukan..."></textarea>
+                <p class="text-[10px] text-slate-400 mt-1">Gunakan kata kunci <strong class="text-red-500">[TANGGAL]</strong> agar sistem otomatis memasukkan tanggal pemeriksaan pasien.</p>
             </div>
         </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Ganti Logo STMC (Kiri)</label>
