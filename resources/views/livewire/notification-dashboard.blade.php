@@ -1,4 +1,5 @@
 <div x-data="{ activeTab: 'broadcast' }" class="max-w-7xl mx-auto">
+    @section('title', 'Kontrol Notifikasi & Pengingat MCU')
 
     {{-- TOMBOL NAVIGASI TAB --}}
     <div class="mb-6 flex space-x-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">

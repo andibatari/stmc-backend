@@ -1,4 +1,3 @@
-
 <div class="px-2 md:px-6 py-6 min-h-screen" x-data="{ activeTab: 'rekapitulasi' }">
     @section('title', 'Pusat Laporan & Ekspor Data')
     {{-- TOMBOL NAVIGASI TAB --}}

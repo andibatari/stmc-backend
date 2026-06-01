@@ -33,8 +33,8 @@ class ProcessMcuReminders implements ShouldQueue
             $karyawan = $jadwal->karyawan;
 
             if ($karyawan && !empty($karyawan->fcm_token)) {
-                $title = "Pengingat Jadwal MCU Manual";
-                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal Medical Check Up kamu besok ya! Mohon datang tepat waktu. Terima kasih.";
+                $title = "Pengingat Jadwal MCU";
+                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal Medical Check Up kamu besok ya! Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
 
                 // Kirim lewat FCMService
                 $statusFCM = FCMService::sendPushNotification(

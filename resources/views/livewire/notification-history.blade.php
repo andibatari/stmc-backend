@@ -1,4 +1,12 @@
 <div class="max-w-7xl mx-auto py-4 px-2 sm:px-4 md:py-8 md:px-6">
+    @section('title', 'Riwayat Pengiriman Notifikasi')
+    
+     {{-- TOMBOL NAVIGASI TAB --}}
+    <div class="mb-6 flex space-x-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
+        <button @click="activeTab = 'broadcast'" :class="activeTab === 'broadcast' ? 'border-b-4 border-red-500 text-red-600 font-bold' : 'text-gray-500 hover:bg-gray-50'" class="px-6 py-3 transition-colors flex items-center">
+            <i class="fas fa-bullhorn mr-2"></i> Riwayat Notifikasi
+        </button>
+    </div>
     <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-100">
         
         <h3 class="text-xl font-bold mb-4 flex items-center">
