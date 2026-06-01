@@ -157,7 +157,7 @@ class NotificationDashboard extends Component
         // 4. Catat ke Tabel Riwayat
         \App\Models\NotificationLog::create([
             'mode' => 'broadcast',
-            'scheduled_date' => null, // Broadcast tidak punya target tanggal
+            'scheduled_date' => now(), // Broadcast tidak punya target tanggal
             'total_targets' => $totalTarget,
             'email_success' => 0,
             'fcm_success' => $fcmSuccessCount,
