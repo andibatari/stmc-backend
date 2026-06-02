@@ -80,14 +80,14 @@
                     </button>
                     @endif
 
-                    @if(isset($pesertaAnak) && $pesertaAnak->count() > 0)
+                    {{-- @if(isset($pesertaAnak) && $pesertaAnak->count() > 0)
                         @foreach ($pesertaAnak as $index => $anak)
                         <button wire:click="selectAnak({{ $anak->id }})" class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all font-bold text-sm @if($activeUser->id === $anak->id) border-red-500 bg-red-50 text-red-700 shadow-sm @else border-transparent bg-slate-50 hover:bg-slate-100 text-slate-600 @endif">
                             <div class="flex items-center"><i class="fas fa-child w-6 text-left opacity-70"></i> Anak Ke-{{ $index + 1 }}</div>
                             @if($activeUser->id === $anak->id) <i class="fas fa-check-circle text-red-500"></i> @endif
                         </button>
                         @endforeach
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
@@ -110,11 +110,18 @@
                     {{-- TAB 1: DATA LENGKAP --}}
                     @if ($activeTab === 'data')
                         <div class="animate-fade-in">
-                        @if ($activeUser)
-                            @include('livewire.partials.user-data', ['user' => $activeUser, 'karyawan' => $karyawan])
-                        @else
-                            <div class="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100">Data profil tidak ditemukan.</div>
-                        @endif
+                            @if ($activeUser)
+                                {{-- LOGIKA: Cek apakah user yang aktif adalah Karyawan Utama atau Keluarga --}}
+                                @if ($activeUser->id === $karyawan->id)
+                                    {{-- Jika ID sama dengan Karyawan Utama, tampilkan user-data --}}
+                                    @include('livewire.partials.user-data', ['user' => $activeUser, 'karyawan' => $karyawan])
+                                @else
+                                    {{-- Jika ID berbeda (berarti Istri/Suami/Anak), tampilkan keluarga-data-view --}}
+                                    @include('livewire.partials.keluarga-data-view', ['pesertaMcu' => $activeUser])
+                                @endif
+                            @else
+                                <div class="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-2xl border border-slate-100">Data profil tidak ditemukan.</div>
+                            @endif
                         </div>
                     @endif
                     

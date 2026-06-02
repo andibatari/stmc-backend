@@ -27,6 +27,7 @@ class JadwalMcu extends Model
         'resume_body',
         'resume_saran',
         'resume_kategori',
+        'is_read_admin',
     ];
 
     // Relasi ke model Karyawan

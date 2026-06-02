@@ -52,13 +52,24 @@ class JadwalMcuController extends Controller
                   ->orderBy('created_at', 'asc'); 
         }])->get();
 
+        // MENGHITUNG KUOTA HARI INI
+        $hariIni = \Carbon\Carbon::today();
+        $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $hariIni)
+                                ->where('status', '!=', 'Canceled')
+                                ->count();
+        $sisaKuota = 30 - $kuotaTerisi;
+        // Pastikan sisa kuota tidak minus jika ada error data
+        $sisaKuota = $sisaKuota < 0 ? 0 : $sisaKuota; // Cegah angka minus
+
         // 4. Kirimkan $search_sap ke view agar nilai tetap ada di input setelah cari
         return view('jadwal.index', [
             'jadwals' => $jadwals,
             'tanggal_filter' => $tanggal_filter, 
             'status' => $status,
-            'search_sap' => $search_sap, // <--- Tambahkan ini
+            'search_sap' => $search_sap,
             'polis' => $polis,
+            'kuotaTerisi' => $kuotaTerisi,
+            'sisaKuota' => $sisaKuota,
         ]);
     }
 

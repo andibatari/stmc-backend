@@ -5,34 +5,48 @@
             <div class="w-6 h-6 rounded bg-blue-50 text-blue-500 flex items-center justify-center mr-2"><i class="fas fa-id-badge"></i></div> Identitas & Pekerjaan
         </h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            
+            {{-- Kotak Umum (Tampil untuk semua) --}}
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipe Anggota</span>
                 <p class="text-sm font-black text-slate-800">{{ $user->tipe_anggota ?? 'Karyawan' }}</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">NIK (Nomor Induk KTP)</span>
-                <p class="text-sm font-black text-slate-800 font-mono">{{ $user->nik_karyawan ?? 'N/A' }}</p>
+                {{-- PERBAIKAN: Cek nik_karyawan dulu, kalau kosong cek nik_pasien --}}
+                <p class="text-sm font-black text-slate-800 font-mono">{{ $user->nik_karyawan ?? $user->nik_pasien ?? 'N/A' }}</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pekerjaan</span>
                 <p class="text-sm font-black text-slate-800">{{ $user->pekerjaan ?? 'N/A' }}</p>
             </div>
+            
+            {{-- TAMBAHAN: Kotak Pendidikan agar sinkron dengan detail pasien umum --}}
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Jabatan</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->jabatan ?? 'N/A' }}</p>
+                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pendidikan</span>
+                <p class="text-sm font-black text-slate-800">{{ $user->pendidikan ?? 'N/A' }}</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Eselon</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->eselon ?? 'N/A' }}</p>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Departemen</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->departemen->nama_departemen ?? 'N/A' }}</p>
-            </div>
-            <div class="md:col-span-2 lg:col-span-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unit Kerja</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->unitKerja->nama_unit_kerja ?? 'N/A' }}</p>
-            </div>
+
+            {{-- Kotak Khusus Organisasi (HANYA TAMPIL JIKA KARYAWAN) --}}
+            @if(($user->tipe_anggota ?? 'Karyawan') === 'Karyawan')
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Jabatan</span>
+                    <p class="text-sm font-black text-slate-800">{{ $user->jabatan ?? 'N/A' }}</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Eselon</span>
+                    <p class="text-sm font-black text-slate-800">{{ $user->eselon ?? 'N/A' }}</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Departemen</span>
+                    <p class="text-sm font-black text-slate-800">{{ $user->departemen->nama_departemen ?? 'N/A' }}</p>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                    <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unit Kerja</span>
+                    <p class="text-sm font-black text-slate-800">{{ $user->unitKerja->nama_unit_kerja ?? 'N/A' }}</p>
+                </div>
+            @endif
+
         </div>
     </div>
 
@@ -74,9 +88,6 @@
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kebangsaan</span>
                 <p class="text-sm font-black text-slate-800">{{ $user->kebangsaan ?? 'N/A' }}</p>
             </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Agama</span>
                 <p class="text-sm font-black text-slate-800">{{ $user->agama ?? 'N/A' }}</p>
@@ -85,15 +96,10 @@
                 <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status Nikah</span>
                 <p class="text-sm font-black text-slate-800">{{ $user->status_pernikahan ?? 'N/A' }}</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pasangan (Suami/Istri)</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->suami_istri ?? 'N/A' }}</p>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pekerjaan Pasangan</span>
-                <p class="text-sm font-black text-slate-800">{{ $user->pekerjaan_suami_istri ?? 'N/A' }}</p>
-            </div>
         </div>
+        {{-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+        </div> --}}
     </div>
 
     {{-- 3. ALAMAT & KONTAK --}}
@@ -133,7 +139,7 @@
     
     {{-- Tombol Edit Dinamis --}}
     <div class="pt-6 border-t border-slate-100 flex justify-end">
-        @if ($user->id === $karyawan->id)
+        @if (isset($karyawan) && $user->id === $karyawan->id)
             <a href="{{ route('karyawan.edit', ['karyawan' => $karyawan->id]) }}" class="inline-flex items-center px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">
                 <i class="fas fa-user-edit mr-2"></i> Edit Data Karyawan
             </a>

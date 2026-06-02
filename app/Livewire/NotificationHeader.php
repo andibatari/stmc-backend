@@ -17,26 +17,29 @@ class NotificationHeader extends Component
     
     public function checkNotifications()
     {
-        // Kita gunakan array agar sistem menangkap semua variasi kata status
-        $statusPencarian = ['scheduled', 'Scheduled'];
+        // 1. Hitung HANYA yang belum dibaca untuk memunculkan Angka Merah di Lonceng
+        $this->unreadNotificationsCount = JadwalMcu::where('status', 'Scheduled')
+                                                   ->where('is_read_admin', false)
+                                                   ->count();
 
-        // 1. Hitung totalnya
-        $this->unreadNotificationsCount = JadwalMcu::whereIn('status', $statusPencarian)->count();
-
-        // 2. Ambil 5 data terbaru
-        if ($this->unreadNotificationsCount > 0) {
-            $this->latestNotifications = JadwalMcu::with('karyawan') 
-                ->whereIn('status', $statusPencarian)
-                ->latest('created_at') 
-                ->take(5) 
-                ->get();
-        } else {
-            $this->latestNotifications = [];
-        }
+        // 2. SELALU ambil 5 data terbaru (Tidak peduli sudah dibaca atau belum)
+        // Hapus `where('is_read_admin', false)` dari sini agar datanya tidak hilang tiba-tiba!
+        $this->latestNotifications = JadwalMcu::with('karyawan') 
+            ->where('status', 'Scheduled')
+            ->latest('created_at') 
+            ->take(5) 
+            ->get();
     }
 
     public function markNotificationsAsRead()
     {
+        // Ubah status "belum dibaca" menjadi "sudah dibaca"
+        if ($this->unreadNotificationsCount > 0) {
+            JadwalMcu::where('status', 'Scheduled')
+                     ->where('is_read_admin', false)
+                     ->update(['is_read_admin' => true]);
+        }
+        
         $this->checkNotifications(); 
     }
 

@@ -15,16 +15,16 @@
                 </div>
                 Edit Data Pasien
             </h1>
-            <p class="text-sm font-medium text-slate-500 mt-2 ml-14">Perbarui informasi identitas, fisik, kontak, dan alamat pasien.</p>
+            <p class="text-sm font-medium text-slate-500 mt-2 ml-14">Perbarui informasi identitas, demografi, dan kontak pasien.</p>
         </div>
 
         <form wire:submit.prevent="updateKeluarga" class="space-y-8">
             
-            {{-- 1. IDENTITAS DASAR --}}
+            {{-- 1. IDENTITAS PASIEN --}}
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-id-badge mr-2 text-slate-400"></i> 1. Identitas Dasar</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div class="md:col-span-2">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-id-card mr-2 text-slate-400"></i> 1. Identitas Pasien</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div class="md:col-span-2 lg:col-span-1">
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Nama Lengkap</label>
                         <input type="text" wire:model.live="nama_lengkap" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors" required>
                         @error('nama_lengkap') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
@@ -35,67 +35,16 @@
                         @error('nik_pasien') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">NIP / SAP</label>
-                        <input type="text" wire:model.live="no_sap" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors font-mono">
-                        @error('no_sap') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Perusahaan Asal</label>
-                        <input type="text" wire:model.live="perusahaan_asal" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
-                        @error('perusahaan_asal') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Pekerjaan</label>
                         <input type="text" wire:model.live="pekerjaan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
                         @error('pekerjaan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
-                </div>
-            </div>
-
-            {{-- 2. KELAHIRAN & FISIK --}}
-            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-heartbeat mr-2 text-slate-400"></i> 2. Kelahiran & Fisik</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tempat Lahir</label>
-                        <input type="text" wire:model.live="tempat_lahir" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
-                        @error('tempat_lahir') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tanggal Lahir</label>
-                        <input type="date" wire:model.live="tanggal_lahir" id="tanggal_lahir" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
-                        @error('tanggal_lahir') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Umur</label>
-                        <input type="text" wire:model="umur" id="umur" class="block w-full px-4 py-3 text-sm font-bold rounded-xl border-slate-200 bg-slate-200 text-slate-600 cursor-not-allowed" readonly>
-                        @error('umur') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Jenis Kelamin</label>
-                        <select wire:model.live="jenis_kelamin" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Agama</label>
+                        <select wire:model.live="agama" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
+                            <option value="">Pilih</option><option value="Islam">Islam</option><option value="Kristen">Kristen</option><option value="Katolik">Katolik</option><option value="Hindu">Hindu</option><option value="Buddha">Buddha</option><option value="Konghucu">Konghucu</option>
                         </select>
-                        @error('jenis_kelamin') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Gol. Darah</label>
-                        <select wire:model.live="golongan_darah" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih</option><option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option>
-                        </select>
-                        @error('golongan_darah') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tinggi (cm)</label>
-                        <input type="number" wire:model.live="tinggi_badan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
-                        @error('tinggi_badan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Berat (kg)</label>
-                        <input type="number" wire:model.live="berat_badan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
-                        @error('berat_badan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                        @error('agama') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Pendidikan</label>
@@ -107,67 +56,48 @@
                 </div>
             </div>
 
-            {{-- 3. DEMOGRAFI SOSIAL --}}
+            {{-- 2. BIOMETRIK & KELAHIRAN --}}
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-users mr-2 text-slate-400"></i> 3. Demografi Sosial</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-heartbeat mr-2 text-slate-400"></i> 2. Biometrik & Kelahiran</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Agama</label>
-                        <select wire:model.live="agama" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih</option><option value="Islam">Islam</option><option value="Kristen">Kristen</option><option value="Katolik">Katolik</option><option value="Hindu">Hindu</option><option value="Buddha">Buddha</option><option value="Konghucu">Konghucu</option>
-                        </select>
-                        @error('agama') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tanggal Lahir</label>
+                        <input type="date" wire:model.live="tanggal_lahir" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Status Pernikahan</label>
-                        <select wire:model.live="status_pernikahan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih</option><option value="Menikah">Menikah</option><option value="Belum Menikah">Belum Menikah</option><option value="Cerai Hidup">Cerai Hidup</option><option value="Cerai Mati">Cerai Mati</option>
-                        </select>
-                        @error('status_pernikahan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tempat Lahir</label>
+                        <input type="text" wire:model.live="tempat_lahir" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 transition-colors">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Kebangsaan</label>
-                        <select wire:model.live="kebangsaan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih</option><option value="WNI">WNI</option><option value="WNA">WNA</option>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Umur</label>
+                        <input type="text" wire:model="umur" class="block w-full px-4 py-3 text-sm font-bold rounded-xl border-slate-200 bg-slate-200 text-slate-600 cursor-not-allowed" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Jenis Kelamin</label>
+                        <select wire:model.live="jenis_kelamin" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
+                            <option value="">Pilih</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option>
                         </select>
-                        @error('kebangsaan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Tinggi Badan (cm)</label>
+                        <input type="number" wire:model.live="tinggi_badan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Berat Badan (kg)</label>
+                        <input type="number" wire:model.live="berat_badan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Gol. Darah</label>
+                        <select wire:model.live="golongan_darah" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
+                            <option value="">Pilih</option><option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            {{-- 4. ORGANISASI (HANYA JIKA BUKAN NON-KARYAWAN) --}}
-            @if ($keluarga->tipe_anggota != 'Non-Karyawan')
+            {{-- 3. DOMISILI & KONTAK --}}
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-sitemap mr-2 text-slate-400"></i> 4. Organisasi Karyawan</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Departemen</label>
-                        <select wire:model.live="departemens_id" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih Departemen</option>
-                            @foreach($departemens as $departemen)
-                                <option value="{{ $departemen->id }}">{{ $departemen->nama_departemen }}</option>
-                            @endforeach
-                        </select>
-                        @error('departemens_id') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Unit Kerja</label>
-                        <select wire:model.live="unit_kerjas_id" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white cursor-pointer focus:border-red-500">
-                            <option value="">Pilih Unit Kerja</option>
-                            @foreach($unitKerjas as $unitKerja)
-                                <option value="{{ $unitKerja->id }}">{{ $unitKerja->nama_unit_kerja }}</option>
-                            @endforeach
-                        </select>
-                        @error('unit_kerjas_id') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            {{-- 5. ALAMAT & KONTAK --}}
-            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-map-marker-alt mr-2 text-slate-400"></i> 5. Alamat & Kontak</h3>
-                
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center"><i class="fas fa-map-marker-alt mr-2 text-slate-400"></i> 3. Domisili & Kontak</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Provinsi</label>
@@ -177,42 +107,35 @@
                                 <option value="{{ $provinsi->id }}">{{ $provinsi->nama_provinsi }}</option>
                             @endforeach
                         </select>
-                        @error('provinsi_id') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Kabupaten/Kota</label>
                         <input type="text" wire:model.live="nama_kabupaten" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
-                        @error('nama_kabupaten') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Kecamatan</label>
                         <input type="text" wire:model.live="nama_kecamatan" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
-                        @error('nama_kecamatan') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Nomor Handphone</label>
                         <input type="text" wire:model.live="no_hp" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 font-mono">
-                        @error('no_hp') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1.5">Email Akses</label>
                         <input type="email" wire:model.live="email" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500">
-                        @error('email') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Alamat Lengkap Domisili (Jalan, RT/RW)</label>
+                        <label class="block text-xs font-bold text-slate-600 mb-1.5">Alamat Lengkap Domisili</label>
                         <textarea wire:model.live="alamat" rows="2" class="block w-full rounded-xl border border-slate-200 bg-white text-sm focus:border-red-500 p-4 resize-none"></textarea>
-                        @error('alamat') <span class="text-red-500 text-xs mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                 </div>
             </div>
 
             {{-- 6. AKUN LOGIN (PASSWORD) --}}
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-lock mr-2 text-slate-400"></i> 6. Keamanan Akun Login</h3>
+                <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-lock mr-2 text-slate-400"></i> 4. Keamanan Akun Login</h3>
                 <p class="text-xs text-slate-500 mb-5">Kosongkan kolom di bawah ini jika tidak ingin mengubah password.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
@@ -231,7 +154,7 @@
             {{-- TOMBOL SIMPAN --}}
             <div class="flex justify-end pt-4 border-t border-slate-100">
                 <button type="submit" wire:loading.attr="disabled" class="w-full sm:w-auto px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5 transition-all duration-200 text-sm">
-                    <span wire:loading.remove><i class="fas fa-save mr-2"></i> Simpan Perubahan Pasien</span>
+                    <span wire:loading.remove><i class="fas fa-save mr-2"></i> Simpan Perubahan</span>
                     <span wire:loading><i class="fas fa-circle-notch fa-spin mr-2"></i> Memperbarui...</span>
                 </button>
             </div>

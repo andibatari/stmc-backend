@@ -2,7 +2,7 @@
 <div x-data="{ open: false }" wire:poll.10s="checkNotifications" class="relative">
     
     {{-- Tombol Lonceng Notifikasi --}}
-    <button @click="open = !open; $wire.markNotificationsAsRead()" 
+<button @click="open = !open" 
             class="p-2 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors duration-150 relative focus:outline-none">
         
         <i class="fas fa-bell text-xl"></i> {{-- Menggunakan FontAwesome agar senada dengan desain web kamu --}}
@@ -17,7 +17,7 @@
 
     {{-- Dropdown Panel Notifikasi --}}
     <div x-show="open" 
-         @click.away="open = false" 
+         @click.away="open = false; $wire.markNotificationsAsRead()" 
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95 transform -translate-y-2"
          x-transition:enter-end="opacity-100 scale-100 transform translate-y-0"
@@ -37,36 +37,39 @@
              @endif
          </div>
          
-         {{-- ISI NOTIFIKASI --}}
-         <div class="max-h-72 overflow-y-auto custom-scrollbar">
-             @if ($unreadNotificationsCount > 0)
+        {{-- ISI NOTIFIKASI --}}
+        <div class="max-h-72 overflow-y-auto custom-scrollbar">
+             
+            {{-- UBAH IF NYA DI SINI --}}
+            @if (count($latestNotifications) > 0)
+                 
                  <div class="flex flex-col divide-y divide-slate-100">
                      {{-- Looping data satu per satu --}}
                      @foreach ($latestNotifications as $notif)
-                        <a href="{{ route('jadwal.index') }}?search_sap={{ $notif->karyawan->no_sap ?? '' }}" class="p-4 hover:bg-red-50/50 transition-colors flex items-start gap-3 group cursor-pointer">
+                        <a href="{{ route('jadwal.index') }}?search_sap={{ $notif->karyawan->no_sap ?? '' }}" 
+                            class="p-4 transition-all duration-300 flex items-start gap-3 group cursor-pointer {{ $notif->is_read_admin ? 'bg-white opacity-60 hover:bg-slate-50 grayscale-[30%]' : 'bg-red-50/80 hover:bg-red-100' }}">
     
-                            {{-- Ikon Bulat --}}
-                            <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fas fa-calendar-check text-sm"></i> {{-- Saya ganti ikonnya ke calendar-check karena sudah otomatis disetujui --}}
-                            </div>
-                            
-                            {{-- Teks Notifikasi --}}
-                            <div class="flex-1">
-                                <p class="text-[13px] text-slate-600 leading-relaxed">
-                                    <span class="font-black text-slate-800">{{ $notif->karyawan->nama_karyawan ?? 'Karyawan' }}</span> baru saja mengambil antrean MCU untuk tanggal <span class="font-bold text-slate-800">{{ \Carbon\Carbon::parse($notif->tanggal_mcu)->translatedFormat('d F Y') }}</span>.
-                                </p>
-                                
-                                <div class="flex items-center justify-between mt-2">
-                                    <p class="text-[10px] text-slate-400 font-medium">
-                                        <i class="far fa-clock mr-1"></i> {{ $notif->created_at->diffForHumans() }}
-                                    </p>
-                                    {{-- TEKS DI SINI KITA UBAH --}}
-                                    <p class="text-[10px] font-bold text-red-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-300">
-                                        Lihat Jadwal <i class="fas fa-arrow-right ml-0.5"></i>
-                                    </p>
-                                </div>
-                            </div>
-                        </a>
+                             {{-- Ikon Bulat --}}
+                             <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-red-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                 <i class="fas fa-calendar-check text-sm"></i>
+                             </div>
+                             
+                             {{-- Teks Notifikasi --}}
+                             <div class="flex-1">
+                                 <p class="text-[13px] text-slate-600 leading-relaxed">
+                                     <span class="font-black text-slate-800">{{ $notif->karyawan->nama_karyawan ?? 'Karyawan' }}</span> baru saja mengambil antrean MCU untuk tanggal <span class="font-bold text-slate-800">{{ \Carbon\Carbon::parse($notif->tanggal_mcu)->translatedFormat('d F Y') }}</span>.
+                                 </p>
+                                 
+                                 <div class="flex items-center justify-between mt-2">
+                                     <p class="text-[10px] text-slate-400 font-medium">
+                                         <i class="far fa-clock mr-1"></i> {{ $notif->created_at->diffForHumans() }}
+                                     </p>
+                                     <p class="text-[10px] font-bold text-red-600 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-300">
+                                         Lihat Jadwal <i class="fas fa-arrow-right ml-0.5"></i>
+                                     </p>
+                                 </div>
+                             </div>
+                         </a>
                      @endforeach
                  </div>
              @else
