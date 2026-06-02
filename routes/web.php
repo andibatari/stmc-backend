@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\PoliGigiResult;
 use App\Models\KebugaranResult;
 use App\Models\FisikResult;
+use App\Livewire\Admin\JadwalDokterManager;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -79,7 +80,10 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::get('/jadwal/{jadwal}/detail', \App\Livewire\QrPatientDetail::class)->name('qr-patient-detail');
     Route::get('/jadwal/{jadwal}/edit', [JadwalMcuController::class, 'edit'])->name('jadwal.edit');
     Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
-
+    Route::get('/jadwal-dokter', JadwalDokterManager::class)->name('admin.jadwal-dokter');
+    // Rute API untuk Jadwal Dokter (digunakan oleh FullCalendar)
+    Route::get('/get-jadwal-dokter', [\App\Http\Controllers\Api\JadwalDokterApiController::class, 'getEvents'])->name('api.jadwal-dokter'); 
+    
     Route::post('jadwal/{jadwal}/update-status', [JadwalMcuController::class, 'updateStatus'])->name('jadwal.update-status');
     Route::get('/scan-qr', QrScanner::class)->name('scan.qr');
 

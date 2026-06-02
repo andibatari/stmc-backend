@@ -13,6 +13,10 @@
     {{-- 2. FontAwesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
+    {{-- 3. FullCalendar (untuk tampilan jadwal dokter) --}}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
     {{-- 3. Tailwind CSS CDN & Config --}}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -261,6 +265,7 @@
                                 <li><a href="{{ route('admin.create') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.create') ? 'active' : '' }}">Kelola Admin</a></li>
                                 <li><a href="{{ route('admin.tambah-dokter') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.tambah-dokter') ? 'active' : '' }}">Kelola Dokter</a></li>
                                 <li><a href="{{ route('paket-poli') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('paket-poli') ? 'active' : '' }}">Paket & Poli MCU</a></li>
+                                <li><a href="{{ route('admin.jadwal-dokter') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.jadwal-dokter') ? 'active' : '' }}">Jadwal Dokter</a></li>
                                 <li><a href="{{ route('admin.laporan.pemeriksaan') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('admin.laporan.pemeriksaan') ? 'active' : '' }}">Rekap & Ekspor</a></li>
                             </ul>
                         </li>

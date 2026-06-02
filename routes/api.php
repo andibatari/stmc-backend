@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Api\JadwalMcuApiController;
 use App\Http\Controllers\Api\LingkunganApiController;
+use App\Http\Controllers\Api\JadwalDokterApiController;
 
 // IMPORT BARU UNTUK KEBUTUHAN FCM
 use Illuminate\Http\Request;
@@ -57,7 +58,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/jadwal-poli/checkin', [\App\Http\Controllers\Api\JadwalMcuApiController::class, 'checkInPoli']);
     // TAMBAHKAN RUTE FILTER INI AGAR DROPDOWN DI FLUTTER BERFUNGSI:
     Route::get('/lingkungan/filters', [LingkunganApiController::class, 'getFilters']);
-
+    Route::get('/jadwal-dokter/events', [JadwalDokterApiController::class, 'getEvents']);
+    
     // Rute Jadwal MCU
     Route::prefix('jadwal-mcu')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);

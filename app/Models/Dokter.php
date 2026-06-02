@@ -19,6 +19,7 @@ class Dokter extends Model
         'email',
         'password',
         'role',
+        'color',
     ];
 
     // Relasi ke tabel admin_users
