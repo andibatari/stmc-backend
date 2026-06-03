@@ -124,7 +124,13 @@
                 </div>
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Password</label>
-                    <input type="password" wire:model.live="password" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                    <div class="relative">
+                        <input type="password" id="pass_create_kar" wire:model.live="password" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('pass_create_kar', 'eyeOpen_ck', 'eyeClosed_ck')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                            <img id="eyeOpen_ck" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                            <img id="eyeClosed_ck" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                        </button>
+                    </div>
                 </div>
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">No Handphone</label>

@@ -57,11 +57,23 @@
             @if ($tipe_anggota == 'Non-Karyawan' || in_array($tipe_anggota, ['Istri', 'Suami']))
                 <div>
                     <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Buat Password Login</label>
-                    <input type="password" wire:model="password" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500">
+                    <div class="relative">
+                        <input type="password" id="pass_add_kel" wire:model="password" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('pass_add_kel', 'eyeOpen_ak1', 'eyeClosed_ak1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                            <img id="eyeOpen_ak1" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                            <img id="eyeClosed_ak1" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Ulangi Password</label>
-                    <input type="password" wire:model="password_confirmation" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500">
+                    <div class="relative">
+                        <input type="password" id="pass_add_kel_conf" wire:model="password_confirmation" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('pass_add_kel_conf', 'eyeOpen_ak2', 'eyeClosed_ak2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                            <img id="eyeOpen_ak2" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                            <img id="eyeClosed_ak2" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                        </button>
+                    </div>
                 </div>
             @endif
         </div>

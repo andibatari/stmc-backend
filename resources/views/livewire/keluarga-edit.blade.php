@@ -169,12 +169,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Password Baru</label>
-                        <input type="password" wire:model.live="password" placeholder="••••••••" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <div class="relative">
+                            <input type="password" id="pass_edit_kel" wire:model.live="password" placeholder="••••••••" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kel', 'eyeOpen_ekel1', 'eyeClosed_ekel1')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                                <img id="eyeOpen_ekel1" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                <img id="eyeClosed_ekel1" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                            </button>
+                        </div>
                         @error('password') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Konfirmasi Password Baru</label>
-                        <input type="password" wire:model.live="password_confirmation" placeholder="••••••••" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <div class="relative">
+                            <input type="password" id="pass_edit_kel_conf" wire:model.live="password_confirmation" placeholder="••••••••" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kel_conf', 'eyeOpen_ekel2', 'eyeClosed_ekel2')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                                <img id="eyeOpen_ekel2" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                <img id="eyeClosed_ekel2" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                            </button>
+                        </div>
                         @error('password_confirmation') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                     </div>
                 </div>

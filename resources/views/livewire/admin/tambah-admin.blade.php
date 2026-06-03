@@ -74,7 +74,13 @@
                         @if (!$isEditing)
                             <div class="md:col-span-2 border-t border-slate-200 pt-4 mt-2">
                                 <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Buat Password Default</label>
-                                <input type="password" wire:model="password" class="block w-full md:w-1/2 px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                                <div class="relative w-full md:w-1/2">
+                                    <input type="password" id="pass_add_admin" wire:model="password" class="block w-full px-4 py-3.5 md:py-3 pr-10 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                                    <button type="button" onclick="togglePasswordVisibility('pass_add_admin', 'eyeOpen_aa', 'eyeClosed_aa')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                                        <img id="eyeOpen_aa" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                        <img id="eyeClosed_aa" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                                    </button>
+                                </div>
                                 @error('password') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                             </div>
                         @endif
@@ -176,7 +182,13 @@
                     <form wire:submit.prevent="updatePassword" class="text-left">
                         <div class="mb-6">
                             <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Password Baru</label>
-                            <input type="password" wire:model="newPassword" class="block w-full px-4 py-3 md:py-3.5 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-amber-500 shadow-sm">
+                            <div class="relative">
+                                <input type="password" id="pass_edit_admin" wire:model="newPassword" class="block w-full px-4 py-3 md:py-3.5 pr-10 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-amber-500 shadow-sm transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('pass_edit_admin', 'eyeOpen_ea', 'eyeClosed_ea')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-amber-600 focus:outline-none">
+                                    <img id="eyeOpen_ea" src="{{ asset('images/eye-open.png') }}" class="h-5 w-5 opacity-70">
+                                    <img id="eyeClosed_ea" src="{{ asset('images/eye-closed.png') }}" class="h-5 w-5 hidden opacity-70">
+                                </button>
+                            </div>
                             @error('newPassword') <p class="mt-1 text-[10px] font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div class="flex flex-col gap-2">

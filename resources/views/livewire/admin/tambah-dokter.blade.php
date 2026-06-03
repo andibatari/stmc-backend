@@ -54,7 +54,13 @@
                     @if (!$isEditing)
                         <div class="md:col-span-2 lg:col-span-4 border-t border-slate-200 pt-4 mt-2">
                             <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Password Akun Baru</label>
-                            <input type="password" wire:model="password" class="block w-full md:w-1/2 lg:w-1/4 px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                            <div class="relative w-full md:w-1/2 lg:w-1/4">
+                                <input type="password" id="pass_add_dok" wire:model="password" class="block w-full px-4 py-3.5 md:py-3 pr-10 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
+                                <button type="button" onclick="togglePasswordVisibility('pass_add_dok', 'eyeOpen_ad', 'eyeClosed_ad')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
+                                    <img id="eyeOpen_ad" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                    <img id="eyeClosed_ad" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                                </button>
+                            </div>
                         </div>
                     @endif
                 </div>

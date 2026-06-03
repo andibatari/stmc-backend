@@ -180,26 +180,42 @@
                         </p>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
+                            {{-- Input Kata Sandi Baru --}}
                             <div>
                                 <label for="password" class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 md:mb-2">Kata Sandi Baru</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i class="fas fa-key text-slate-400"></i>
                                     </div>
+                                    {{-- Ditambahkan pr-12 agar teks tidak tertimpa icon mata --}}
                                     <input type="password" name="password" id="password" placeholder="••••••••"
-                                        class="block w-full pl-11 pr-4 py-3 bg-slate-50 border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all shadow-sm">
+                                        class="block w-full pl-11 pr-12 py-3 bg-slate-50 border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all shadow-sm">
+                                    
+                                    {{-- Tombol Mata (Buka/Tutup) --}}
+                                    <button type="button" onclick="togglePasswordVisibility('password', 'eyeOpenPass1', 'eyeClosedPass1')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-red-600 focus:outline-none transition-colors">
+                                        <img id="eyeOpenPass1" src="{{ asset('images/eye-open.png') }}" alt="Show" class="h-5 w-5 opacity-70">
+                                        <img id="eyeClosedPass1" src="{{ asset('images/eye-closed.png') }}" alt="Hide" class="h-5 w-5 hidden opacity-70">
+                                    </button>
                                 </div>
                                 @error('password') <p class="text-rose-500 text-[10px] md:text-xs mt-1 font-bold">{{ $message }}</p> @enderror
                             </div>
 
+                            {{-- Input Konfirmasi Kata Sandi --}}
                             <div>
                                 <label for="password_confirmation" class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 md:mb-2">Konfirmasi Sandi Baru</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i class="fas fa-check-double text-slate-400"></i>
                                     </div>
+                                    {{-- Ditambahkan pr-12 agar teks tidak tertimpa icon mata --}}
                                     <input type="password" name="password_confirmation" id="password_confirmation" placeholder="••••••••"
-                                        class="block w-full pl-11 pr-4 py-3 bg-slate-50 border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all shadow-sm">
+                                        class="block w-full pl-11 pr-12 py-3 bg-slate-50 border-slate-200 rounded-xl text-sm font-bold focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all shadow-sm">
+                                    
+                                    {{-- Tombol Mata (Buka/Tutup) --}}
+                                    <button type="button" onclick="togglePasswordVisibility('password_confirmation', 'eyeOpenPass2', 'eyeClosedPass2')" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-red-600 focus:outline-none transition-colors">
+                                        <img id="eyeOpenPass2" src="{{ asset('images/eye-open.png') }}" alt="Show" class="h-5 w-5 opacity-70">
+                                        <img id="eyeClosedPass2" src="{{ asset('images/eye-closed.png') }}" alt="Hide" class="h-5 w-5 hidden opacity-70">
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -255,5 +271,24 @@
             reader.readAsDataURL(file);
         }
     });
+
+    // Fungsi Dinamis Buka/Tutup Password
+    function togglePasswordVisibility(inputId, eyeOpenId, eyeClosedId) {
+        const passwordInput = document.getElementById(inputId);
+        const eyeOpen = document.getElementById(eyeOpenId);
+        const eyeClosed = document.getElementById(eyeClosedId);
+
+        if (passwordInput.type === 'password') {
+            // Ubah ke Text (Terlihat)
+            passwordInput.type = 'text';
+            eyeOpen.classList.add('hidden');
+            eyeClosed.classList.remove('hidden');
+        } else {
+            // Ubah ke Password (Tersembunyi)
+            passwordInput.type = 'password';
+            eyeOpen.classList.remove('hidden');
+            eyeClosed.classList.add('hidden');
+        }
+    }
 </script>
 @endsection

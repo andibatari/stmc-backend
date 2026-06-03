@@ -52,7 +52,7 @@
                 <img src="{{ asset('images/LogoStmc.png') }}" alt="STMC Logo" class="h-10 w-10 object-contain bg-white rounded-xl p-1 shadow-sm">
                 <div>
                     <h2 class="font-black text-xl text-red-800 leading-none">STMC</h2>
-                    <p class="text-[10px] uppercase tracking-widest text-red-500 font-bold">Medical Centre</p>
+                    <p class="text-[10px] uppercase tracking-widest text-red-500 font-bold">Semen Tonasa Medical Centre</p>
                 </div>
             </div>
             
@@ -85,8 +85,8 @@
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <label for="password" class="text-xs font-bold text-slate-600 uppercase tracking-wide">Kata Sandi</label>
-                        <a href="#" class="text-xs font-bold text-red-600 hover:text-red-800 transition-colors">Lupa sandi?</a>
                     </div>
+                    
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -98,6 +98,12 @@
                             <img id="eyeOpen" src="{{ asset('images/eye-open.png') }}" alt="Show" class="h-5 w-5 opacity-70">
                             <img id="eyeClosed" src="{{ asset('images/eye-closed.png') }}" alt="Hide" class="h-5 w-5 hidden opacity-70">
                         </button>
+                    </div>
+                    {{-- 3. Tombol Lupa Sandi (Ditambahkan di sini, di bawah kanan input) --}}
+                    <div class="flex justify-end mt-2">
+                        <a href="javascript:void(0)" onclick="tampilkanLupaSandi()" class="text-xs font-bold text-red-600 hover:text-red-800 transition-colors">
+                            Lupa sandi?
+                        </a>
                     </div>
                 </div>
 
@@ -115,6 +121,25 @@
     </div>
 
     <script>
+
+        // Fungsi untuk pop-up Lupa Sandi yang lebih proporsional
+        function tampilkanLupaSandi() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Lupa Kata Sandi?',
+                text: 'Untuk alasan keamanan rekam medis, silakan hubungi Tim IT atau Superadmin STMC secara langsung untuk mereset kata sandi Anda.',
+                confirmButtonColor: '#dc2626',
+                width: '320px', // Membatasi lebar maksimal agar tidak penuh di layar HP
+                padding: '1.5em', // Mengurangi jarak ruang kosong di dalam pop-up
+                customClass: {
+                    popup: 'rounded-2xl', // Lengkungan sudut yang tidak terlalu ekstrem
+                    title: 'text-lg font-black text-slate-800', // Ukuran judul diperkecil
+                    htmlContainer: 'text-xs text-slate-500 font-medium', // Ukuran teks penjelasan diperkecil
+                    confirmButton: 'px-5 py-2 text-xs font-bold rounded-xl shadow-sm' // Memperkecil tombol OK
+                }
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const togglePassword = document.getElementById('togglePassword');
             const passwordInput = document.getElementById('password');
@@ -136,5 +161,6 @@
             }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

@@ -498,6 +498,24 @@
                 }
             });
         });
+
+        function togglePasswordVisibility(inputId, eyeOpenId, eyeClosedId) {
+            const passwordInput = document.getElementById(inputId);
+            const eyeOpen = document.getElementById(eyeOpenId);
+            const eyeClosed = document.getElementById(eyeClosedId);
+
+            if (passwordInput && eyeOpen && eyeClosed) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
+                } else {
+                    passwordInput.type = 'password';
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
+                }
+            }
+        }
     </script>
     @livewireScripts
     @stack('scripts') 

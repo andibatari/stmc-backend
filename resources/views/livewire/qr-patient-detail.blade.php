@@ -1,24 +1,26 @@
 @section('title', 'Detail Jadwal Pasien MCU')
 
 {{-- OUTER CONTAINER (ROOT ELEMENT LIVEWIRE) --}}
-<div wire:poll.3s class="py-6 px-3 md:max-w-6xl md:mx-auto md:px-6 min-h-screen"> 
+{{-- PERBAIKAN: Padding mobile dikurangi (py-4 px-2) agar konten lebih lega di HP --}}
+<div wire:poll.3s class="py-4 px-2 md:py-6 md:px-6 md:max-w-6xl md:mx-auto min-h-screen"> 
     
     {{-- KARTU UTAMA --}}
-    <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+    <div class="bg-white rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 overflow-hidden">
 
         {{-- 1. HEADER --}}
-        <div class="bg-gradient-to-r from-red-700 to-red-600 px-6 py-5 md:px-8 md:py-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
+        {{-- PERBAIKAN: Flexbox lebih rapi di HP, tombol cetak mengambil full lebar (w-full) di layar kecil --}}
+        <div class="bg-gradient-to-r from-red-700 to-red-600 px-5 py-4 md:px-8 md:py-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm shrink-0">
                     <i class="fas fa-notes-medical text-white text-xl"></i>
                 </div>
-                <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Detail Pasien MCU</h1>
+                <h1 class="text-lg md:text-2xl font-black text-white tracking-wide leading-tight">Detail Pasien MCU</h1>
             </div>
             
             <button
                 x-data="{ jadwalId: {{ $jadwal->id }}, mergedUrl: '{{ route('download.mcu.summary', ['jadwalId' => '__ID__']) }}' }"
                 @click.prevent="window.open(mergedUrl.replace('__ID__', jadwalId), '_blank')"
-                class="inline-flex items-center justify-center px-5 py-2.5 bg-white text-red-700 rounded-xl font-bold text-sm tracking-wide hover:bg-red-50 hover:scale-105 active:scale-95 transition-all duration-200 shadow-sm"
+                class="w-full md:w-auto inline-flex items-center justify-center px-5 py-2.5 bg-white text-red-700 rounded-xl font-bold text-sm tracking-wide hover:bg-red-50 active:scale-95 transition-all duration-200 shadow-sm"
             >
                 <i class="fas fa-file-pdf mr-2 text-red-600"></i> Cetak Hasil MCU
             </button>
@@ -26,68 +28,69 @@
 
         <div class="p-4 md:p-8">
             {{-- 2. BAGIAN DETAIL PASIEN --}}
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+            {{-- PERBAIKAN: Gap dikurangi untuk mobile agar tidak terlalu jauh --}}
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 mb-6 md:mb-8">
                 
                 {{-- KIRI: KODE PENDAFTARAN (QR) --}}
-                <div class="md:col-span-4 flex flex-col items-center justify-center p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Kode Pendaftaran</h3>
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                <div class="md:col-span-4 flex flex-col items-center justify-center p-4 md:p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                    <h3 class="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 md:mb-4">Kode Pendaftaran</h3>
+                    <div class="bg-white p-2.5 md:p-3 rounded-2xl shadow-sm border border-slate-200">
                         @if ($qrCodeImage)
-                            <img src="data:image/png;base64,{{ $qrCodeImage }}" alt="QR Code Pasien" class="w-32 h-32 md:w-44 md:h-44 object-contain"> 
+                            <img src="data:image/png;base64,{{ $qrCodeImage }}" alt="QR Code Pasien" class="w-28 h-28 md:w-44 md:h-44 object-contain"> 
                         @else
-                            <div class="w-32 h-32 md:w-44 md:h-44 flex items-center justify-center bg-slate-50 rounded-xl">
-                                <p class="text-slate-400 font-medium text-center text-xs">QR Tidak Tersedia</p>
+                            <div class="w-28 h-28 md:w-44 md:h-44 flex items-center justify-center bg-slate-50 rounded-xl">
+                                <p class="text-slate-400 font-medium text-center text-[10px] md:text-xs">QR Tidak Tersedia</p>
                             </div>
                         @endif
                     </div>
                 </div>
 
                 {{-- KANAN: DATA PRIBADI --}}
-                <div class="md:col-span-8 flex flex-col justify-center space-y-4"> 
+                <div class="md:col-span-8 flex flex-col justify-center space-y-3 md:space-y-4"> 
                     @if ($patient)
                         <div>
-                            <div class="flex flex-wrap items-center gap-3 mb-1">
-                                <h2 class="text-2xl md:text-3xl font-black text-slate-800">{{ $patient->nama_lengkap ?? $patient->nama_karyawan }}</h2>
-                                <span class="px-3 py-1 rounded-full text-xs font-bold border
+                            <div class="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                                <h2 class="text-xl md:text-3xl font-black text-slate-800 leading-tight">{{ $patient->nama_lengkap ?? $patient->nama_karyawan }}</h2>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] md:text-xs font-bold border
                                     @if($jadwal->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200
                                     @elseif($jadwal->status === 'Present') bg-blue-50 text-blue-600 border-blue-200
                                     @else bg-emerald-50 text-emerald-600 border-emerald-200 @endif">
                                     <i class="fas fa-circle text-[8px] mr-1"></i> {{ $jadwal->status }}
                                 </span>
                             </div>
-                            <p class="text-sm font-medium text-slate-500 flex items-center gap-2">
+                            <p class="text-xs md:text-sm font-medium text-slate-500 flex items-center gap-2">
                                 <i class="fas fa-building text-slate-400"></i> {{ $patient->perusahaan_asal ?? 'PT Semen Tonasa' }}
                             </p>
                         </div>
 
                         {{-- Grid Info List Pasien --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mt-2">
-                            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400"><i class="fas fa-id-card w-4 text-center"></i></div>
-                                <div>
-                                    <p class="text-xs text-slate-400 font-semibold mb-0.5">SAP / NIK</p>
-                                    <p class="font-bold text-slate-700 truncate">{{ $patient->no_sap ?? '-' }} / {{ $patient->nik_pasien ?? $patient->nik_karyawan }}</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 mt-2">
+                            <div class="flex items-center gap-3 p-2.5 md:p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400 shrink-0"><i class="fas fa-id-card w-4 text-center"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-[10px] md:text-xs text-slate-400 font-semibold mb-0.5 uppercase tracking-wider">SAP / NIK</p>
+                                    <p class="text-xs md:text-sm font-bold text-slate-700 truncate">{{ $patient->no_sap ?? '-' }} / {{ $patient->nik_pasien ?? $patient->nik_karyawan }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400"><i class="fas fa-calendar-alt w-4 text-center"></i></div>
-                                <div>
-                                    <p class="text-xs text-slate-400 font-semibold mb-0.5">Tgl. Lahir</p>
-                                    <p class="font-bold text-slate-700">{{ \Carbon\Carbon::parse($patient->tanggal_lahir)->format('d M Y') }}</p>
+                            <div class="flex items-center gap-3 p-2.5 md:p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400 shrink-0"><i class="fas fa-calendar-alt w-4 text-center"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-[10px] md:text-xs text-slate-400 font-semibold mb-0.5 uppercase tracking-wider">Tgl. Lahir</p>
+                                    <p class="text-xs md:text-sm font-bold text-slate-700 truncate">{{ \Carbon\Carbon::parse($patient->tanggal_lahir)->format('d M Y') }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400"><i class="fas fa-venus-mars w-4 text-center"></i></div>
-                                <div>
-                                    <p class="text-xs text-slate-400 font-semibold mb-0.5">Jenis Kelamin</p>
-                                    <p class="font-bold text-slate-700">{{ $patient->jenis_kelamin }}</p>
+                            <div class="flex items-center gap-3 p-2.5 md:p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                <div class="bg-white p-2 rounded-lg shadow-sm text-slate-400 shrink-0"><i class="fas fa-venus-mars w-4 text-center"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-[10px] md:text-xs text-slate-400 font-semibold mb-0.5 uppercase tracking-wider">Gender</p>
+                                    <p class="text-xs md:text-sm font-bold text-slate-700 truncate">{{ $patient->jenis_kelamin }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-100">
-                                <div class="bg-white p-2 rounded-lg shadow-sm text-red-500"><i class="fas fa-stethoscope w-4 text-center"></i></div>
-                                <div>
-                                    <p class="text-xs text-red-400 font-semibold mb-0.5">Paket MCU</p>
-                                    <p class="font-bold text-red-700 truncate">{{ $jadwal->paketMcu->nama_paket ?? 'N/A' }}</p>
+                            <div class="flex items-center gap-3 p-2.5 md:p-3 bg-red-50 rounded-xl border border-red-100">
+                                <div class="bg-white p-2 rounded-lg shadow-sm text-red-500 shrink-0"><i class="fas fa-stethoscope w-4 text-center"></i></div>
+                                <div class="min-w-0">
+                                    <p class="text-[10px] md:text-xs text-red-400 font-semibold mb-0.5 uppercase tracking-wider">Paket MCU</p>
+                                    <p class="text-xs md:text-sm font-bold text-red-700 truncate">{{ $jadwal->paketMcu->nama_paket ?? 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>
@@ -95,44 +98,42 @@
                         <div class="p-5 bg-red-50 rounded-2xl border border-red-100 text-center flex flex-col items-center justify-center h-full">
                             <i class="fas fa-exclamation-triangle text-3xl text-red-400 mb-2"></i>
                             <h2 class="text-lg font-bold text-red-700 mb-1">Data Pasien Tidak Ditemukan</h2>
-                            <p class="text-red-500 text-sm">Pastikan data karyawan/peserta terdaftar di sistem.</p>
+                            <p class="text-red-500 text-xs md:text-sm">Pastikan data karyawan/peserta terdaftar di sistem.</p>
                         </div>
                     @endif
                 </div>
             </div>
 
             {{-- 3. TABS NAVIGASI (MODERN PILL TABS) --}}
-            <div class="mb-6 overflow-x-auto pb-2 scrollbar-hide"> 
+            {{-- PERBAIKAN: Padding tab disesuaikan untuk HP agar tombol tidak terlalu besar --}}
+            <div class="mb-5 md:mb-6 overflow-x-auto pb-3 scrollbar-hide"> 
                 <ul class="flex space-x-2 w-max" role="tablist">
-                    {{-- TAB RINGKASAN --}}
                     <li role="presentation">
-                        <button class="px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200 flex items-center gap-2
+                        <button class="px-4 md:px-5 py-2 md:py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 flex items-center gap-2
                             @if($activeTab === 'summary') bg-slate-800 text-white shadow-md @else bg-slate-100 text-slate-500 hover:bg-slate-200 @endif"
                             wire:click="$set('activeTab', 'summary')" type="button">
                             <i class="fas fa-list-ul"></i> Ringkasan
                         </button>
                     </li>
 
-                    {{-- TAB RESUME --}}
                     <li role="presentation">
-                        <button class="px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200 flex items-center gap-2
+                        <button class="px-4 md:px-5 py-2 md:py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 flex items-center gap-2
                             @if($activeTab === 'resume') bg-red-600 text-white shadow-md shadow-red-200 @else bg-slate-100 text-slate-500 hover:bg-slate-200 @endif"
                             wire:click="$set('activeTab', 'resume')" type="button">
                             <i class="fas fa-file-medical"></i> Resume Dokter
                         </button> 
                     </li>
 
-                    {{-- Tabs untuk setiap Poli --}}
                     @if($polis->count() > 0)
-                        <div class="w-px h-6 bg-slate-200 my-auto mx-1"></div> {{-- Pemisah --}}
+                        <div class="w-px h-6 bg-slate-200 my-auto mx-1"></div> 
                         @foreach ($polis as $poli)
                             @php
                                 $shortName = match(strtoupper($poli->nama_poli)) {
-                                    'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'MATA' => 'Mata', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
+                                    'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
                                 };
                             @endphp
                             <li role="presentation">
-                                <button class="px-4 py-2.5 rounded-full font-bold text-sm transition-all duration-200 whitespace-nowrap
+                                <button class="px-3 md:px-4 py-2 md:py-2.5 rounded-full font-bold text-xs md:text-sm transition-all duration-200 whitespace-nowrap
                                     @if($activeTab === 'poli-' . $poli->id) bg-blue-600 text-white shadow-md shadow-blue-200 @else bg-slate-100 text-slate-500 hover:bg-slate-200 @endif"
                                     wire:click="$set('activeTab', 'poli-{{ $poli->id }}')" type="button">
                                     {{ $shortName }}
@@ -149,16 +150,17 @@
                 {{-- TAB RINGKASAN POLI --}}
                 @if ($activeTab === 'summary')
                     <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                        <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                            <h3 class="text-base font-bold text-slate-800">Status Pemeriksaan Poli</h3>
+                        <div class="px-4 py-3 md:px-5 md:py-4 border-b border-slate-100 bg-slate-50/50">
+                            <h3 class="text-sm md:text-base font-bold text-slate-800">Status Pemeriksaan Poli</h3>
                         </div>
                         <div class="overflow-x-auto"> 
-                            <table class="min-w-full text-sm text-left text-slate-600"> 
-                                <thead class="text-xs text-slate-500 uppercase bg-slate-50 font-bold border-b border-slate-200">
+                            {{-- PERBAIKAN: whitespace-nowrap ditambahkan agar tabel tidak hancur di HP --}}
+                            <table class="min-w-full text-xs md:text-sm text-left text-slate-600 whitespace-nowrap"> 
+                                <thead class="text-[10px] md:text-xs text-slate-500 uppercase bg-slate-50 font-bold border-b border-slate-200">
                                     <tr>
-                                        <th scope="col" class="py-4 px-6">Nama Poli</th> 
-                                        <th scope="col" class="py-4 px-6 text-center">Status</th> 
-                                        <th scope="col" class="py-4 px-6 text-center">Tindakan Cepat</th> 
+                                        <th scope="col" class="py-3 px-4 md:py-4 md:px-6">Nama Poli</th> 
+                                        <th scope="col" class="py-3 px-4 md:py-4 md:px-6 text-center">Status</th> 
+                                        <th scope="col" class="py-3 px-4 md:py-4 md:px-6 text-center">Tindakan Cepat</th> 
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -166,13 +168,13 @@
                                         @php
                                             $poliData = $jadwalPoliData[$poli->id] ?? (object)['status' => 'Pending', 'id' => null];
                                             $shortName = match(strtoupper($poli->nama_poli)) {
-                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'MATA' => 'Mata', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
+                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
                                             };
                                         @endphp
                                         <tr class="hover:bg-slate-50/80 transition-colors">
-                                            <td class="py-4 px-6 font-bold text-slate-800">{{ $shortName }}</td>
-                                            <td class="py-4 px-6 text-center">
-                                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border
+                                            <td class="py-3 px-4 md:py-4 md:px-6 font-bold text-slate-800">{{ $shortName }}</td>
+                                            <td class="py-3 px-4 md:py-4 md:px-6 text-center">
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] md:text-xs font-bold border
                                                     @if($poliData->status === 'Pending') bg-slate-100 text-slate-600 border-slate-200
                                                     @elseif($poliData->status === 'Waiting') bg-amber-50 text-amber-600 border-amber-200
                                                     @elseif($poliData->status === 'Calling') bg-blue-50 text-blue-600 border-blue-200 animate-pulse
@@ -182,39 +184,34 @@
                                                     {{ $poliData->status }}
                                                 </span>
                                             </td>
-                                            <td class="py-4 px-6 text-center">
+                                            <td class="py-3 px-4 md:py-4 md:px-6 text-center">
                                                 @if($poliData->id)
                                                     <div class="flex items-center justify-center gap-2">
-                                                        {{-- TOMBOL PANGGIL --}}
                                                         <button wire:click="panggilPasien({{ $poli->id }})" title="Panggil Pasien"
-                                                            class="w-8 h-8 rounded-full flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all active:scale-90">
-                                                            <i class="fas fa-bullhorn text-xs"></i>
+                                                            class="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white transition-all active:scale-90">
+                                                            <i class="fas fa-bullhorn text-[10px] md:text-xs"></i>
                                                         </button>
-
-                                                        {{-- TOMBOL DONE --}}
                                                         <button wire:click="markAsDone({{ $poli->id }})" title="Tandai Selesai"
-                                                            class="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90
+                                                            class="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all active:scale-90
                                                             @if($poliData->status === 'Finished' || $poliData->status === 'Done') bg-slate-100 text-slate-300 cursor-not-allowed @else text-emerald-600 bg-emerald-50 hover:bg-emerald-600 hover:text-white @endif"
                                                             @if($poliData->status === 'Finished' || $poliData->status === 'Done') disabled @endif>
-                                                            <i class="fas fa-check text-xs"></i>
+                                                            <i class="fas fa-check text-[10px] md:text-xs"></i>
                                                         </button>
-
-                                                        {{-- TOMBOL CANCEL --}}
                                                         <button wire:click="markAsPending({{ $poli->id }})" title="Batalkan (Pending)"
-                                                            class="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90
+                                                            class="w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center transition-all active:scale-90
                                                             @if($poliData->status === 'Pending') bg-slate-100 text-slate-300 cursor-not-allowed @else text-slate-500 bg-slate-100 hover:bg-slate-500 hover:text-white @endif"
                                                             @if($poliData->status === 'Pending') disabled @endif>
-                                                            <i class="fas fa-undo text-xs"></i>
+                                                            <i class="fas fa-undo text-[10px] md:text-xs"></i>
                                                         </button>
                                                     </div>
                                                 @else
-                                                    <span class="text-xs text-slate-400 italic">N/A</span>
+                                                    <span class="text-[10px] md:text-xs text-slate-400 italic">N/A</span>
                                                 @endif
                                             </td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="3" class="py-8 text-center text-slate-400">Belum ada daftar poli untuk paket MCU ini.</td>
+                                            <td colspan="3" class="py-8 text-center text-xs md:text-sm text-slate-400">Belum ada daftar poli untuk paket MCU ini.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
@@ -226,44 +223,49 @@
                 {{-- TAB RESUME --}}
                 @if ($activeTab === 'resume')
                     <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                        <div class="px-5 py-4 border-b border-slate-100 bg-red-50/50 flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                                <i class="fas fa-notes-medical"></i>
+                        <div class="px-4 py-3 md:px-5 md:py-4 border-b border-slate-100 bg-red-50/50 flex items-center gap-3">
+                            <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
+                                <i class="fas fa-notes-medical text-sm"></i>
                             </div>
-                            <h3 class="text-base font-bold text-red-800">Form Resume Medis</h3>
+                            <h3 class="text-sm md:text-base font-bold text-red-800">Form Resume Medis</h3>
                         </div>
 
-                        <form wire:submit.prevent="saveResume" class="p-5 md:p-7 space-y-6">
+                        {{-- PERBAIKAN: Padding dikecilkan di mobile agar tidak makan tempat --}}
+                        <form wire:submit.prevent="saveResume" class="p-4 md:p-7 space-y-5 md:space-y-6">
+                            
                             {{-- HASIL PEMERIKSAAN (GRID) --}}
                             <div>
-                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">A. Hasil Pemeriksaan Klinis</h4>
+                                <h4 class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 md:mb-4">A. Hasil Pemeriksaan Klinis</h4>
+                                
+                                {{-- PERBAIKAN: Semua placeholder diperjelas menjadi instruksi yang komprehensif --}}
                                 @php
                                 $resumeFields = [
-                                    'bmi' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Dihitung dari TB/BB'],
-                                    'laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Contoh: ISK, Kolesterol Tinggi...'], 
-                                    'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Contoh: Sinus Rhythm...'], 
-                                    'gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Contoh: OH Buruk...'], 
-                                    'mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Contoh: Presbiopia...'], 
-                                    'spirometri' => ['label' => '6. Spirometri', 'placeholder' => '...'], 
-                                    'audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Normal...'], 
-                                    'kesegaran' => ['label' => '8. Kebugaran', 'placeholder' => '...'], 
-                                    'temuan_lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => '...'], 
-                                    'thorax_photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Cor & Pulmo normal...'], 
-                                    'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Negative/Positive...'], 
-                                    'usg' => ['label' => '12. USG', 'placeholder' => 'Normal...'],
+                                    'bmi' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem akan menghitung otomatis...'],
+                                    'laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi, Gula Darah normal...'], 
+                                    'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm, Normal Axis...'], 
+                                    'gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies di gigi 36, Kalkulus ++...'], 
+                                    'mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6, VOS 6/9, Buta Warna Negatif...'], 
+                                    'spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction, FVC 80%...'], 
+                                    'audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural Ringan Telinga Kiri...'], 
+                                    'kesegaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup, VO2Max 35...'], 
+                                    'temuan_lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90, Ada bekas luka operasi...'], 
+                                    'thorax_photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor & Pulmo dalam batas normal...'], 
+                                    'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Response Negative...'], 
+                                    'usg' => ['label' => '12. USG', 'placeholder' => 'Misal: Fatty Liver Grade 1, Ginjal Normal...'],
                                 ];
                                 @endphp
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                {{-- PERBAIKAN: Gap diperkecil di mobile, text-sm digunakan untuk input agar iOS tidak auto-zoom --}}
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                                     @foreach ($resumeFields as $key => $field)
                                         <div>
-                                            <label for="resume_{{ $key }}" class="block text-xs font-bold text-slate-600 mb-1.5">{{ $field['label'] }}</label>
+                                            <label for="resume_{{ $key }}" class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">{{ $field['label'] }}</label>
                                             <input type="text" id="resume_{{ $key }}" wire:model.defer="resumeData.{{ $key }}"
                                                 @if($key === 'bmi') readonly @endif
                                                 class="block w-full rounded-xl border-slate-200 shadow-sm text-sm focus:border-red-500 focus:ring-red-500 placeholder-slate-300 transition-colors
                                                 @if($key === 'bmi') bg-slate-50 font-black text-slate-500 cursor-not-allowed border-slate-100 @endif" 
                                                 placeholder="{{ $field['placeholder'] }}">
-                                            @error("resumeData.{$key}") <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                            @error("resumeData.{$key}") <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                                         </div>
                                     @endforeach
                                 </div>
@@ -273,22 +275,23 @@
 
                             {{-- SARAN DOKTER --}}
                             <div>
-                                <h4 class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3">B. Rekomendasi Medis</h4>
-                                <label for="resume_saran" class="block text-sm font-bold text-slate-700 mb-2">Saran & Tindak Lanjut</label>
-                                <textarea id="resume_saran" wire:model.defer="resumeSaran" rows="3" 
+                                <h4 class="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-widest mb-2 md:mb-3">B. Rekomendasi Medis</h4>
+                                <label for="resume_saran" class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Saran & Tindak Lanjut</label>
+                                <textarea id="resume_saran" wire:model.defer="resumeSaran" rows="4" 
                                     class="block w-full rounded-xl border-slate-200 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 placeholder-slate-300 resize-none"
-                                    placeholder="Ketikan saran dokter untuk pasien di sini..."></textarea>
-                                @error('resumeSaran') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    placeholder="1. Kurangi makanan berlemak dan bersantan&#10;2. Rutin berolahraga minimal 3x seminggu&#10;3. Kontrol ulang tensi 2 minggu lagi..."></textarea>
+                                @error('resumeSaran') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                             </div>
 
                             {{-- KESIMPULAN & TOMBOL --}}
-                            <div class="bg-amber-50 border border-amber-100 p-5 rounded-2xl flex flex-col md:flex-row md:items-end justify-between gap-5 mt-4"> 
+                            {{-- PERBAIKAN: Flex column di mobile agar tombol mengambil full-width dan rapi --}}
+                            <div class="bg-amber-50 border border-amber-100 p-4 md:p-5 rounded-2xl flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2"> 
                                 <div class="w-full md:w-1/2">
-                                    <label for="resume_kategori" class="block text-sm font-black text-amber-800 mb-2 uppercase tracking-wide">
+                                    <label for="resume_kategori" class="block text-xs md:text-sm font-black text-amber-800 mb-1.5 uppercase tracking-wide">
                                         Kesimpulan Akhir (Kelayakan)
                                     </label>
                                     <select id="resume_kategori" wire:model.defer="resumeKategori"
-                                        class="block w-full rounded-xl border-amber-200 shadow-sm text-sm font-bold text-slate-700 focus:border-amber-500 focus:ring-amber-500 bg-white cursor-pointer py-2.5">
+                                        class="block w-full rounded-xl border-amber-200 shadow-sm text-sm font-bold text-slate-700 focus:border-amber-500 focus:ring-amber-500 bg-white cursor-pointer py-2 md:py-2.5">
                                         <option value="" disabled selected>-- Tentukan Status Fit --</option>
                                         <option value="Fit To Work (K1)">🟢 Fit To Work (K1)</option>
                                         <option value="Fit With Note (K2)">🟡 Fit With Note (K2)</option>
@@ -296,11 +299,12 @@
                                         <option value="Temporary Unfit (K4)">🔴 Temporary Unfit (K4)</option>
                                         <option value="Unfit (K5)">⚫ Unfit (K5)</option>
                                     </select>
-                                    @error('resumeKategori') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    @error('resumeKategori') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                                 </div>
 
-                                <div class="w-full md:w-auto flex flex-col sm:flex-row gap-3">
-                                    <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-slate-800 rounded-xl font-bold text-sm text-white hover:bg-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200" wire:loading.attr="disabled" wire:target="saveResume">
+                                <div class="w-full md:w-auto">
+                                    {{-- PERBAIKAN: w-full pada tombol agar mudah diklik di HP --}}
+                                    <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 md:py-3 bg-slate-800 rounded-xl font-bold text-sm text-white hover:bg-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200" wire:loading.attr="disabled" wire:target="saveResume">
                                         <span wire:loading.remove wire:target="saveResume"><i class="fas fa-save mr-2"></i> Simpan Data</span>
                                         <span wire:loading wire:target="saveResume"><i class="fas fa-circle-notch fa-spin mr-2"></i> Loading...</span>
                                     </button>
@@ -314,14 +318,14 @@
                 @foreach ($polis as $poli)
                     @if ($activeTab === 'poli-' . $poli->id)
                         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                            <div class="px-5 py-4 border-b border-slate-100 bg-blue-50/50 flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                                    <i class="fas fa-file-upload"></i>
+                            <div class="px-4 py-3 md:px-5 md:py-4 border-b border-slate-100 bg-blue-50/50 flex items-center gap-3">
+                                <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-file-upload text-sm"></i>
                                 </div>
-                                <h3 class="text-base font-bold text-blue-800">Berkas {{ $poli->nama_poli }}</h3>
+                                <h3 class="text-sm md:text-base font-bold text-blue-800">Berkas {{ $poli->nama_poli }}</h3>
                             </div>
 
-                            <div class="p-5 md:p-7">
+                            <div class="p-4 md:p-7">
                                 @if (strtoupper($poli->nama_poli) === 'GIGI')
                                     @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $jadwalPoliData[$poli->id] ])
                                 @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
@@ -329,22 +333,23 @@
                                 @elseif (strtoupper($poli->nama_poli) === 'FISIK')
                                     @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
                                 @elseif (in_array(strtoupper($poli->nama_poli), $uploadablePoliNames))
-                                    <div class="max-w-2xl bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-6 text-center">
+                                    <div class="max-w-2xl bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-5 md:p-6 text-center mx-auto">
                                         <div class="mb-4">
-                                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
-                                                <i class="fas fa-cloud-upload-alt text-2xl text-blue-500"></i>
+                                            <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
+                                                <i class="fas fa-cloud-upload-alt text-xl md:text-2xl text-blue-500"></i>
                                             </div>
-                                            <h4 class="text-sm font-bold text-slate-700">Unggah Laporan PDF</h4>
-                                            <p class="text-xs text-slate-400 mt-1">Maksimal ukuran file 10MB.</p>
+                                            <h4 class="text-xs md:text-sm font-bold text-slate-700">Unggah Laporan PDF</h4>
+                                            <p class="text-[10px] md:text-xs text-slate-400 mt-1">Maksimal ukuran file 10MB.</p>
                                         </div>
 
-                                        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                            <label for="file-{{ $poli->id }}" class="cursor-pointer bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 text-sm rounded-xl shadow-sm transition-all duration-200">
+                                        {{-- PERBAIKAN: Flex col di HP agar tombol upload tidak saling himpit --}}
+                                        <div class="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-3">
+                                            <label for="file-{{ $poli->id }}" class="w-full sm:w-auto cursor-pointer bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2 md:py-2.5 px-5 text-xs md:text-sm rounded-xl shadow-sm transition-all duration-200">
                                                 <i class="fas fa-folder-open mr-2 text-blue-500"></i> Telusuri File
                                             </label>
                                             <input type="file" id="file-{{ $poli->id }}" wire:model="pdfFiles.{{ $poli->id }}" wire:key="upload-input-{{ $poli->id }}" accept="application/pdf" class="sr-only">
                                             
-                                            <button wire:click="savePdf({{ $poli->id }})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 text-sm" wire:loading.attr="disabled" wire:target="pdfFiles.{{ $poli->id }}">
+                                            <button wire:click="savePdf({{ $poli->id }})" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 md:py-2.5 px-6 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 text-xs md:text-sm" wire:loading.attr="disabled" wire:target="pdfFiles.{{ $poli->id }}">
                                                 <span wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}"><i class="fas fa-cloud-upload-alt mr-2"></i> Upload Sekarang</span>
                                                 <span wire:loading wire:target="pdfFiles.{{ $poli->id }}"><i class="fas fa-spinner fa-spin mr-2"></i> Memproses...</span>
                                             </button>
@@ -352,7 +357,7 @@
 
                                         {{-- Indikator File Terpilih --}}
                                         <div class="mt-4 pt-4 border-t border-slate-200/60">
-                                            <span class="text-sm font-medium text-slate-600" wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">
+                                            <span class="text-[10px] md:text-sm font-medium text-slate-600" wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">
                                                 @if(isset($pdfFiles[$poli->id]))
                                                     <span class="text-blue-600"><i class="fas fa-file-pdf mr-1"></i> {{ $pdfFiles[$poli->id]->getClientOriginalName() }}</span> (Siap Diupload)
                                                 @elseif(isset($uploadedFileNames[$poli->id]) && $uploadedFileNames[$poli->id])
@@ -361,19 +366,19 @@
                                                     <span class="text-slate-400 italic">Belum ada file dipilih</span>
                                                 @endif
                                             </span>
-                                            @error('pdfFiles.' . $poli->id) <p class="mt-2 text-xs font-bold text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p> @enderror
+                                            @error('pdfFiles.' . $poli->id) <p class="mt-2 text-[10px] md:text-xs font-bold text-red-500"><i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}</p> @enderror
                                         </div>
                                     </div>
 
                                     {{-- Tombol Lihat/Unduh PDF yang sudah diupload --}}
                                     @if (isset($jadwalPoliData[$poli->id]) && $jadwalPoliData[$poli->id]->file_path)
-                                        <div class="mt-6 flex flex-wrap gap-3">
+                                        <div class="mt-5 md:mt-6 flex flex-col sm:flex-row gap-2 md:gap-3">
                                             <a href="{{ asset('storage/' . $jadwalPoliData[$poli->id]->file_path) }}" target="_blank"
-                                                class="inline-flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors border border-slate-200">
+                                                class="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 md:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs md:text-sm transition-colors border border-slate-200">
                                                 <i class="fas fa-external-link-alt mr-2 text-slate-500"></i> Buka File
                                             </a>
                                             <a href="{{ asset('storage/' . $jadwalPoliData[$poli->id]->file_path) }}" target="_blank" download 
-                                                class="inline-flex items-center px-4 py-2 bg-white hover:bg-emerald-50 text-emerald-700 rounded-xl font-bold text-sm transition-colors border border-emerald-200">
+                                                class="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 md:py-2.5 bg-white hover:bg-emerald-50 text-emerald-700 rounded-xl font-bold text-xs md:text-sm transition-colors border border-emerald-200">
                                                 <i class="fas fa-download mr-2 text-emerald-500"></i> Unduh File
                                             </a>
                                         </div>
@@ -383,7 +388,7 @@
                                         <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
                                             <i class="fas fa-keyboard text-xl text-slate-400"></i>
                                         </div>
-                                        <p class="text-slate-600 font-medium">Poli ini memerlukan input form interaktif.</p>
+                                        <p class="text-xs md:text-sm text-slate-600 font-medium">Poli ini memerlukan input form interaktif.</p>
                                     </div>
                                 @endif
                             </div>
@@ -394,9 +399,8 @@
         </div>
     </div>
 
-    {{-- STYLE DAN SCRIPT HARUS ADA DI DALAM ROOT ELEMENT DIV --}}
+    {{-- STYLE DAN SCRIPT --}}
     <style>
-        /* Menghilangkan scrollbar di tab navigasi tapi tetap bisa discroll */
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>

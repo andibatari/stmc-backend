@@ -125,7 +125,13 @@
                     </div>
                     <div class="col-span-2">
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Ganti Password <span class="text-slate-400 font-normal">(Kosongkan jika tidak diubah)</span></label>
-                        <input type="password" wire:model.live="password" placeholder="Password baru..." class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
+                        <div class="relative">
+                            <input type="password" id="pass_edit_kar" wire:model.live="password" placeholder="Password baru..." class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500 shadow-sm transition-all">
+                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kar', 'eyeOpen_ek', 'eyeClosed_ek')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none">
+                                <img id="eyeOpen_ek" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                <img id="eyeClosed_ek" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                            </button>
+                        </div>
                         @error('password') <span class="text-red-500 text-[10px] font-bold mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
