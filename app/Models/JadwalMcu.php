@@ -4,12 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity; 
+use Spatie\Activitylog\LogOptions;
 
 class JadwalMcu extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     protected $table = 'jadwal_mcus';
+    protected $guarded = [];
+    
     protected $fillable = [
         'qr_code_id',
         'peserta_mcus_id',
@@ -29,6 +34,15 @@ class JadwalMcu extends Model
         'resume_kategori',
         'is_read_admin',
     ];
+
+    // 3. Tambahkan fungsi konfigurasi ini
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll() // Pantau semua kolom di tabel ini
+            ->logOnlyDirty() // HANYA rekam jika nilainya benar-benar berubah (hemat storage)
+            ->dontSubmitEmptyLogs(); // Jangan buat log jika tidak ada perubahan
+    }
 
     // Relasi ke model Karyawan
     public function karyawan()

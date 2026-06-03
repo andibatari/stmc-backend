@@ -136,6 +136,7 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     })->where('filePath', '.*')->name('download');
 
     Route::get('/pengaturan-sistem', \App\Livewire\Admin\SystemSettings::class)->name('admin.settings');
+    Route::get('/admin/audit-trail', \App\Livewire\Admin\AuditTrail::class)->name('audit.trail');
 });
 
 // Grup Rute untuk Karyawan (jika ada guard terpisah)

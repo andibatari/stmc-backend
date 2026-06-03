@@ -35,8 +35,9 @@
     31 => 'Carbon\\Laravel\\ServiceProvider',
     32 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     33 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    34 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
-    35 => 'App\\Providers\\AppServiceProvider',
+    34 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
+    35 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
+    36 => 'App\\Providers\\AppServiceProvider',
   ),
   'eager' => 
   array (
@@ -59,8 +60,9 @@
     16 => 'Carbon\\Laravel\\ServiceProvider',
     17 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     18 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    19 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
-    20 => 'App\\Providers\\AppServiceProvider',
+    19 => 'Spatie\\Activitylog\\ActivitylogServiceProvider',
+    20 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
+    21 => 'App\\Providers\\AppServiceProvider',
   ),
   'deferred' => 
   array (

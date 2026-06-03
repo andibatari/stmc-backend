@@ -252,6 +252,13 @@
                             </ul>
                         </li>
                         
+                        {{-- AUDIT TRAIL & KEAMANAN --}}
+                        <li>
+                            <a href="{{ route('audit.trail') }}" class="sidebar-link group flex items-center p-3.5 text-sm text-brand-100 rounded-xl {{ request()->routeIs('audit.trail') ? 'active' : '' }}">
+                                <i class="fas fa-shield-alt w-6 text-center text-lg opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                                <span class="ml-3">Audit & Keamanan</span>
+                            </a>
+                        </li>
                         {{-- MANAJEMEN LAYANAN --}}
                         <li>
                             <button id="toggleAdmin" class="w-full text-left sidebar-link group flex items-center justify-between p-3.5 text-sm text-brand-100 rounded-xl {{ request()->routeIs(['admin.create', 'admin.tambah-dokter', 'paket-poli', 'admin.laporan.pemeriksaan']) ? 'active' : '' }}">

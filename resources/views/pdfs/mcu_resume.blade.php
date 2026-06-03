@@ -180,7 +180,6 @@
                 <td></td>
                 <td style="vertical-align: top; text-align: right; padding-right: 10px;">
                     <span style="font-weight: bold; text-decoration: underline;">{{ $doctor_data['nama'] ?? '(Nama Dokter)' }}</span><br>
-                    <span style="font-size: 8.5pt; color: #475569;">{{ $doctor_data['nip'] ?? 'NIP. -' }}</span>
                 </td>
             </tr>
         </table>

@@ -13,12 +13,15 @@ use App\Models\UnitKerja;
 use App\Models\Departemen;
 use App\Models\Provinsi;
 use App\Models\PesertaMcu; // Pastikan model ini diimpor
+use Spatie\Activitylog\Traits\LogsActivity; 
+use Spatie\Activitylog\LogOptions;
 
 class Karyawan extends Model
 {
-    use Notifiable,HasFactory;
+    use Notifiable,HasFactory,LogsActivity,HasApiTokens;
 
     protected $table = 'karyawans';
+    protected $guarded = [];
 
     protected $fillable = [
         'no_sap',
@@ -52,6 +55,14 @@ class Karyawan extends Model
         'berat_badan',
         'fcm_token',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll() // Pantau semua kolom di tabel ini
+            ->logOnlyDirty() // HANYA rekam jika nilainya benar-benar berubah (hemat storage)
+            ->dontSubmitEmptyLogs(); // Jangan buat log jika tidak ada perubahan
+    }
 
     // Accesor untuk mengambil email (Jika Job menggunakan $karyawan->email_karyawan)
     public function getEmailKaryawanAttribute()
