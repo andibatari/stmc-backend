@@ -22,7 +22,7 @@ class CreateKaryawanForm extends Component
     public $status_pernikahan, $kebangsaan, $jabatan, $eselon;
     public $pendidikan, $unit_kerjas_id, $departemens_id;
     public $provinsi_id, $nama_kabupaten, $nama_kecamatan;
-    public $email, $password, $suami_istri, $pekerjaan_suami_istri;
+    public $email, $password;
     public $alamat, $no_hp;
 
     // Tambahkan properti baru
@@ -114,8 +114,6 @@ class CreateKaryawanForm extends Component
             'hubungan' => $this->hubungan,
             'jabatan' => $this->jabatan,
             'eselon' => $this->eselon,
-            'suami_istri' => $this->suami_istri,
-            'pekerjaan_suami_istri' => $this->pekerjaan_suami_istri,
             'unit_kerjas_id' => $this->unit_kerjas_id,
             'departemens_id' => $this->departemens_id,
             'tanggal_lahir' => $this->tanggal_lahir,

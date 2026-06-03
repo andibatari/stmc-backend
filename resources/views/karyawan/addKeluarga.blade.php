@@ -1,34 +1,38 @@
 @extends('layouts.app')
-@section('title', 'Tambah Pasien')
+@section('title', 'Tambah Pasien Keluarga/Umum')
 
 @section('content')
-<div class="px-2 md:px-6 py-6 min-h-screen">
-    {{-- Tombol Kembali --}}
-    <div class="mb-6 lg:mb-8">
+<div class="px-3 md:px-6 py-4 md:py-6 min-h-screen">
+    <div class="mb-4">
         @if ($karyawan)
-            <a href="{{ route('karyawan.show', $karyawan->id) }}" class="inline-flex items-center px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:-translate-x-1 transition-all">
-                <i class="fas fa-arrow-left mr-2"></i> Kembali ke Profil {{ $karyawan->nama_karyawan }}
+            {{-- Mengembalikan ke detail karyawan spesifik jika penambahan dilakukan dari halaman keluarga --}}
+            <a href="{{ route('karyawan.show', $karyawan->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-all">
+                <i class="fas fa-arrow-left mr-1.5"></i> Kembali ke {{ $karyawan->nama_karyawan }}
             </a>
         @else
-            <a href="javascript:history.back()" class="inline-flex items-center px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 hover:-translate-x-1 transition-all">
-                <i class="fas fa-arrow-left mr-2"></i> Kembali
+            {{-- Native history fallback --}}
+            <a href="javascript:history.back()" class="inline-flex items-center px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-all">
+                <i class="fas fa-arrow-left mr-1.5"></i> Kembali
             </a>
         @endif
     </div>
 
-    <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden p-6 md:p-10 max-w-7xl mx-auto">
-        <div class="mb-8 border-b border-slate-100 pb-6">
-            <h1 class="text-2xl lg:text-3xl font-black text-slate-800 flex items-center">
-                <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mr-3">
-                    <i class="fas {{ $karyawan ? 'fa-users' : 'fa-user-injured' }} text-xl"></i>
-                </div>
-                {{ $karyawan ? 'Tambah Anggota Keluarga' : 'Tambah Pasien Umum (Non-PTST)' }}
-            </h1>
-            <p class="text-sm font-medium text-slate-500 mt-2 ml-14">
-                {{ $karyawan ? "Lengkapi data untuk menambahkan keluarga Bapak/Ibu {$karyawan->nama_karyawan}." : 'Lengkapi formulir di bawah untuk meregistrasi pasien dari luar perusahaan.' }}
-            </p>
+    <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden p-4 md:p-8 max-w-7xl mx-auto">
+        <div class="mb-5 md:mb-8 border-b border-slate-100 pb-4 flex items-center">
+            <div class="w-8 h-8 md:w-10 md:h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 shrink-0">
+                <i class="fas {{ $karyawan ? 'fa-users' : 'fa-user-injured' }} text-sm md:text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-2xl font-black text-slate-800 leading-tight">
+                    {{ $karyawan ? 'Tambah Keluarga Karyawan' : 'Registrasi Pasien Umum' }}
+                </h1>
+                <p class="text-[10px] md:text-xs font-medium text-slate-500 mt-0.5">
+                    {{ $karyawan ? "Input data tanggungan medis." : 'Pendaftaran non-karyawan PTST.' }}
+                </p>
+            </div>
         </div>
         
+        {{-- Mount form logic --}}
         <livewire:add-keluarga-karyawan :karyawan_id="$karyawan ? $karyawan->id : null" />
     </div>
 </div>
@@ -38,6 +42,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Kalkulasi umur client-side sebelum dikirim ke backend
         const tanggalLahirInput = document.getElementById('tanggal_lahir');
         if (tanggalLahirInput) {
             tanggalLahirInput.addEventListener('change', function() {
@@ -46,6 +51,8 @@
                 let age = today.getFullYear() - birthDate.getFullYear();
                 const m = today.getMonth() - birthDate.getMonth();
                 if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) { age--; }
+                
+                // Melempar update value ke public parameter di component Livewire
                 Livewire.dispatch('updateUmur', { age: age });
             });
         }
@@ -58,13 +65,7 @@
 
     Livewire.on('show-success-popup', (event) => {
         Swal.fire({
-            title: event[0].title, text: event[0].message, icon: 'success', confirmButtonColor: '#dc2626', customClass: { popup: 'rounded-[2rem]' }
-        });
-    });
-
-    Livewire.on('show-error-popup', (event) => {
-        Swal.fire({
-            title: 'Error!', text: event[0].message, icon: 'error', confirmButtonColor: '#dc2626', customClass: { popup: 'rounded-[2rem]' }
+            title: event[0].title, text: event[0].message, icon: 'success', confirmButtonColor: '#dc2626', customClass: { popup: 'rounded-2xl' }
         });
     });
 </script>

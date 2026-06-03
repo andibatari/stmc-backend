@@ -2,23 +2,29 @@
 @section('title', 'Manajemen Pasien / Daftar Pasien')
 
 @section('content')
-    <div class="px-2 md:px-4 py-4 min-h-screen">
-        <div class="flex justify-between items-center mb-6 lg:mb-8">
+    {{-- Wrapper utama dengan padding minimum di perangkat kecil untuk efisiensi ruang --}}
+    <div class="px-3 md:px-6 py-4 md:py-6 min-h-screen">
+        
+        <div class="flex justify-between items-center mb-4 md:mb-6">
             <div>
-                <h1 class="text-2xl lg:text-3xl font-black text-slate-800">Manajemen Pasien</h1>
-                <p class="text-sm font-medium text-slate-500 mt-1">Basis data Karyawan PTST & Peserta Umum.</p>
+                <h1 class="text-xl md:text-2xl lg:text-3xl font-black text-slate-800 tracking-tight">Manajemen Pasien</h1>
+                <p class="text-[10px] md:text-sm font-medium text-slate-500 mt-0.5">Basis data Karyawan PTST & Peserta Umum.</p>
             </div>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden p-6 md:p-8">
+        {{-- Container Livewire dibungkus card --}}
+        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden p-4 md:p-8">
+            {{-- Render komponen Livewire pencarian karyawan --}}
             @livewire('search-karyawan')
         </div>
     </div>
 @endsection
 
 @push('scripts')
+{{-- Load SweetAlert2 untuk notifikasi flash session yang interaktif --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Memastikan skrip dijalankan setelah DOM terbentuk sempurna
     document.addEventListener('DOMContentLoaded', function () {
         @if(session('success'))
             Swal.fire({
@@ -27,7 +33,7 @@
                 icon: 'success',
                 confirmButtonText: 'Tutup',
                 confirmButtonColor: '#dc2626',
-                customClass: { popup: 'rounded-3xl' }
+                customClass: { popup: 'rounded-2xl md:rounded-3xl' }
             });
         @endif
     });

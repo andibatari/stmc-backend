@@ -1,26 +1,26 @@
 <div> {{-- ROOT ELEMENT LIVEWIRE WAJIB DI SINI --}}
     @section('title', 'Manajemen Admin & Sistem')
 
-    <div class="px-2 md:px-6 py-6 min-h-screen">
-        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 md:p-10 border border-slate-100 max-w-7xl mx-auto mb-8">
+    <div class="px-3 md:px-6 py-4 md:py-6 min-h-screen">
+        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-10 border border-slate-100 max-w-7xl mx-auto mb-6 md:mb-8">
             
-            <h2 class="text-2xl lg:text-3xl font-black text-slate-800 mb-8 border-b border-slate-100 pb-6 flex items-center">
-                <div class="w-10 h-10 bg-slate-800 text-white rounded-xl flex items-center justify-center mr-3"><i class="fas fa-shield-alt text-xl"></i></div>
+            <h2 class="text-xl md:text-2xl lg:text-3xl font-black text-slate-800 mb-6 md:mb-8 border-b border-slate-100 pb-4 md:pb-6 flex items-center">
+                <div class="w-8 h-8 md:w-10 md:h-10 bg-slate-800 text-white rounded-lg md:rounded-xl flex items-center justify-center mr-3 shrink-0"><i class="fas fa-shield-alt text-lg md:text-xl"></i></div>
                 {{ $isEditing ? 'Edit Akun Administrator' : 'Registrasi Akun Sistem' }}
             </h2>
 
             @if (session()->has('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-2xl flex items-center shadow-sm mb-6 animate-fade-in font-bold text-sm">
-                    <i class="fas fa-check-circle text-xl mr-3"></i> {{ session('success') }}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center shadow-sm mb-6 animate-fade-in font-bold text-xs md:text-sm">
+                    <i class="fas fa-check-circle text-lg md:text-xl mr-3"></i> {{ session('success') }}
                 </div>
             @endif
 
-            <form wire:submit.prevent="{{ $isEditing ? 'update' : 'save' }}" class="space-y-6">
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 relative z-10">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <form wire:submit.prevent="{{ $isEditing ? 'update' : 'save' }}" class="space-y-4 md:space-y-6">
+                <div class="bg-slate-50 p-5 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-100 relative z-20 shadow-inner">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Pilih Role / Hak Akses</label>
-                            <select wire:model.live="role" class="block w-full px-4 py-3 text-sm font-black rounded-xl border border-slate-200 bg-white focus:border-red-500 text-red-600 cursor-pointer shadow-sm">
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Pilih Role / Hak Akses</label>
+                            <select wire:model.live="role" class="block w-full px-4 py-3.5 md:py-3 text-sm font-black rounded-xl border border-slate-200 bg-white focus:border-red-500 text-red-600 cursor-pointer shadow-sm">
                                 <option value="admin">Administrator Root</option>
                                 <option value="dokter">Dokter Pemeriksa</option>
                                 <option value="karyawan">Karyawan PTST</option>
@@ -28,21 +28,21 @@
                         </div>
 
                         <div class="relative">
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Penautan Akun (Pilih Personel)</label>
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Penautan Akun (Pilih Personel)</label>
                             
                             @if ($role === 'dokter')
-                                <select wire:model.live="selectedDokterId" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 cursor-pointer shadow-sm">
+                                <select wire:model.live="selectedDokterId" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 cursor-pointer shadow-sm">
                                     <option value="">-- Pilih Dokter Terdaftar --</option>
                                     @foreach ($listDokter as $id => $nama) <option value="{{ $id }}">{{ $nama }}</option> @endforeach
                                 </select>
                             @elseif ($role === 'karyawan')
                                 <div class="relative">
-                                    <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
-                                    <input type="text" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari by SAP atau Nama..." class="block w-full pl-10 pr-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                                    <i class="fas fa-search absolute left-4 top-4 md:top-3.5 text-slate-400 text-sm"></i>
+                                    <input type="text" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari by SAP atau Nama..." class="block w-full pl-10 pr-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
                                 </div>
                                 
                                 @if (!empty($searchQuery) && count($searchedKaryawans) > 0)
-                                    <div class="absolute z-50 w-full bg-white border border-slate-100 mt-2 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto overflow-hidden divide-y divide-slate-50">
+                                    <div class="absolute z-[100] w-full bg-white border border-slate-100 mt-2 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto overflow-hidden divide-y divide-slate-50">
                                         @foreach ($searchedKaryawans as $k)
                                             <p wire:click="selectKaryawan({{ $k->id }})" class="p-4 cursor-pointer hover:bg-slate-50 hover:text-red-600 text-sm font-bold text-slate-700 transition-colors">
                                                 <span class="font-mono text-xs text-slate-400 mr-2">{{ $k->no_sap }}</span> {{ $k->nama_karyawan }}
@@ -51,52 +51,53 @@
                                     </div>
                                 @endif
                             @else
-                                <input type="text" wire:model="nama_lengkap" placeholder="Ketik nama admin baru..." class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                                <input type="text" wire:model="nama_lengkap" placeholder="Ketik nama admin baru..." class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
                             @endif
 
                             @if ($selectedKaryawanId || $selectedDokterId)
-                                 <p class="text-[10px] font-bold text-emerald-600 mt-2"><i class="fas fa-check-circle mr-1"></i> Data ditautkan: {{ $nama_lengkap }} ({{ $no_sap }})</p>
+                                 <p class="text-[10px] md:text-xs font-bold text-emerald-600 mt-2"><i class="fas fa-check-circle mr-1"></i> Data ditautkan: {{ $nama_lengkap }} ({{ $no_sap }})</p>
                             @endif
-                            @error('nama_lengkap') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
+                            @error('nama_lengkap') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">No. SAP / ID Karyawan</label>
-                            <input type="text" wire:model="no_sap" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 font-mono shadow-sm {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'disabled' : '' }}>
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">No. SAP / ID Karyawan</label>
+                            <input type="text" wire:model="no_sap" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 font-mono shadow-sm {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'disabled' : '' }}>
                         </div>
                         
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Alamat Email (Untuk Login)</label>
-                            <input type="email" wire:model="email" class="block w-full px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 shadow-sm {{ ($role !== 'admin') ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin') ? 'disabled' : '' }}>
-                            @error('email') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Alamat Email (Login)</label>
+                            <input type="email" wire:model="email" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 shadow-sm {{ ($role !== 'admin') ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin') ? 'disabled' : '' }}>
+                            @error('email') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
 
                         @if (!$isEditing)
                             <div class="md:col-span-2 border-t border-slate-200 pt-4 mt-2">
-                                <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Buat Password Default</label>
-                                <input type="password" wire:model="password" class="block w-full md:w-1/2 px-4 py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
-                                @error('password') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
+                                <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Buat Password Default</label>
+                                <input type="password" wire:model="password" class="block w-full md:w-1/2 px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                                @error('password') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                             </div>
                         @endif
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-4">
+                {{-- Tombol Responsif --}}
+                <div class="flex flex-col-reverse sm:flex-row justify-end pt-2 md:pt-4 gap-3">
                     @if ($isEditing)
-                        <button type="button" wire:click="cancelEdit" class="mr-3 px-6 py-3.5 bg-white border-2 border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm">Batal Edit</button>
-                        <button type="submit" class="px-8 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">Update Akun</button>
+                        <button type="button" wire:click="cancelEdit" class="w-full sm:w-auto px-6 py-4 md:py-3.5 bg-white border border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm">Batal Edit</button>
+                        <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">Update Akun</button>
                     @else
-                        <button type="submit" class="px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm"><i class="fas fa-save mr-2"></i> Daftarkan Akun</button>
+                        <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 hover:-translate-y-0.5 transition-all text-sm"><i class="fas fa-save mr-2"></i> Daftarkan Akun</button>
                     @endif
                 </div>
             </form>
         </div>
 
         {{-- TABEL ADMIN --}}
-        <div class="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 md:p-10 border border-slate-100 max-w-7xl mx-auto">
-            <h4 class="text-xl font-black text-slate-800 mb-6 border-b border-slate-100 pb-4">Database Administrator</h4>
+        <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-10 border border-slate-100 max-w-7xl mx-auto">
+            <h4 class="text-lg md:text-xl font-black text-slate-800 mb-5 md:mb-6 border-b border-slate-100 pb-4">Database Administrator</h4>
             
-            <div class="overflow-x-auto border border-slate-100 rounded-2xl hidden md:block">
+            <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-2xl">
                 <table class="min-w-full text-left">
                     <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
@@ -131,22 +132,34 @@
                 </table>
             </div>
 
-            {{-- Mobile View --}}
+            {{-- Mobile Cards View --}}
             <div class="md:hidden space-y-4">
-                @foreach ($this->adminUsers as $admin)
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p class="font-black text-slate-800">{{ $admin->nama_lengkap }} <span class="text-xs bg-red-50 text-red-600 px-1.5 py-0.5 rounded ml-1">{{ $admin->role }}</span></p>
-                    <div class="text-xs text-slate-500 font-medium space-y-1 mb-4 mt-2">
-                        <p><i class="fas fa-id-card w-4"></i> SAP: {{ $admin->no_sap ?? '-' }}</p>
-                        <p><i class="fas fa-envelope w-4"></i> {{ $admin->email }}</p>
+                @forelse ($this->adminUsers as $admin)
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-2 h-full {{ $admin->role === 'admin' ? 'bg-red-500' : ($admin->role === 'dokter' ? 'bg-blue-500' : 'bg-emerald-500') }}"></div>
+                    <p class="font-black text-slate-800 text-base leading-tight">{{ $admin->nama_lengkap }}</p>
+                    <div class="mt-1 mb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border 
+                            {{ $admin->role === 'admin' ? 'bg-red-50 border-red-100 text-red-600' : 
+                              ($admin->role === 'dokter' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600') }}">
+                            {{ $admin->role }}
+                        </span>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button wire:click="editPassword({{ $admin->id }})" class="flex-1 bg-white border border-slate-200 py-2 rounded-xl text-[11px] font-bold text-amber-600 hover:bg-amber-50"><i class="fas fa-key mr-1"></i> Pass</button>
-                        <button wire:click="edit({{ $admin->id }})" class="flex-1 bg-white border border-slate-200 py-2 rounded-xl text-[11px] font-bold text-blue-600 hover:bg-blue-50"><i class="fas fa-pen mr-1"></i> Edit</button>
-                        <button wire:click="delete({{ $admin->id }})" onclick="return confirm('Hapus?')" class="flex-1 bg-red-50 border border-red-100 py-2 rounded-xl text-[11px] font-bold text-red-600 hover:bg-red-100"><i class="fas fa-trash mr-1"></i> Del</button>
+                    
+                    <div class="text-xs text-slate-600 font-medium space-y-1.5 mb-5 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                        <p><i class="fas fa-id-card text-slate-400 w-4"></i> SAP: <span class="font-mono">{{ $admin->no_sap ?? '-' }}</span></p>
+                        <p><i class="fas fa-envelope text-slate-400 w-4"></i> {{ $admin->email }}</p>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button wire:click="editPassword({{ $admin->id }})" class="flex-1 bg-amber-50 border border-amber-100 py-2.5 rounded-xl text-xs font-bold text-amber-600 hover:bg-amber-100 transition-colors"><i class="fas fa-key mr-1"></i> Pass</button>
+                        <button wire:click="edit({{ $admin->id }})" class="flex-1 bg-white border border-slate-200 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"><i class="fas fa-pen mr-1"></i> Edit</button>
+                        <button wire:click="delete({{ $admin->id }})" onclick="return confirm('Hapus?')" class="flex-1 bg-red-50 text-red-600 border border-red-100 py-2.5 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-                @endforeach
+                @empty
+                    <div class="text-center py-8 text-slate-400 text-sm font-medium bg-slate-50 rounded-2xl border border-slate-100">Tidak ada admin.</div>
+                @endforelse
             </div>
 
             <div class="mt-6 border-t border-slate-100 pt-4">{{ $this->adminUsers->links() }}</div>
@@ -155,20 +168,20 @@
         {{-- Modal Ganti Password Modern --}}
         @if ($editPasswordId)
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-                <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-8 text-center relative overflow-hidden">
-                    <div class="w-16 h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200"><i class="fas fa-key text-2xl"></i></div>
-                    <h3 class="text-xl font-black text-slate-800 mb-1">Ganti Password</h3>
-                    <p class="text-xs text-slate-500 font-medium mb-6">Ubah kata sandi keamanan untuk admin ini.</p>
+                <div class="bg-white rounded-[2rem] shadow-2xl max-w-sm w-full p-6 md:p-8 text-center relative overflow-hidden">
+                    <div class="w-14 h-14 md:w-16 md:h-16 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200"><i class="fas fa-key text-xl md:text-2xl"></i></div>
+                    <h3 class="text-xl md:text-2xl font-black text-slate-800 mb-1">Ganti Password</h3>
+                    <p class="text-[11px] md:text-xs text-slate-500 font-medium mb-6">Ubah kata sandi keamanan untuk admin ini.</p>
                     
                     <form wire:submit.prevent="updatePassword" class="text-left">
                         <div class="mb-6">
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Password Baru</label>
-                            <input type="password" wire:model="newPassword" class="block w-full px-4 py-3 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-amber-500 shadow-sm">
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Password Baru</label>
+                            <input type="password" wire:model="newPassword" class="block w-full px-4 py-3 md:py-3.5 text-sm font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-amber-500 shadow-sm">
                             @error('newPassword') <p class="mt-1 text-[10px] font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div class="flex flex-col gap-2">
-                            <button type="submit" class="w-full py-3 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 shadow-lg transition-all text-xs">Simpan Password Baru</button>
-                            <button type="button" wire:click="$set('editPasswordId', null)" class="w-full py-3 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-colors text-xs">Batalkan</button>
+                            <button type="submit" class="w-full py-3.5 md:py-3 rounded-xl font-bold text-white bg-slate-800 hover:bg-slate-700 shadow-lg transition-all text-sm md:text-xs">Simpan Password</button>
+                            <button type="button" wire:click="$set('editPasswordId', null)" class="w-full py-3.5 md:py-3 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-colors text-sm md:text-xs">Batalkan</button>
                         </div>
                     </form>
                 </div>
@@ -180,4 +193,4 @@
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
-</div> {{-- AKHIR ROOT ELEMENT --}}
+</div>

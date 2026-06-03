@@ -158,7 +158,7 @@
                 </div>
                 <div class="flex flex-col">
                     <span class="font-black text-xl tracking-wide text-white">STMC</span>
-                    <span class="text-[10px] font-medium text-brand-200 tracking-wider uppercase">Medical Centre</span>
+                    <span class="text-[10px] font-medium text-brand-200 tracking-wider uppercase">Semen Tonasa Medical Centre</span>
                 </div>
             </div>
             

@@ -3,229 +3,260 @@
 
 @section('content')
 <style>
+    /* x-cloak menyembunyikan elemen HTML hingga Alpine.js selesai menginisialisasi DOM untuk mencegah layout melompat (flicker) */
     [x-cloak] { display: none !important; }
+    /* Utilitas CSS kustom untuk menghilangkan scrollbar default browser yang memakan ruang visual */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 
-{{-- PUSAT KENDALI TUNGGAL --}}
+{{-- Container utama mendeklarasikan Alpine.js component. State isOpen mengontrol visibilitas dropdown menu aksi baris tabel --}}
 <div x-data="{
         isOpen: false,
         currentId: null,
         currentStatus: '',
         top: 0,
         left: 0,
+        // Fungsi ini bertugas mengkalkulasi koordinat X dan Y klik pengguna agar dropdown menu muncul tepat di sebelah tombol
         openMenu(event, id, status) {
             this.currentId = id;
             this.currentStatus = status;
             
+            // getBoundingClientRect mengambil posisi relatif tombol terhadap viewport (layar browser)
             const rect = event.currentTarget.getBoundingClientRect();
             
+            // Menentukan posisi horizontal (X). Dikurangi 208px (estimasi lebar menu) agar menu mengarah ke kiri
             let x = rect.right - 208;
-            if (x < 10) x = 10;
-            if (x + 208 > window.innerWidth) x = window.innerWidth - 218;
+            if (x < 10) x = 10; // Cegah menu terpotong batas kiri layar
+            if (x + 208 > window.innerWidth) x = window.innerWidth - 218; // Cegah menu terpotong batas kanan layar
             
+            // Menentukan posisi vertikal (Y).
             let y = rect.bottom + 5;
-            if (y + 250 > window.innerHeight) y = rect.top - 260;
+            if (y + 250 > window.innerHeight) y = rect.top - 260; // Jika tidak muat di bawah, menu muncul ke arah atas
             
             this.left = x;
             this.top = y;
-            this.isOpen = true;
+            this.isOpen = true; // Trigger render CSS transisi pada menu
         }
-     }" 
-     class="px-2 md:px-4 py-4 min-h-screen relative">
+    }" 
+    class="px-2 md:px-6 py-4 md:py-6 min-h-screen relative">
     
-    {{-- HEADER --}}
-    <div class="flex items-center justify-between mb-6 lg:mb-8">
+    {{-- Bagian Header halaman --}}
+    <div class="flex items-center justify-between mb-4 md:mb-6">
         <div>
-            <h1 class="text-2xl lg:text-3xl font-black text-slate-800">Manajemen Jadwal</h1>
-            <p class="text-sm font-medium text-slate-500 mt-1">Kelola dan pantau antrean MCU pasien.</p>
+            <h1 class="text-xl md:text-2xl font-black text-slate-800">Manajemen Jadwal</h1>
+            <p class="text-[10px] md:text-sm font-medium text-slate-500 mt-0.5">Kelola dan pantau antrean MCU.</p>
         </div>
-        <a href="{{ route('jadwal.create') }}" class="hidden md:inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-lg shadow-red-600/30 hover:-translate-y-0.5 transition-all duration-200 text-sm">
-            <i class="fas fa-plus mr-2"></i> Tambah Jadwal Baru
+        <a href="{{ route('jadwal.create') }}" class="hidden md:inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm text-xs transition-colors">
+            <i class="fas fa-plus mr-1.5"></i> Tambah Jadwal
         </a>
     </div>
 
-    <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-        <div class="p-6 md:p-8">
+    {{-- Wrapper konten utama dengan efek shadow minimalis --}}
+    <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-4 md:p-6">
             
-            <a href="{{ route('jadwal.create') }}" class="md:hidden w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-600/30 mb-6 transition-colors">
-                <i class="fas fa-plus mr-2"></i> Tambah Jadwal Baru
+            {{-- Tombol tambah khusus mobile, mengambil lebar penuh layar (w-full) --}}
+            <a href="{{ route('jadwal.create') }}" class="md:hidden w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm mb-4 text-xs transition-colors">
+                <i class="fas fa-plus mr-1.5"></i> Buat Jadwal Baru
             </a>
 
-            <div class="mb-8 bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                <h2 class="text-sm font-bold text-slate-700 mb-4 flex items-center">
-                    <div class="bg-red-100 text-red-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3"><i class="fas fa-users"></i></div>
-                    Pantauan Antrean Poli Hari Ini
+            {{-- Komponen Livewire untuk statistik antrean, diletakkan dalam grid abu-abu agar terpisah dari konten utama --}}
+            <div class="mb-5 bg-slate-50 rounded-xl p-3 md:p-4 border border-slate-100">
+                <h2 class="text-[10px] md:text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-widest">
+                    <i class="fas fa-users text-red-500 mr-2"></i> Pantauan Antrean Poli Hari Ini
                 </h2>
                 <livewire:admin.card-antrean-poli />
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 flex items-center justify-between shadow-sm">
+            {{-- Indikator Kapasitas Kuota --}}
+            <div class="bg-white border border-slate-200 rounded-xl p-3 md:p-4 mb-5 flex items-center justify-between shadow-sm">
                 <div>
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-1">Status Kuota MCU Hari Ini</h2>
-                    <p class="text-xs text-slate-500">{{ \Carbon\Carbon::today()->translatedFormat('l, d F Y') }}</p>
+                    <h2 class="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-0.5">Status Kuota Hari Ini</h2>
+                    <p class="text-xs md:text-sm font-black text-slate-800">{{ \Carbon\Carbon::today()->translatedFormat('l, d F Y') }}</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <p class="text-2xl font-black {{ $sisaKuota == 0 ? 'text-red-600' : 'text-emerald-600' }}">
-                            {{ $kuotaTerisi }} <span class="text-sm font-medium text-slate-400">/ 30 Pasien</span>
-                        </p>
-                        <p class="text-[10px] font-bold uppercase tracking-wider {{ $sisaKuota == 0 ? 'text-red-500' : 'text-emerald-500' }}">
-                            {{ $sisaKuota == 0 ? 'Kuota Penuh' : 'Tersedia: ' . $sisaKuota }}
-                        </p>
-                    </div>
+                <div class="text-right">
+                    <p class="text-lg md:text-xl font-black leading-none {{ $sisaKuota == 0 ? 'text-red-600' : 'text-emerald-600' }}">
+                        {{ $kuotaTerisi }} <span class="text-[10px] md:text-xs font-medium text-slate-400">/ 30</span>
+                    </p>
+                    <p class="text-[8px] md:text-[9px] font-bold uppercase tracking-wider {{ $sisaKuota == 0 ? 'text-red-500' : 'text-emerald-500' }}">
+                        {{ $sisaKuota == 0 ? 'Kuota Penuh' : 'Tersisa: ' . $sisaKuota }}
+                    </p>
                 </div>
             </div>
 
-            <form method="GET" action="{{ route('jadwal.index') }}" class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 flex flex-col md:flex-row md:items-end gap-4 shadow-sm">
-                <div class="w-full md:w-1/4">
-                    <label for="search_sap" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Cari No. SAP</label>
-                    <input type="text" name="search_sap" id="search_sap" value="{{ $search_sap ?? '' }}" placeholder="Contoh: 12345678"
-                        class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors">
-                </div>
-                <div class="w-full md:w-1/4">
-                    <label for="tanggal_filter" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Filter Tanggal</label>
-                    <div class="flex items-center gap-2">
-                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" 
-                            class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors">
+            {{-- Form Pencarian dan Pemfilteran Data. Menggunakan metode GET agar parameter filter tersimpan di URL --}}
+            <form method="GET" action="{{ route('jadwal.index') }}" class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-5 shadow-inner">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 items-end">
+                    <div class="col-span-2 md:col-span-1">
+                        <label for="search_sap" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cari SAP / Nama</label>
+                        <input type="text" name="search_sap" id="search_sap" value="{{ $search_sap ?? '' }}" placeholder="Ketik kata kunci..."
+                            class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 focus:ring-red-500">
                     </div>
-                </div>
-                <div class="w-full md:w-1/4">
-                    <label for="status_jadwal" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Status</label>
-                    <select id="status_jadwal" name="status"
-                        class="block w-full px-4 py-2.5 text-sm font-medium rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-red-500 focus:ring-red-500 transition-colors cursor-pointer">
-                        <option value="">Semua Status</option>
-                        <option value="Pending" @if($status == 'Pending') selected @endif>Menunggu</option>
-                        <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Terjadwal</option>
-                        <option value="Present" @if($status == 'Present') selected @endif>Hadir</option>
-                        <option value="Finished" @if($status == 'Finished') selected @endif>Selesai</option>
-                        <option value="Canceled" @if($status == 'Canceled') selected @endif>Batal</option>
-                    </select>
-                </div>
-                <div class="flex gap-2">
-                    <button type="submit" class="px-6 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-all">Cari</button>
-                    <a href="{{ route('jadwal.index') }}" class="px-6 py-2.5 text-sm font-bold text-slate-600 border border-slate-200 bg-white rounded-xl hover:bg-slate-50 transition-all">Reset</a>
+                    <div>
+                        <label for="tanggal_filter" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Filter Tgl</label>
+                        <input type="date" name="tanggal_filter" id="tanggal_filter" value="{{ $tanggal_filter ?? '' }}" 
+                            class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 focus:ring-red-500">
+                    </div>
+                    <div>
+                        <label for="status_jadwal" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</label>
+                        <select id="status_jadwal" name="status" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 focus:ring-red-500 cursor-pointer">
+                            <option value="">Semua Status</option>
+                            <option value="Pending" @if($status == 'Pending') selected @endif>Menunggu</option>
+                            <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Terjadwal</option>
+                            <option value="Present" @if($status == 'Present') selected @endif>Hadir</option>
+                            <option value="Finished" @if($status == 'Finished') selected @endif>Selesai</option>
+                            <option value="Canceled" @if($status == 'Canceled') selected @endif>Batal</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1 flex gap-2 pt-2 md:pt-0">
+                        <button type="submit" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm">Cari</button>
+                        <a href="{{ route('jadwal.index') }}" class="px-4 py-2 text-xs font-bold text-slate-600 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center">Reset</a>
+                    </div>
                 </div>
             </form>
 
-            <div class="overflow-x-auto border border-slate-100 rounded-2xl">
-                <table class="min-w-full bg-white text-left border-collapse">
-                    <thead class="bg-slate-50 border-b border-slate-100">
+            {{-- 
+              TAMPILAN DATA DESKTOP 
+              Disembunyikan saat layar di bawah ukuran 'md' (768px). Menggunakan display:table murni untuk kejelasan kolom.
+            --}}
+            <div class="hidden md:block overflow-x-auto border border-slate-200 rounded-xl hide-scrollbar">
+                <table class="min-w-full bg-white text-left border-collapse whitespace-nowrap">
+                    <thead class="bg-slate-50 border-b border-slate-200">
                         <tr>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">No</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Antrean</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden md:table-cell">SAP</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Pasien</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Tgl Daftar</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Tgl MCU</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Dokter</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Paket</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                            <th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">No</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Antrean</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">SAP / Pasien</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Tgl Daftar & MCU</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Dokter & Paket</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Status</th>
+                            <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-50">
+                    <tbody class="divide-y divide-slate-100">
                         @forelse ($jadwals as $jadwalMcu)
-                            <tr class="hover:bg-slate-100/100 transition-colors group cursor-pointer" 
-                                @click="window.location.href='{{ route('qr-patient-detail', $jadwalMcu->id) }}'">
-                                
-                                <td class="py-4 px-4 text-sm font-medium text-slate-500">{{ ($jadwals->currentPage() - 1) * $jadwals->perPage() + $loop->iteration }}</td>
-                                <td class="py-4 px-4 text-sm font-bold text-slate-700 hidden sm:table-cell">{{ $jadwalMcu->no_antrean ?? '-' }}</td>
-                                <td class="py-4 px-4 text-sm text-slate-500 hidden md:table-cell font-mono">{{ $jadwalMcu->no_sap ?? '-' }}</td>
-                                
-                                <td class="py-4 px-4 text-sm">
-                                    <div class="font-bold text-slate-800">
+                            {{-- @click memicu event JavaScript biasa untuk navigasi halaman jika baris tabel diklik --}}
+                            <tr class="hover:bg-slate-50 transition-colors cursor-pointer" @click="window.location.href='{{ route('qr-patient-detail', $jadwalMcu->id) }}'">
+                                <td class="py-3 px-3 text-xs text-slate-500">{{ ($jadwals->currentPage() - 1) * $jadwals->perPage() + $loop->iteration }}</td>
+                                <td class="py-3 px-3 text-xs font-black text-slate-700">{{ $jadwalMcu->no_antrean ?? '-' }}</td>
+                                <td class="py-3 px-3">
+                                    <div class="text-xs font-black text-slate-800">
                                         @if ($jadwalMcu->karyawan_id) {{ $jadwalMcu->karyawan->nama_karyawan ?? '-' }}
                                         @elseif ($jadwalMcu->peserta_mcus_id) {{ $jadwalMcu->pesertaMcu->nama_lengkap ?? '-' }}
                                         @else {{ $jadwalMcu->nama_pasien ?? '-' }} @endif
                                     </div>
-                                    <div class="text-xs text-slate-400 mt-0.5">
-                                        {{ $jadwalMcu->karyawan_id ? 'Karyawan' : 'Non-PTST' }}
-                                    </div>
+                                    <div class="text-[10px] font-mono text-slate-500 mt-0.5">SAP: {{ $jadwalMcu->no_sap ?? '-' }} | Tipe: {{ $jadwalMcu->karyawan_id ? 'Karyawan' : 'Non-PTST' }}</div>
                                 </td>
-
-                                <td class="py-4 px-4 text-sm text-slate-600 hidden lg:table-cell">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_pendaftaran)->format('d M Y') }}</td>
-                                <td class="py-4 px-4 text-sm font-semibold text-slate-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d M Y') }}</td>
-                                
-                                <td class="py-4 px-4 text-sm text-slate-600 hidden sm:table-cell">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-[10px]"><i class="fas fa-user-md"></i></div>
-                                        <span class="truncate max-w-[120px]">{{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}</span>
-                                    </div>
+                                <td class="py-3 px-3">
+                                    <div class="text-[10px] text-slate-500">Daftar: {{ \Carbon\Carbon::parse($jadwalMcu->tanggal_pendaftaran)->format('d/m/y') }}</div>
+                                    <div class="text-xs font-bold text-slate-700">MCU: {{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d M Y') }}</div>
                                 </td>
-                                
-                                <td class="py-4 px-4 text-sm text-slate-600 hidden lg:table-cell">
-                                    <span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-semibold">{{ $jadwalMcu->paketMcu->nama_paket ?? '-' }}</span>
+                                <td class="py-3 px-3">
+                                    <div class="text-xs font-bold text-blue-600 truncate max-w-[120px]"><i class="fas fa-user-md text-[10px] mr-1"></i>{{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}</div>
+                                    <div class="text-[10px] font-bold text-slate-500 mt-0.5 bg-slate-100 inline-block px-1.5 py-0.5 rounded">{{ $jadwalMcu->paketMcu->nama_paket ?? '-' }}</div>
                                 </td>
-                                
-                                <td class="py-4 px-4">
-                                    <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full border
-                                        @if($jadwalMcu->status === 'Pending') bg-slate-50 text-slate-600 border-slate-200 @endif
-                                        @if($jadwalMcu->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @endif
-                                        @if($jadwalMcu->status === 'Present') bg-blue-50 text-blue-600 border-blue-200 @endif
-                                        @if($jadwalMcu->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @endif
-                                        @if($jadwalMcu->status === 'Canceled') bg-red-50 text-red-600 border-red-200 @endif">
-                                        @if($jadwalMcu->status === 'Finished') <i class="fas fa-check-circle mr-1 mt-0.5"></i> @endif
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-0.5 inline-flex text-[9px] font-black uppercase tracking-wider rounded border
+                                        @if($jadwalMcu->status === 'Pending') bg-slate-50 text-slate-600 border-slate-200 
+                                        @elseif($jadwalMcu->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 
+                                        @elseif($jadwalMcu->status === 'Present') bg-blue-50 text-blue-600 border-blue-200 
+                                        @elseif($jadwalMcu->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 
+                                        @elseif($jadwalMcu->status === 'Canceled') bg-red-50 text-red-600 border-red-200 @endif">
                                         {{ $jadwalMcu->status }}
                                     </span>
                                 </td>
-                                
-                                <td class="py-2 px-2 text-xs lg:text-sm text-gray-700 text-center relative" @click.stop>
-                                    <div class="flex items-center justify-center gap-2">
-                                        
+                                {{-- @click.stop mencegah event propagasi (klik baris ke halaman detail) agar tombol aksi dapat ditekan secara mandiri --}}
+                                <td class="py-3 px-3 text-center relative" @click.stop>
+                                    <div class="flex items-center justify-center gap-1.5">
                                         @if($jadwalMcu->status === 'Present')
                                             <form action="{{ route('jadwal.update-status', $jadwalMcu->id) }}" method="POST">
-                                                @csrf
-                                                <input type="hidden" name="status" value="Finished">
-                                                <button type="submit" class="bg-emerald-100 text-emerald-600 hover:bg-emerald-500 hover:text-white w-8 h-8 rounded-lg flex items-center justify-center transition-colors shadow-sm" title="Tandai Selesai">
-                                                    <i class="fas fa-check-double text-xs"></i>
-                                                </button>
+                                                @csrf <input type="hidden" name="status" value="Finished">
+                                                <button type="submit" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white w-7 h-7 rounded flex items-center justify-center transition-colors border border-emerald-100" title="Tandai Selesai"><i class="fas fa-check-double text-[10px]"></i></button>
                                             </form>
                                         @endif
-                                        
-                                        <div class="inline-block text-left">
-                                            {{-- CUKUP PANGGIL openMenu --}}
-                                            <button @click.prevent="openMenu($event, {{ $jadwalMcu->id }}, '{{ $jadwalMcu->status }}')" 
-                                                    type="button" 
-                                                    class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors focus:outline-none">
-                                                <i class="fas fa-ellipsis-v pointer-events-none"></i>
-                                            </button>
-                                        </div>
-
+                                        {{-- Tombol Ellipsis. Memicu fungsi openMenu() di Alpine.js root component dengan melempar parameter ID dan Status --}}
+                                        <button @click.prevent="openMenu($event, {{ $jadwalMcu->id }}, '{{ $jadwalMcu->status }}')" type="button" class="w-7 h-7 rounded border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus:outline-none bg-white">
+                                            <i class="fas fa-ellipsis-v pointer-events-none text-[10px]"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="10" class="py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center">
-                                        <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mb-3">
-                                            <i class="fas fa-calendar-times text-2xl text-slate-400"></i>
-                                        </div>
-                                        <p class="text-slate-500 font-medium">Belum ada jadwal yang terdaftar atau sesuai filter.</p>
-                                    </div>
-                                </td>
-                            </tr>
+                            <tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs font-medium">Belum ada jadwal yang sesuai filter.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            {{-- 
+              TAMPILAN DATA MOBILE (KARTU) 
+              Menggantikan tabel saat dibuka di HP agar antarmuka tidak terpotong (overflow horizontal).
+            --}}
+            <div class="md:hidden flex flex-col gap-3">
+                @forelse ($jadwals as $jadwalMcu)
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm relative" @click="window.location.href='{{ route('qr-patient-detail', $jadwalMcu->id) }}'">
+                        
+                        {{-- Tombol Aksi di sudut kanan atas kartu --}}
+                        <div class="absolute top-3 right-3 flex gap-1" @click.stop>
+                            @if($jadwalMcu->status === 'Present')
+                                <form action="{{ route('jadwal.update-status', $jadwalMcu->id) }}" method="POST">
+                                    @csrf <input type="hidden" name="status" value="Finished">
+                                    <button type="submit" class="bg-emerald-50 text-emerald-600 w-6 h-6 rounded flex items-center justify-center border border-emerald-100"><i class="fas fa-check-double text-[9px]"></i></button>
+                                </form>
+                            @endif
+                            <button @click.prevent="openMenu($event, {{ $jadwalMcu->id }}, '{{ $jadwalMcu->status }}')" type="button" class="w-6 h-6 rounded border border-slate-200 text-slate-500 bg-white flex items-center justify-center"><i class="fas fa-ellipsis-v pointer-events-none text-[9px]"></i></button>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[9px] font-black tracking-wider">NO: {{ $jadwalMcu->no_antrean ?? '-' }}</span>
+                            <span class="px-1.5 py-0.5 text-[8px] font-black uppercase rounded border
+                                @if($jadwalMcu->status === 'Pending') bg-slate-50 text-slate-600 border-slate-200 
+                                @elseif($jadwalMcu->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 
+                                @elseif($jadwalMcu->status === 'Present') bg-blue-50 text-blue-600 border-blue-200 
+                                @elseif($jadwalMcu->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 
+                                @elseif($jadwalMcu->status === 'Canceled') bg-red-50 text-red-600 border-red-200 @endif">{{ $jadwalMcu->status }}</span>
+                        </div>
+                        
+                        <h4 class="text-xs font-black text-slate-800 pr-16 truncate">
+                            @if ($jadwalMcu->karyawan_id) {{ $jadwalMcu->karyawan->nama_karyawan ?? '-' }}
+                            @elseif ($jadwalMcu->peserta_mcus_id) {{ $jadwalMcu->pesertaMcu->nama_lengkap ?? '-' }}
+                            @else {{ $jadwalMcu->nama_pasien ?? '-' }} @endif
+                        </h4>
+                        <p class="text-[10px] font-mono text-slate-500 mb-2">SAP: {{ $jadwalMcu->no_sap ?? '-' }} | Tipe: {{ $jadwalMcu->karyawan_id ? 'Karyawan' : 'Non-PTST' }}</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 border-t border-slate-100 pt-2 mt-2">
+                            <div>
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Tanggal MCU</span>
+                                <span class="text-[11px] font-bold text-slate-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d M Y') }}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[8px] font-bold text-slate-400 uppercase">Dokter</span>
+                                <span class="text-[10px] font-bold text-blue-600 truncate block"><i class="fas fa-user-md text-[8px] mr-1"></i>{{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="bg-slate-50 p-6 text-center rounded-xl border border-slate-100 text-xs font-bold text-slate-500">Belum ada jadwal.</div>
+                @endforelse
+            </div>
         
-            <div class="mt-6">
+            {{-- Paginasi data menggunakan appends() untuk mempertahankan query string pencarian pada URL halaman berikutnya --}}
+            <div class="mt-4 border-t border-slate-100 pt-4">
                 {{ $jadwals->appends(request()->input())->links() }}
             </div>
         </div>
     </div>
 
-    {{-- LAYAR TEMBUS PANDANG (Penangkal Bug Multi-Menu & Bug Macet) --}}
+    {{-- Overlay Latar Belakang Tembus Pandang --}}
+    {{-- Mencegah bug interaksi ganda, ketika menu dropdown terbuka, klik di manapun (atau scroll) akan menutup menu tersebut --}}
     <div x-show="isOpen" 
          @click="isOpen = false"
          @scroll.window="isOpen = false"
          x-cloak 
          class="fixed inset-0 z-[9998]"></div>
 
-    {{-- KOTAK DROPDOWN TUNGGAL --}}
+    {{-- KOTAK DROPDOWN AKSI TUNGGAL --}}
+    {{-- Elemen ini dirender secara absolut dan posisi top/left diinjeksikan secara dinamis via x-bind:style berdasarkan posisi kursor event --}}
     <div x-show="isOpen" 
          x-cloak
          x-transition:enter="transition ease-out duration-100" 
@@ -235,35 +266,33 @@
          x-transition:leave-start="transform opacity-100 scale-100" 
          x-transition:leave-end="transform opacity-0 scale-95" 
          x-bind:style="`top: ${top}px; left: ${left}px;`"
-         class="fixed w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-[9999] py-1">
+         class="fixed w-48 rounded-xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] bg-white border border-slate-100 focus:outline-none z-[9999] py-1.5 overflow-hidden">
 
+        {{-- Menggunakan element <template> Alpine.js untuk merender opsi aksi secara kondisional bergantung status data saat ini --}}
         <template x-if="currentStatus === 'Pending'">
             <form :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST">
                 @csrf
                 <input type="hidden" name="status" value="Scheduled">
-                <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-white bg-green-600 hover:bg-green-700 font-bold border-b border-green-700">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    Approve Jadwal
+                <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-xs text-white bg-emerald-600 hover:bg-emerald-700 font-bold transition-colors border-b border-emerald-700">
+                    <i class="fas fa-check-circle w-4 mr-2"></i> Approve Jadwal
                 </button>
             </form>
         </template>
 
         <template x-if="currentStatus !== 'Pending' && currentStatus !== 'Finished' && currentStatus !== 'Canceled'">
-            <div class="border-b border-gray-100">
+            <div class="border-b border-slate-100">
                 <form :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST">
                     @csrf
                     <input type="hidden" name="status" value="Present">
-                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100">
-                        <svg class="h-4 w-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Set Present
+                    <button type="submit" class="flex items-center px-4 py-2.5 w-full text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-user-check text-blue-500 w-4 mr-2"></i> Set Present (Hadir)
                     </button>
                 </form>
                 <form :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST">
                     @csrf
                     <input type="hidden" name="status" value="Finished">
-                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100">
-                        <svg class="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Set Finished
+                    <button type="submit" class="flex items-center px-4 py-2.5 w-full text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                        <i class="fas fa-check-double text-emerald-500 w-4 mr-2"></i> Set Finished
                     </button>
                 </form>
             </div>
@@ -271,34 +300,29 @@
 
         <div class="py-1">
             <template x-if="currentStatus !== 'Finished' && currentStatus !== 'Canceled'">
-                <form :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST">
+                <form :action="`{{ route('jadwal.update-status', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST" class="border-b border-slate-100 pb-1 mb-1">
                     @csrf
                     <input type="hidden" name="status" value="Canceled">
-                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-sm text-red-600 hover:bg-red-50">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Cancel Jadwal
+                    <button type="submit" class="flex items-center px-4 py-2 w-full text-left text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors">
+                        <i class="fas fa-times-circle w-4 mr-2"></i> Batalkan Jadwal
                     </button>
                 </form>
             </template>
 
-            <a x-bind:href="`{{ route('qr-patient-detail', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-                <svg class="h-5 w-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                Details
+            <a x-bind:href="`{{ route('qr-patient-detail', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" class="flex items-center px-4 py-2.5 w-full text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                <i class="fas fa-eye text-blue-500 w-4 mr-2"></i> Lihat Detail Pasien
             </a>
-            <a x-bind:href="`{{ route('jadwal.edit', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200">
-                <svg class="h-5 w-5 text-indigo-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                Edit
+            <a x-bind:href="`{{ route('jadwal.edit', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" class="flex items-center px-4 py-2.5 w-full text-left text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                <i class="fas fa-edit text-amber-500 w-4 mr-2"></i> Edit Data Jadwal
             </a>
-            <form :action="`{{ route('jadwal.destroy', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST" class="w-full">
+            <form :action="`{{ route('jadwal.destroy', ['jadwal' => 'ID_PLACEHOLDER']) }}`.replace('ID_PLACEHOLDER', currentId)" method="POST">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="group flex items-center px-4 py-2 w-full text-left text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200" onclick="return confirm('Yakin ingin menghapus jadwal ini?');">
-                    <svg class="h-5 w-5 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    Delete
+                <button type="submit" class="flex items-center px-4 py-2.5 w-full text-left text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors mt-1 border-t border-slate-100" onclick="return confirm('Tindakan ini permanen. Lanjutkan penghapusan?');">
+                    <i class="fas fa-trash-alt w-4 mr-2"></i> Hapus Permanen
                 </button>
             </form>
         </div>
     </div>
-
 </div>
 @endsection

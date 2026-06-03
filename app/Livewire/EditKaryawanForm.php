@@ -33,8 +33,6 @@ class EditKaryawanForm extends Component
     public $jabatan;
     public $eselon;
     public $pendidikan;
-    public $suami_istri;
-    public $pekerjaan_suami_istri;
     public $alamat;
     public $no_hp;
     public $email;
@@ -170,8 +168,6 @@ class EditKaryawanForm extends Component
             'nama_kabupaten' => 'nullable|string|max:255',
             'nama_kecamatan' => 'nullable|string|max:255',
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($this->karyawan->id)],
-            'suami_istri' => 'nullable|string',
-            'pekerjaan_suami_istri' => 'nullable|string',
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string',
             'password' => 'nullable|min:6',

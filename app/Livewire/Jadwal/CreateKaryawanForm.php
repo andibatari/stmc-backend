@@ -10,16 +10,15 @@ use App\Models\JadwalMcu;
 use App\Models\Dokter;
 use App\Models\PaketMcu;
 use App\Models\JadwalPoli;
+use App\Models\JadwalDokter; // Memanggil model JadwalDokter untuk pengecekan hari praktik
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class CreateKaryawanForm extends Component
 {
-    // Properti baru untuk mode Edit
     public $jadwalId = null;
     public $isEditMode = false;
-    // ---
 
     public $search = '';
     public $karyawan_id = null;
@@ -50,21 +49,17 @@ class CreateKaryawanForm extends Component
         $this->results = new Collection();
         $this->daftarDokter = Dokter::all();
         $this->daftarPaket = PaketMcu::all();
-        $this->tanggal_mcu = now()->toDateString(); // Default untuk Creat
-
-        // LOGIKA BARU UNTUK MODE EDIT
+        
         if ($jadwalId) {
             $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu'])->findOrFail($jadwalId);
             
             $this->jadwalId = $jadwalId;
-            $this->isEditMode = true; // Set mode edit
+            $this->isEditMode = true;
 
-            // 1. Isi data jadwal
             $this->tanggal_mcu = $jadwal->tanggal_mcu;
             $this->dokter_id = $jadwal->dokter_id;
             $this->paket_mcus_id = $jadwal->paket_mcus_id;
 
-            // 2. Isi data pasien terpilih
             if ($jadwal->karyawan_id) {
                 $this->patientType = 'karyawan';
                 $this->karyawan_id = $jadwal->karyawan_id;
@@ -77,11 +72,41 @@ class CreateKaryawanForm extends Component
                 $this->search = $jadwal->pesertaMcu->nama_lengkap;
             }
             
-            // Isi properti final untuk pasien yang sudah ada
             $this->finalNoSap = $jadwal->no_sap;
             $this->finalNamaPasien = $jadwal->nama_pasien;
             $this->finalNikPasien = $jadwal->nik_pasien;
             $this->finalPerusahaanAsal = $jadwal->perusahaan_asal;
+        } else {
+            $this->tanggal_mcu = now()->toDateString();
+            // {{-- Memicu pengecekan dokter otomatis untuk tanggal hari ini saat halaman pertama kali dibuka --}}
+            $this->autoSetDokter(); 
+        }
+    }
+
+    // {{-- 
+    //   AUTOMATIC DETECT HOOK: 
+    //   Fungsi ini otomatis berjalan setiap kali variabel $tanggal_mcu berubah di sisi klien.
+    //   Metode ini memanfaatkan fitur Lifecycle Hooks dari Livewire (updatedProperty).
+    // --}}
+    public function updatedTanggalMcu($value)
+    {
+        if ($value) {
+            $this->autoSetDokter();
+        }
+    }
+
+    // {{-- Logika utama untuk mencari dokter berdasarkan tanggal praktik di database --}}
+    public function autoSetDokter()
+    {
+        // // {{-- Mencari baris jadwal dokter yang memiliki kecocokan tanggal --}}
+        $jadwalDokter = JadwalDokter::whereDate('tanggal', $this->tanggal_mcu)->first();
+
+        if ($jadwalDokter) {
+            // // {{-- Jika ditemukan dokter yang bertugas, kunci ID-nya ke variabel $dokter_id untuk mengisi dropdown otomatis --}}
+            $this->dokter_id = $jadwalDokter->dokter_id;
+        } else {
+            // // {{-- Jika tidak ada dokter yang terjadwal pada tanggal tersebut, kosongkan dropdown agar diisi manual oleh admin --}}
+            $this->dokter_id = null;
         }
     }
 
@@ -96,13 +121,11 @@ class CreateKaryawanForm extends Component
         $karyawanResults = Karyawan::where('nama_karyawan', 'like', '%' . $searchTerm . '%')
                                      ->orWhere('nik_karyawan', 'like', '%' . $searchTerm . '%')
                                      ->orWhere('no_sap', 'like', '%' . $searchTerm . '%')
-                                     ->limit(10)
-                                     ->get();
+                                     ->limit(10)->get();
         $pesertaMcuResults = PesertaMcu::where('nama_lengkap', 'like', '%' . $searchTerm . '%')
                                            ->orWhere('nik_pasien', 'like', '%' . $searchTerm . '%')
                                            ->orWhere('no_sap', 'like', '%' . $searchTerm . '%')
-                                           ->limit(10)
-                                           ->get();
+                                           ->limit(10)->get();
         $mappedKaryawan = $karyawanResults->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -157,29 +180,18 @@ class CreateKaryawanForm extends Component
     {
         $this->validate();
 
-        // ==============================================================
-        // ⬇️ TAMBAHAN FITUR: CEK KUOTA MAKSIMAL 30 ORANG/HARI ⬇️
-        // ==============================================================
-        if (!$this->isEditMode) { // Hanya cek kuota saat membuat jadwal baru
+        if (!$this->isEditMode) {
             $tanggal_mcu_cek = Carbon::parse($this->tanggal_mcu)->toDateString();
-            
-            $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $tanggal_mcu_cek)
-                                    ->where('status', '!=', 'Canceled')
-                                    ->count();
+            $kuotaTerisi = JadwalMcu::whereDate('tanggal_mcu', $tanggal_mcu_cek)->where('status', '!=', 'Canceled')->count();
 
             if ($kuotaTerisi >= 30) {
-                // Tampilkan error menggunakan SweetAlert (event 'jadwal-created')
                 $this->dispatch('jadwal-created', [
                     'type' => 'error',
-                    'message' => 'Mohon maaf, kuota jadwal untuk tanggal ' . Carbon::parse($tanggal_mcu_cek)->format('d-m-Y') . ' sudah penuh (30 orang). Silakan pilih hari lain.'
+                    'message' => 'Mohon maaf, kuota jadwal untuk tanggal ' . Carbon::parse($tanggal_mcu_cek)->format('d-m-Y') . ' sudah penuh (30 orang).'
                 ]);
-                
-                return; // Hentikan eksekusi kode di bawahnya
+                return;
             }
         }
-        // ==============================================================
-        // ⬆️ AKHIR TAMBAHAN FITUR ⬆️
-        // ==============================================================
 
         $finalKaryawanId = $this->karyawan_id;
         $finalPesertaMcuId = $this->peserta_mcus_id;
@@ -192,38 +204,25 @@ class CreateKaryawanForm extends Component
             DB::beginTransaction();
             
             if ($this->isEditMode) {
-                // *** LOGIKA UPDATE (EDIT) ***
                 $jadwal = JadwalMcu::findOrFail($this->jadwalId);
-                
                 $jadwal->update([
                     'karyawan_id' => $finalKaryawanId,
                     'peserta_mcus_id' => $finalPesertaMcuId,
                     'dokter_id' => $this->dokter_id,
                     'tanggal_mcu' => $this->tanggal_mcu,
                     'paket_mcus_id' => $this->paket_mcus_id,
-                    
-                    // Update detail pasien jika pasien berubah (walaupun biasanya di edit hanya jadwalnya)
                     'no_sap' => $finalNoSap,
                     'nama_pasien' => $finalNamaPasien,
                     'nik_pasien' => $finalNikPasien,
                     'perusahaan_asal' => $finalPerusahaanAsal,
                 ]);
 
-                // Hapus dan buat ulang JadwalPoli jika paket MCU berubah
-                // ATAU pastikan hanya kolom yang diizinkan untuk diubah yang diupdate
-                // Untuk keamanan, di sini kita hanya memperbarui data utama.
-                
-                $this->dispatch('jadwal-created', [ // Gunakan event yang sama atau buat event baru
+                $this->dispatch('jadwal-created', [
                     'type' => 'success',
                     'message' => 'Jadwal MCU berhasil diperbarui!',
                 ]);
-                
             } else {
-                // *** LOGIKA CREATE (TAMBAH) - Kode Anda yang sudah ada ***
-                $lastAntrean = JadwalMcu::where('tanggal_mcu', $this->tanggal_mcu)
-                                         ->where('dokter_id', $this->dokter_id)
-                                         ->select(DB::raw('MAX(CAST(SUBSTR(no_antrean, 2) AS UNSIGNED)) as max_number'))
-                                         ->first();
+                $lastAntrean = JadwalMcu::where('tanggal_mcu', $this->tanggal_mcu)->where('dokter_id', $this->dokter_id)->select(DB::raw('MAX(CAST(SUBSTR(no_antrean, 2) AS UNSIGNED)) as max_number'))->first();
                 $lastNumber = $lastAntrean ? $lastAntrean->max_number : 0;
                 $newNumber = $lastNumber + 1;
                 $newAntrean = 'C' . sprintf('%03d', $newNumber);
@@ -245,7 +244,6 @@ class CreateKaryawanForm extends Component
                     'paket_mcus_id' => $this->paket_mcus_id,
                 ]);
 
-                // Logika buat JadwalPoli
                 $paket = PaketMcu::with('poli')->find($this->paket_mcus_id);
                 if ($paket) {
                     foreach ($paket->poli as $poli) {
@@ -265,8 +263,6 @@ class CreateKaryawanForm extends Component
             }
 
             DB::commit();
-            
-            // Redirect ke halaman index setelah create/update
             return redirect()->route('jadwal.index');
             
         } catch (\Exception $e) {
@@ -290,9 +286,6 @@ class CreateKaryawanForm extends Component
 
     public function render()
     {
-        return view('livewire.jadwal.create-karyawan-form',[
-            'daftarDokter' => $this->daftarDokter,
-            'daftarPaket' => $this->daftarPaket,
-        ]);
+        return view('livewire.jadwal.create-karyawan-form');
     }
 }
