@@ -24,7 +24,7 @@ class NotificationHeader extends Component
 
         // 2. SELALU ambil 5 data terbaru (Tidak peduli sudah dibaca atau belum)
         // Hapus `where('is_read_admin', false)` dari sini agar datanya tidak hilang tiba-tiba!
-        $this->latestNotifications = JadwalMcu::with('karyawan') 
+        $this->latestNotifications = JadwalMcu::with('karyawan','pesertaMcu') 
             ->where('status', 'Scheduled')
             ->latest('created_at') 
             ->take(5) 

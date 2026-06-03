@@ -2,23 +2,25 @@
 <html>
 <head>
     <title>Resume MCU</title>
+    {{-- Memastikan encoding dokumen terset ke UTF-8 agar penulisan simbol karakter tidak rusak --}}
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <style>
-        /* 1. KEMBALIKAN FONT KE 10PT (STANDAR BACA) TAPI MARGIN KERTAS TETAP KECIL */
+        /* Mengatur font standar sans-serif ukuran 10pt dengan batas margin cetak kertas agar padat (compact) */
         body { font-family: sans-serif; font-size: 10pt; margin: 0.3in 0.4in; color: #1e293b; }
         
+        /* Layouting tabel header instansi menggunakan display table standar agar kompatibel penuh dengan DomPDF */
         .header-container { width: 100%; display: table; border-bottom: 2px solid #000; }
         .header-cell { display: table-cell; vertical-align: middle; padding-bottom: 5px; }
         .header-left { width: 30%; text-align: left; }
         .header-center { width: 80%; text-align: left; padding-left: 0; line-height: 1.2; }
         
-        /* LOGO & JUDUL DIPADATKAN */
+        /* Penataan ukuran gambar logo kop surat */
         .header-logo { height: 50px; width: auto; margin-right: 5px; }
         .text-title { font-size: 18pt; margin: 0; font-weight: 900;}
         .text-subtitle { font-size: 16pt; margin: 0; text-decoration: underline; font-weight: bold;}
         .text-priority { font-size: 14pt; margin: 0; color: #cc3333; font-weight: bold; }
         
-        /* DATA PASIEN */
+        /* Grid data demografi pasien rekam medis */
         .data-pasien { margin-top: 7px; margin-bottom: 7px; }
         .data-pasien table { width: 100%; border-collapse: collapse; }
         .data-pasien td { padding: 1px 0; vertical-align: top; font-size: 10pt; }
@@ -26,19 +28,15 @@
         .data-pasien .colon-col { width: 1%; }
         .data-pasien .value-col { width: 37%; }
 
-        /* KATA PENGANTAR (DISCLAIMER) */
-        .greeting {
-            margin-top: 8px;
-            margin-bottom: 8px;
-            line-height: 1.3;
-            text-align: justify;
-        }
+        /* Blok paragraf kata pengantar surat kelayakan kerja */
+        .greeting { margin-top: 8px; margin-bottom: 8px; line-height: 1.3; text-align: justify; }
         .greeting strong { font-size: 10.5pt; color: #000; display: inline-block; margin-bottom: 2px; }
 
-        /* KONTEN HASIL & SARAN */
+        /* Blok seksi kontainer per butir indikator rekam medis */
         .content-section { margin-top: 10px; }
         .content-section h4 { margin: 0 0 2px 0; font-size: 11pt; border-bottom: 1px solid #000; padding-bottom: 2px; }
         
+        /* Desain list butir rekomendasi saran medis */
         .saran-list { margin: 2px 0 2px 0; padding-left: 15px; list-style-type: disc; }
         .saran-list li { margin-bottom: 2px; line-height: 1.3; font-size: 10pt;}
         
@@ -47,7 +45,7 @@
 </head>
 <body>
 
-    {{-- HEADER --}}
+    {{-- KOP SURAT / HEADER KLINIK STMC --}}
     <div class="header-container">
         <div class="header-cell header-left">
             <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
@@ -61,7 +59,7 @@
     </div>
     <hr style="border: none; border-bottom: 0.5px solid #000; margin-top: 0; margin-bottom: 6px;">    
 
-    {{-- DATA PASIEN --}}
+    {{-- BIODATA IDENTITAS PASIEN --}}
     <div class="data-pasien">
         <table>
             <tr><td colspan="6" style="padding-bottom: 3px;">Kepada Yth.</td></tr>
@@ -84,13 +82,13 @@
         </table>
     </div>
 
-    {{-- KATA PENGANTAR --}}
+    {{-- PARAGRAF SURAT PENGANTAR (DISCLAIMER) --}}
     <div class="greeting">
         <strong>Dengan Hormat,</strong><br>
         {!! $setting_disclaimer !!}
     </div>
 
-    {{-- BLOK PHP PARSING DATA RESUME --}}
+    {{-- PEMBENTUKAN STRING BUTIR REKAM MEDIS --}}
     @php
     $resumeData = ($resume_body_raw && is_string($resume_body_raw)) ? json_decode($resume_body_raw, true) : null; 
     $resumeText = '';
@@ -106,7 +104,6 @@
         $i = 1;
         foreach ($resumeMap as $key => $label) {
             $value = $resumeData[$key] ?? '—'; 
-            // Margin diset ke 0 agar rapat, line-height 1.3 agar teks tidak bertumpuk
             $resumeText .= "<p style='margin:0; padding-left: 15px; text-indent: -15px; line-height: 1.3;'>{$i}. {$label} : <b>{$value}</b></p>";
             $i++;
         }
@@ -120,7 +117,7 @@
     }
     @endphp
 
-    {{-- HASIL PEMERIKSAAN --}}
+    {{-- OUTPUT HASIL PEMERIKSAAN MEDIS --}}
     <div class="content-section">
         @if ($resumeText)
             <div style="font-size: 10pt;">{!! $resumeText !!}</div> 
@@ -129,7 +126,7 @@
         @endif
     </div>
     
-    {{-- SARAN --}}
+    {{-- OUTPUT SARAN MEDICAL DOKTER --}}
     <div class="content-section">
         <h4>Saran:</h4>
         @if (!empty($saranArray))
@@ -143,35 +140,47 @@
         @endif
     </div>
     
-    {{-- KATEGORI AKHIR --}}
+    {{-- OUTPUT KATEGORI KELAYAKAN AKHIR --}}
     <div class="content-section" style="margin-top: 10px;">
         <h4 style="border: none;">Kategori Akhir:</h4>
         <p style="font-weight: 900; font-size: 12pt; margin: 0;">{{ $resume_kategori ?? 'N/A' }}</p>
     </div>
     
-    {{-- TANDA TANGAN GANDA COMPACT --}}
-    <div style="page-break-inside: avoid; margin-top: 15px;">
-        <table style="width: 100%; text-align: center; border-collapse: collapse; font-size: 10pt;">
+    {{-- 
+       TANDA TANGAN GANDA COMPACT DENGAN INTEGRASI QR VALIDATION SEAL:
+       page-break-inside: avoid mencegah kolom tanda tangan terpotong gantung di halaman yang berbeda.
+       Kolom tengah diisi segel gambar QR Code hasil konversi teks Base64 dari controller.
+    --}}
+    <div class="content-section" style="page-break-inside: avoid; margin-top: 15px;">
+        <table style="width: 100%; text-align: center; border-collapse: collapse; font-size: 10pt; table-layout: fixed;">
             <tr>
-                <td style="width: 50%;"></td>
-                <td style="width: 50%; padding-bottom: 5px;">Pangkep, {{ $tanggal_cetak }}</td>
+                <td style="width: 35%;"></td>
+                <td style="width: 30%;"></td>
+                <td style="width: 35%; padding-bottom: 5px; font-size: 9.5pt; text-align: right;">Pangkep, {{ $tanggal_cetak }}</td>
             </tr>
             <tr>
-                <td style="vertical-align: top;">Mengetahui,<br>Kepala Klinik STMC,</td>
-                <td style="vertical-align: top;">Dokter Pemeriksa,</td>
+                <td style="vertical-align: top; text-align: left; padding-left: 10px;">Mengetahui,<br>Kepala Klinik STMC,</td>
+                <td style="vertical-align: middle; text-align: center;">
+                    {{-- UBAH INI: width dan height diperbesar menjadi 100px --}}
+                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" alt="Segel Elektronik STMC" style="width: 100px; height: 100px;"><br>
+                    <span style="font-size: 8pt; font-weight: bold; color: #475569; font-family: monospace;">E-SIGN VERIFIED</span>
+                </td>
+                <td style="vertical-align: top; text-align: right; padding-right: 10px;">Dokter Pemeriksa,</td>
             </tr>
-            {{-- Spacer Tanda Tangan dikurangi jadi 45px --}}
+            {{-- Spacer tinggi dihilangkan karena area tengah sudah diisi gambar QR Code --}}
             <tr>
-                <td style="height: 45px;"></td>
-                <td style="height: 45px;"></td>
+                <td style="height: 10px;"></td>
+                <td style="height: 10px;"></td>
+                <td style="height: 10px;"></td>
             </tr>
             <tr>
-                <td style="vertical-align: top;">
+                <td style="vertical-align: top; text-align: left; padding-left: 10px;">
                     <span style="font-weight: bold; text-decoration: underline;">{{ $setting_kepala_klinik }}</span>
                 </td>
-                <td style="vertical-align: top;">
+                <td></td>
+                <td style="vertical-align: top; text-align: right; padding-right: 10px;">
                     <span style="font-weight: bold; text-decoration: underline;">{{ $doctor_data['nama'] ?? '(Nama Dokter)' }}</span><br>
-                    <span style="font-size: 8.5pt;">{{ $doctor_data['nip'] ?? 'NIP. -' }}</span>
+                    <span style="font-size: 8.5pt; color: #475569;">{{ $doctor_data['nip'] ?? 'NIP. -' }}</span>
                 </td>
             </tr>
         </table>

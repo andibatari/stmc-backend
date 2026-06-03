@@ -25,6 +25,9 @@ use App\Models\PoliGigiResult;
 use App\Models\KebugaranResult;
 use App\Models\FisikResult;
 use App\Livewire\Admin\JadwalDokterManager;
+use App\Http\Controllers\ValidationController; // Tambahkan ini di bagian atas file web.php
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -143,3 +146,6 @@ Route::middleware(['auth:employee_logins'])->prefix('karyawan')->group(function 
     // Pendaftaran MCU (dari sisi karyawan)
     Route::post('/daftar-mcu', [JadwalMcuController::class, 'simpanPendaftaran'])->name('karyawan.daftar-mcu');
 });
+
+// Rute Publik untuk Validasi Keaslian PDF via Scan QR Code
+Route::get('/validasi-dokumen/{uuid}', [ValidationController::class, 'verifyPdf'])->name('validasi.pdf');
