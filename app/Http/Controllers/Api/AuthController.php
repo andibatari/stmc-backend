@@ -277,7 +277,7 @@ class AuthController extends Controller
                 'provinsi'      => 'nullable|string',
                 'kabupaten'     => 'nullable|string',
                 'kecamatan'     => 'nullable|string',
-                'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
+                'foto_profil' => 'required|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
             ]);
 
             if ($request->hasFile('foto_profil')) {
