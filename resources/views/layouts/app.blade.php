@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Sistem MCU & Pemantauan STMC')</title>
+    <title>@yield('title', 'STMC Health Portal')</title>
     
     {{-- 1. Google Fonts: Inter --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">

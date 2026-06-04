@@ -16,8 +16,6 @@ class PemantauanLingkunganForm extends Component
     public $departemens_id; // BARU: Dari SearchableDepartemen
     public $unit_kerjas_id; // BARU: Dari SearchableDepartemen
 
-    public $kesimpulan; // <-- 1. PROPERTY BARU UNTUK KESIMPULAN
-
     // KRITIS: Struktur data untuk menampung banyak lokasi
     public $lokasiData = [];
 
@@ -56,10 +54,9 @@ class PemantauanLingkunganForm extends Component
         
         'area' => 'required|string|max:255',
         'tanggal_pemantauan' => 'required|date',
-        'kesimpulan' => 'nullable|string|max:2000', // Rules untuk kesimpulan
-        
         // Rules untuk data lokasi
         'lokasiData.*.lokasi' => 'required|string|max:255',
+        'lokasiData.*.kesimpulan' => 'nullable|string|max:2000',
         'lokasiData.*.pemantauan.cahaya' => 'nullable|numeric',
         'lokasiData.*.pemantauan.bising' => 'nullable|numeric',
         'lokasiData.*.pemantauan.debu' => 'nullable|numeric',
@@ -76,7 +73,7 @@ class PemantauanLingkunganForm extends Component
         $this->tanggal_pemantauan = Carbon::now()->toDateString();
         // Inisialisasi data lokasi
         $this->lokasiData = [
-            ['lokasi' => '', 'pemantauan' => $this->getDefaultPemantauanData()],
+            ['lokasi' => '', 'kesimpulan' => '', 'pemantauan' => $this->getDefaultPemantauanData()],
         ];
     }
     
@@ -113,7 +110,7 @@ class PemantauanLingkunganForm extends Component
                 'unit_kerjas_id' => $this->unit_kerjas_id,
                 'area' => $this->area,
                 'lokasi' => $lokasiItem['lokasi'],
-                
+
                 // NAB sekarang diambil dari property level component yang dapat diedit
                 'nab_cahaya' => $this->nabCahaya,
                 'nab_bising' => $this->nabBising,
@@ -122,14 +119,14 @@ class PemantauanLingkunganForm extends Component
                 
                 'data_pemantauan' => $lokasiItem['pemantauan'],
                 'tanggal_pemantauan' => $this->tanggal_pemantauan,
-                'kesimpulan' => $this->kesimpulan, // <-- 2. SIMPAN KESIMPULAN
+                'kesimpulan' => $lokasiItem['kesimpulan'] ?? null, // Kesimpulan per lokasi, jika ada
             ]);
         }
 
         session()->flash('message', 'Data pemantauan lingkungan berhasil disimpan!');
         $this->reset([
             'area', 'lokasiData', 'departemens_id', 'unit_kerjas_id', 
-            'nabCahaya', 'nabBising', 'nabDebu', 'nabSuhu', 'kesimpulan'
+            'nabCahaya', 'nabBising', 'nabDebu', 'nabSuhu'
         ]);
         $this->mount();
         return redirect()->route('pemantauan.index');
