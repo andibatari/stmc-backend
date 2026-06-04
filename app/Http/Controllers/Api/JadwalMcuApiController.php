@@ -320,28 +320,43 @@ class JadwalMcuApiController extends Controller
 
     public function checkKetersediaan(Request $request)
     {
-        $tanggal = $request->query('tanggal');
+        try {
+            $tanggal = $request->query('tanggal');
 
-        // 1. Cek Kuota (Maksimal 30 orang per hari)
-        $jumlahTerdaftar = \App\Models\JadwalMcu::whereDate('tanggal_mcu', $tanggal)
-            ->whereNotIn('status', ['Canceled']) // Yang batal tidak dihitung
-            ->count();
-            
-        $sisaKuota = 30 - $jumlahTerdaftar;
-        if ($sisaKuota < 0) $sisaKuota = 0;
+            // 1. Cek Kuota (Maksimal 30 orang per hari)
+            $jumlahTerdaftar = \App\Models\JadwalMcu::whereDate('tanggal_mcu', $tanggal)
+                ->where('status', '!=', 'Canceled') // Yang batal tidak dihitung
+                ->count();
+                
+            $sisaKuota = 30 - $jumlahTerdaftar;
+            if ($sisaKuota < 0) $sisaKuota = 0;
 
-        // 2. Cari Jadwal Dokter pada tanggal tersebut
-        // Sesuaikan dengan struktur tabel JadwalDokter kamu
-        $jadwalDokter = \App\Models\JadwalDokter::whereDate('tanggal', $tanggal)->with('dokter')->first();
-        
-        $namaDokter = $jadwalDokter && $jadwalDokter->dokter 
-                      ? $jadwalDokter->dokter->nama_lengkap 
-                      : 'Dokter Piket (Belum Ditentukan)';
+            // 2. Cari Jadwal Dokter pada tanggal tersebut
+            $namaDokter = 'Dokter Piket (Belum Ditentukan)';
 
-        return response()->json([
-            'success' => true,
-            'sisa_kuota' => $sisaKuota,
-            'dokter' => $namaDokter
-        ]);
+            // Kita cek dengan hati-hati agar tidak membuat sistem Crash jika tabel/kolom berbeda
+            if (class_exists(\App\Models\JadwalDokter::class)) {
+                // SESUAIKAN KATA 'tanggal' DI BAWAH INI DENGAN NAMA KOLOM ASLI DI DATABASE-MU
+                $jadwalDokter = \App\Models\JadwalDokter::whereDate('tanggal', $tanggal)->with('dokter')->first();
+                
+                if ($jadwalDokter && $jadwalDokter->dokter) {
+                    $namaDokter = $jadwalDokter->dokter->nama_lengkap;
+                }
+            }
+
+            // 3. Kembalikan Respon Sukses
+            return response()->json([
+                'success' => true,
+                'sisa_kuota' => $sisaKuota,
+                'dokter' => $namaDokter
+            ], 200);
+
+        } catch (\Exception $e) {
+            // JIKA ADA ERROR DATABASE, KIRIM KE FLUTTER AGAR MUNCUL DI LAYAR HP
+            return response()->json([
+                'success' => false,
+                'message' => 'Error Server Laravel: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
