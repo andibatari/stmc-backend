@@ -240,6 +240,38 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user('sanctum');
+
+        // ========================================================
+        // 🚨 RADAR DETEKTOR SERVER (TARUH SEMENTARA DI SINI) 🚨
+        // ========================================================
+        if (!$request->hasFile('foto_profil')) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'RADAR KOSONG: Laravel SAMA SEKALI TIDAK MENERIMA FILE FOTO! Isi $_FILES: ' . json_encode($_FILES)
+            ], 422); // Sengaja dibuat error agar memunculkan pop-up merah
+        }
+        
+        try {
+            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
+            
+            if (!$path) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'RADAR GAGAL GCS: File diterima PHP, tapi GAGAL disimpan ke GCS.'
+                ], 500);
+            }
+
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'RADAR SUKSES: File berhasil masuk ke GCS! Path: ' . $path
+            ], 400); // Sengaja error 400 agar tetap memunculkan pop-up merah untuk dibaca
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error', 
+                'message' => 'RADAR CRASH GCS: ' . $e->getMessage()
+            ], 500);
+        }
     
         // Gunakan pengecekan class yang lebih aman
         if ($user instanceof \App\Models\EmployeeLogin) {
