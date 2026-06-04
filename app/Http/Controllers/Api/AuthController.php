@@ -174,8 +174,9 @@ class AuthController extends Controller
                 'unit_kerja' => $karyawan->unitKerja->nama_unit_kerja ?? null,
                 'email' => $karyawan->email,
                 'no_hp' => $karyawan->no_hp,
-                'foto' => $karyawan->foto_profil 
-                    ? Storage::disk('gcs')->url($karyawan->foto_profil) 
+                'foto_path' => $karyawan->foto_profil,
+                'foto' => !empty($karyawan->foto_profil)
+                    ? Storage::disk('gcs')->url($karyawan->foto_profil)
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
@@ -239,126 +240,90 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = $request->user('sanctum');
-
-        // ========================================================
-        // 🚨 RADAR DETEKTOR SERVER (TARUH SEMENTARA DI SINI) 🚨
-        // ========================================================
-        if ($request->hasFile('foto_profil')) {
-            // 1. Hapus foto lama jika ada
-            if ($profile->foto_profil) {
-                Storage::disk('gcs')->delete($profile->foto_profil);
-            }
-            
-            // 2. Upload foto baru & tangkap hasilnya
-            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
-            
-            // 3. VALIDASI PENTING: Apakah $path berisi data?
-            if ($path) {
-                $profile->foto_profil = $path; // Simpan path ke variabel $profile
-                $profile->save();              // SIMPAN KE DATABASE SEKARANG!
-            } else {
-                // Jika $path kosong, kembalikan error agar kita tahu
-                return response()->json(['status' => 'error', 'message' => 'Gagal mendapatkan path file dari GCS.'], 500);
-            }
-        }
-        
         try {
-            // Coba upload dengan driver yang sudah terkonfigurasi
-            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
-            
+
+            $user = $request->user('sanctum');
+
+            if ($user instanceof EmployeeLogin) {
+                $profile = $user->karyawan;
+            } elseif ($user instanceof PesertaMcuLogin) {
+                $profile = $user->pasien;
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User tidak dikenali'
+                ], 403);
+            }
+
+            $request->validate([
+                'nik'           => 'nullable|string',
+                'nama'          => 'nullable|string',
+                'email'         => 'nullable|email',
+                'no_hp'         => 'nullable|string',
+                'tinggi_badan'  => 'nullable|numeric',
+                'berat_badan'   => 'nullable|numeric',
+                'alamat'        => 'nullable|string',
+                'provinsi'      => 'nullable|string',
+                'kabupaten'     => 'nullable|string',
+                'kecamatan'     => 'nullable|string',
+                'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ]);
+
+            if ($request->hasFile('foto_profil')) {
+
+                if (!empty($profile->foto_profil)) {
+                    Storage::disk('gcs')->delete($profile->foto_profil);
+                }
+
+                $path = $request->file('foto_profil')
+                    ->store('profile_photos', 'gcs');
+
+                $profile->foto_profil = $path;
+            }
+
+            $updateData = [
+                'no_hp' => $request->no_hp,
+                'alamat' => $request->alamat,
+                'tinggi_badan' => $request->tinggi_badan,
+                'berat_badan' => $request->berat_badan,
+                'nama_kabupaten' => $request->kabupaten,
+                'nama_kecamatan' => $request->kecamatan,
+            ];
+
+            if ($user instanceof EmployeeLogin) {
+
+                $updateData['nik_karyawan'] = $request->nik;
+                $updateData['nama_karyawan'] = $request->nama;
+
+            } else {
+
+                $updateData['nik_pasien'] = $request->nik;
+                $updateData['nama_lengkap'] = $request->nama;
+            }
+
+            $profile->fill(array_filter(
+                $updateData,
+                fn($value) => !is_null($value)
+            ));
+
+            $profile->save();
+
+            $user->refresh();
+
             return response()->json([
                 'status' => 'success',
-                'user_profile' => ['foto' => Storage::disk('gcs')->url($path)] // Tes langsung URL
+                'message' => 'Profil berhasil diperbarui',
+                'user_profile' => $this->getProfileData($user)
             ]);
-                
-        } catch (\Exception $e) {
+
+        } catch (\Throwable $e) {
+
             return response()->json([
-                'status' => 'error', 
-                'message' => 'ERROR GCS: ' . $e->getMessage()
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => basename($e->getFile())
             ], 500);
         }
-    
-        // Gunakan pengecekan class yang lebih aman
-        if ($user instanceof \App\Models\EmployeeLogin) {
-            $profile = $user->karyawan;
-        } elseif ($user instanceof \App\Models\PesertaMcuLogin) {
-            $profile = $user->pasien;
-        } else {
-            return response()->json(['message' => 'Tipe user tidak dikenali'], 403);
-        }
-
-        // 1. Validasi field yang dikirim dari Flutter
-        $request->validate([
-            'nik'           => 'nullable|string',
-            'nama'          => 'nullable|string',
-            'email'         => 'nullable|email',
-            'no_hp'         => 'nullable|string',
-            'tinggi_badan'  => 'nullable|numeric',
-            'berat_badan'   => 'nullable|numeric',
-            'alamat'        => 'nullable|string',
-            'provinsi'      => 'nullable|string',
-            'kabupaten'     => 'nullable|string',
-            'kecamatan'     => 'nullable|string',
-            'foto_profil'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
-
-        // 2. Handle Upload Foto ke GCS (Google Cloud Storage)
-        if ($request->hasFile('foto_profil')) {
-            // Hapus foto lama dari GCS jika ada path tersimpan
-            if ($profile->foto_profil) {
-                Storage::disk('gcs')->delete($profile->foto_profil);
-            }
-            
-            // Simpan file baru ke folder 'profile_photos' di disk 'gcs'
-            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
-            
-            // Update kolom foto_profil di model
-            $profile->foto_profil = $path;
-        }
-
-        // 3. Mapping data teks dari Flutter ke kolom Database
-        $updateData = [
-            'no_hp'          => $request->no_hp,
-            'alamat'         => $request->alamat,
-            'tinggi_badan'   => $request->tinggi_badan,
-            'berat_badan'    => $request->berat_badan,
-            'nama_kabupaten' => $request->kabupaten, // Mapping ke kolom DB 'nama_kabupaten'
-            'nama_kecamatan' => $request->kecamatan, // Mapping ke kolom DB 'nama_kecamatan'
-        ];
-
-        // Penyesuaian nama kolom jika berbeda antara tabel Karyawan dan Pasien
-        if ($user instanceof \App\Models\EmployeeLogin) {
-            $updateData['nik_karyawan'] = $request->nik;
-            $updateData['nama_karyawan'] = $request->nama;
-        } else {
-            $updateData['nik_pasien']   = $request->nik;
-            $updateData['nama_lengkap'] = $request->nama;
-        }
-        
-        // Eksekusi update dan simpan perubahan foto_profil
-        $profile->fill(array_filter($updateData));
-        $profile->save();
-
-        // 🚨 KUNCI PERBAIKAN: Load relasi kembali agar getProfileData punya data 🚨
-        $user->refresh(); 
-        if ($user instanceof \App\Models\EmployeeLogin) {
-            $user->load('karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen');
-        } else {
-            $user->load('pasien.provinsi');
-        }
-
-        $profileData = $this->getProfileData($user);
-
-        // 🚨 DEBUG: Jika ini null, berarti getProfileData gagal mengambil data
-        if (!$profileData) {
-            return response()->json(['status' => 'error', 'message' => 'Gagal mengambil data profil terbaru'], 500);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Profil berhasil diperbarui',
-            'user_profile' => $this->getProfileData($user) // Mengirim objek profil terbaru
-        ]);
     }
 }
