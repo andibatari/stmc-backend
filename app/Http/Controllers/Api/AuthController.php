@@ -63,7 +63,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
-        $user = $request->user('sanctum'); // Sanctum user (login table)
+        $user = $request->user('sanctum');
 
         if ($user && $user->currentAccessToken()) {
             $user->currentAccessToken()->delete();
@@ -87,7 +87,7 @@ class AuthController extends Controller
                 'new_password' => 'required|string|min:6|confirmed',
             ]);
 
-            $user = $request->user('sanctum'); // EmployeeLogin / PesertaMcuLogin
+            $user = $request->user('sanctum');
 
             if (!Hash::check($request->current_password, $user->password)) {
                 return response()->json([
@@ -114,14 +114,13 @@ class AuthController extends Controller
     }
 
     // ===============================
-    // HELPER
+    // HELPER PROFILE DATA (MENGGUNAKAN PUBLIC DISK DENGAN URL ABSOLUT)
     // ===============================
 
     protected function findAndAuthenticateApiUser(string $input, string $password)
     {
         $loginUser = null;
 
-        // ===== EMPLOYEE =====
         if (is_numeric($input)) {
             $field = strlen($input) <= 6 ? 'no_sap' : 'nik_karyawan';
             $loginUser = EmployeeLogin::where($field, $input)->first();
@@ -131,7 +130,6 @@ class AuthController extends Controller
             })->first();
         }
 
-        // ===== PESERTA MCU =====
         if (!$loginUser) {
             if (is_numeric($input)) {
                 $loginUser = PesertaMcuLogin::where('nik_pasien', $input)->first();
@@ -149,17 +147,11 @@ class AuthController extends Controller
 
     protected function getProfileData($loginUser)
     {
-        // ======================
-        // KARYAWAN
-        // ======================
+        // ===== KARYAWAN =====
         if ($loginUser instanceof EmployeeLogin) {
-
             $karyawan = $loginUser->karyawan()
-                ->with([
-                    'departemen',
-                    'unitKerja',
-                    'provinsi'
-                ])->first();
+                ->with(['departemen', 'unitKerja', 'provinsi'])
+                ->first();
 
             return $karyawan ? [
                 'type' => 'Karyawan',
@@ -172,6 +164,7 @@ class AuthController extends Controller
                 'email' => $karyawan->email,
                 'no_hp' => $karyawan->no_hp,
                 'foto_path' => $karyawan->foto_profil,
+                // 🌟 FIX: Menghasilkan link absolut https://stmc-health.my.id/storage/...
                 'foto' => !empty($karyawan->foto_profil)
                     ? asset('storage/' . $karyawan->foto_profil)
                     : null,
@@ -191,9 +184,7 @@ class AuthController extends Controller
             ] : null ;
         }
 
-        // ======================
-        // PESERTA MCU
-        // ======================
+        // ===== PESERTA MCU =====
         if ($loginUser instanceof PesertaMcuLogin) {
             $pasien = $loginUser->pasien;
             if (!$pasien) {
@@ -211,6 +202,7 @@ class AuthController extends Controller
                 'nik' => $pasien->nik_pasien,
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
+                // 🌟 FIX: Menghasilkan link absolut https://stmc-health.my.id/storage/...
                 'foto' => !empty($pasien->foto_profil)
                     ? asset('storage/' . $pasien->foto_profil)
                     : null,
@@ -235,6 +227,9 @@ class AuthController extends Controller
         return null;
     }
 
+    /**
+     * UPDATE PROFILE INTERFACES
+     */
     public function updateProfile(Request $request)
     {
         try {
@@ -251,7 +246,6 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // 1. KEMBALIKAN VALIDASI MENJADI NULLABLE AGAR BISA UPDATE TEKS JUGA
             $request->validate([
                 'nik'           => 'nullable|string',
                 'nama'          => 'nullable|string',
@@ -266,40 +260,23 @@ class AuthController extends Controller
                 'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
             ]);
 
-            // 2. PROSES UPLOAD FOTO PROFIL
             if ($request->hasFile('foto_profil')) {
                 $file = $request->file('foto_profil');
                 
                 if ($file->isValid()) {
-                    // Hapus foto lama di GCS jika ada (Diberi try-catch agar tidak error jika file lama hilang)
+                    // Hapus foto lama di penyimpanan lokal public jika ada
                     if (!empty($profile->foto_profil)) {
                         try {
                             Storage::disk('public')->delete($profile->foto_profil);
                         } catch (\Exception $e) {}
                     }
 
-                    // Simpan ke Google Cloud Storage (GCS)
+                    // 🌟 SIMPAN KE DISK PUBLIC HOSTING
                     $path = $file->store('profile_photos', 'public');
-
-                    // Jika GCS gagal menyimpan secara diam-diam
-                    if (!$path) {
-                        return response()->json([
-                            'status' => 'error', 
-                            'message' => 'Gagal menyimpan foto ke Cloud Storage.'
-                        ], 500);
-                    }
-
-                    // Memasukkan nama path foto ke variabel model
                     $profile->foto_profil = $path;
-                } else {
-                    return response()->json([
-                        'status' => 'error', 
-                        'message' => 'File gambar corrupt saat diterima server.'
-                    ], 422);
                 }
             }
 
-            // 3. PROSES UPDATE DATA TEKS
             $updateData = [
                 'no_hp' => $request->no_hp,
                 'alamat' => $request->alamat,
@@ -317,35 +294,18 @@ class AuthController extends Controller
                 $updateData['nama_lengkap'] = $request->nama;
             }
 
-            // Saring data null agar tidak menimpa data lama dengan kosong
             $profile->fill(array_filter(
                 $updateData,
                 fn($value) => !is_null($value)
             ));
 
-            // 4. PAKSA SIMPAN KE DATABASE SECARA MUTLAK
             $profile->save();
-
-            // Refresh user dari database untuk memastikan perubahan terbaca
             $user->refresh();
 
-            // Ambil struktur profil terbaru
-            $newProfileData = $this->getProfileData($user);
-
-            // 🚨 PENJAGA TERAKHIR: Jika foto sukses masuk tapi gagal di generate URL-nya
-            if ($request->hasFile('foto_profil') && empty($newProfileData['foto'])) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Database tidak tersimpan atau GCS belum terkonfigurasi dengan benar di sistem Laravel Anda.',
-                    'debug_db_path' => $profile->foto_profil ?? 'Kosong'
-                ], 500);
-            }
-
-            // 5. BERHASIL! KEMBALIKAN DATA KE FLUTTER
             return response()->json([
                 'status' => 'success',
-                'message' => 'Profil berhasil diperbarui',
-                'user_profile' => $newProfileData
+                'message' => 'Profil berhasil diperbarui di server hosting',
+                'user_profile' => $this->getProfileData($user)
             ]);
 
         } catch (\Throwable $e) {
