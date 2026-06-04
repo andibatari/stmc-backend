@@ -34,7 +34,7 @@ return new class extends Migration
             $table->text('resume_body')->nullable();
             $table->text('resume_saran')->nullable();
             $table->string('resume_kategori')->nullable();
-            $table->enum('status', ['Present', 'Scheduled', 'Finished', 'Canceled'])->default('Scheduled'); // Mengubah default menjadi Scheduled
+            $table->string('status', 50)->default('Scheduled'); // Mengubah default menjadi Scheduled
 
 
             // Definisi Foreign Keys

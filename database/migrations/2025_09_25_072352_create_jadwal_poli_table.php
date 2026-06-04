@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('jadwal_mcus_id');
             $table->unsignedBigInteger('poli_id');
-            $table->enum('status', ['Pending', 'Done', 'Canceled'])->default('Pending');
+            $table->string('status', 50)->default('Pending');
             $table->timestamps();
             $table->unique(['jadwal_mcus_id', 'poli_id']); // Mencegah duplikat
             $table->foreign('jadwal_mcus_id')->references('id')->on('jadwal_mcus')->onDelete('cascade');
