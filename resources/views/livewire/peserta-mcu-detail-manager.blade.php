@@ -9,8 +9,15 @@
                 <div class="absolute top-0 left-0 w-full h-20 md:h-24 bg-gradient-to-br from-blue-600 to-indigo-800 opacity-90 rounded-t-2xl md:rounded-t-[2rem]"></div>
                 
                 <div class="relative mt-4 md:mt-6 mb-3 md:mb-4">
-                    <div class="w-20 h-20 md:w-24 md:h-24 mx-auto bg-slate-100 rounded-full p-1 shadow-lg ring-4 ring-white flex items-center justify-center text-slate-300">
-                        <i class="fas fa-user text-3xl md:text-4xl"></i>
+                    {{-- 🌟 Menambahkan deteksi dan render foto dari driver public --}}
+                    <div class="w-20 h-20 md:w-24 md:h-24 mx-auto bg-white rounded-full p-1 shadow-lg ring-4 ring-white flex items-center justify-center overflow-hidden">
+                        @if($pesertaMcu && $pesertaMcu->foto_profil)
+                            <img src="{{ Storage::disk('public')->url($pesertaMcu->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-full">
+                        @else
+                            <div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300 rounded-full">
+                                <i class="fas fa-user text-3xl md:text-4xl"></i>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
