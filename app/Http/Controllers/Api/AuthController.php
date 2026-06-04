@@ -238,31 +238,7 @@ class AuthController extends Controller
     public function updateProfile(Request $request)
     {
         try {
-
-            // 🚨 1. KODE RADAR PELACAK (TAMBAHKAN DI SINI) 🚨
-            return response()->json([
-                'status' => 'error', // Sengaja kita buat error 422 agar ditangkap pop-up Flutter
-                'PESAN_DARI_RADAR' => $request->hasFile('foto_profil') 
-                                        ? '✅ FILE FOTO MASUK!' 
-                                        : '❌ FILE KOSONG / HILANG DI JALAN!',
-                'file_yang_terdeteksi' => array_keys($request->allFiles()),
-                'ukuran_dikirim' => $request->server('CONTENT_LENGTH') . ' bytes'
-            ], 422);
-
             $user = $request->user('sanctum');
-
-            // 🚨 KODE DETEKTIF: Cek apakah file benar-benar sampai ke Laravel
-            if (!$request->hasFile('foto_profil')) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Laravel sama sekali tidak mendeteksi file foto.',
-                    'info_server' => [
-                        'upload_limit_aktif' => ini_get('upload_max_filesize'),
-                        'post_limit_aktif' => ini_get('post_max_size'),
-                    ],
-                    'data_yang_masuk_dari_flutter' => $request->keys(),
-                ], 422);
-            }
 
             if ($user instanceof EmployeeLogin) {
                 $profile = $user->karyawan;
@@ -275,7 +251,7 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // DIPERBAIKI: Limit Max ditambah ke 5MB agar aman dari Flutter Picker, tambahkan support webp/heic
+            // 1. KEMBALIKAN VALIDASI MENJADI NULLABLE AGAR BISA UPDATE TEKS JUGA
             $request->validate([
                 'nik'           => 'nullable|string',
                 'nama'          => 'nullable|string',
@@ -287,20 +263,43 @@ class AuthController extends Controller
                 'provinsi'      => 'nullable|string',
                 'kabupaten'     => 'nullable|string',
                 'kecamatan'     => 'nullable|string',
-                'foto_profil' => 'required|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
+                'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
             ]);
 
+            // 2. PROSES UPLOAD FOTO PROFIL
             if ($request->hasFile('foto_profil')) {
-                if (!empty($profile->foto_profil)) {
-                    Storage::disk('gcs')->delete($profile->foto_profil);
+                $file = $request->file('foto_profil');
+                
+                if ($file->isValid()) {
+                    // Hapus foto lama di GCS jika ada (Diberi try-catch agar tidak error jika file lama hilang)
+                    if (!empty($profile->foto_profil)) {
+                        try {
+                            Storage::disk('gcs')->delete($profile->foto_profil);
+                        } catch (\Exception $e) {}
+                    }
+
+                    // Simpan ke Google Cloud Storage (GCS)
+                    $path = $file->store('profile_photos', 'gcs');
+
+                    // Jika GCS gagal menyimpan secara diam-diam
+                    if (!$path) {
+                        return response()->json([
+                            'status' => 'error', 
+                            'message' => 'Gagal menyimpan foto ke Cloud Storage.'
+                        ], 500);
+                    }
+
+                    // Memasukkan nama path foto ke variabel model
+                    $profile->foto_profil = $path;
+                } else {
+                    return response()->json([
+                        'status' => 'error', 
+                        'message' => 'File gambar corrupt saat diterima server.'
+                    ], 422);
                 }
-
-                $path = $request->file('foto_profil')
-                    ->store('profile_photos', 'gcs');
-
-                $profile->foto_profil = $path;
             }
 
+            // 3. PROSES UPDATE DATA TEKS
             $updateData = [
                 'no_hp' => $request->no_hp,
                 'alamat' => $request->alamat,
@@ -318,24 +317,41 @@ class AuthController extends Controller
                 $updateData['nama_lengkap'] = $request->nama;
             }
 
+            // Saring data null agar tidak menimpa data lama dengan kosong
             $profile->fill(array_filter(
                 $updateData,
                 fn($value) => !is_null($value)
             ));
 
+            // 4. PAKSA SIMPAN KE DATABASE SECARA MUTLAK
             $profile->save();
+
+            // Refresh user dari database untuk memastikan perubahan terbaca
             $user->refresh();
 
+            // Ambil struktur profil terbaru
+            $newProfileData = $this->getProfileData($user);
+
+            // 🚨 PENJAGA TERAKHIR: Jika foto sukses masuk tapi gagal di generate URL-nya
+            if ($request->hasFile('foto_profil') && empty($newProfileData['foto'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Database tidak tersimpan atau GCS belum terkonfigurasi dengan benar di sistem Laravel Anda.',
+                    'debug_db_path' => $profile->foto_profil ?? 'Kosong'
+                ], 500);
+            }
+
+            // 5. BERHASIL! KEMBALIKAN DATA KE FLUTTER
             return response()->json([
                 'status' => 'success',
                 'message' => 'Profil berhasil diperbarui',
-                'user_profile' => $this->getProfileData($user)
+                'user_profile' => $newProfileData
             ]);
 
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage(),
+                'message' => 'Exception: ' . $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => basename($e->getFile())
             ], 500);
