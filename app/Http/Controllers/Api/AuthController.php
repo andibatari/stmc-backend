@@ -100,9 +100,6 @@ class AuthController extends Controller
                 'password' => Hash::make($request->new_password)
             ]);
 
-            // optional: hapus semua token
-            // $user->tokens()->delete();
-
             return response()->json([
                 'status' => 'success',
                 'message' => 'Password berhasil diubah'
@@ -214,7 +211,7 @@ class AuthController extends Controller
                 'nik' => $pasien->nik_pasien,
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
-                'foto' => $pasien->foto_profil
+                'foto' => !empty($pasien->foto_profil)
                     ? Storage::disk('gcs')->url($pasien->foto_profil)
                     : null,
                 'tanggal_lahir' => $pasien->tanggal_lahir,
@@ -255,6 +252,7 @@ class AuthController extends Controller
                 ], 403);
             }
 
+            // DIPERBAIKI: Limit Max ditambah ke 5MB agar aman dari Flutter Picker, tambahkan support webp/heic
             $request->validate([
                 'nik'           => 'nullable|string',
                 'nama'          => 'nullable|string',
@@ -266,11 +264,10 @@ class AuthController extends Controller
                 'provinsi'      => 'nullable|string',
                 'kabupaten'     => 'nullable|string',
                 'kecamatan'     => 'nullable|string',
-                'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+                'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
             ]);
 
             if ($request->hasFile('foto_profil')) {
-
                 if (!empty($profile->foto_profil)) {
                     Storage::disk('gcs')->delete($profile->foto_profil);
                 }
@@ -291,12 +288,9 @@ class AuthController extends Controller
             ];
 
             if ($user instanceof EmployeeLogin) {
-
                 $updateData['nik_karyawan'] = $request->nik;
                 $updateData['nama_karyawan'] = $request->nama;
-
             } else {
-
                 $updateData['nik_pasien'] = $request->nik;
                 $updateData['nama_lengkap'] = $request->nama;
             }
@@ -307,7 +301,6 @@ class AuthController extends Controller
             ));
 
             $profile->save();
-
             $user->refresh();
 
             return response()->json([
@@ -317,7 +310,6 @@ class AuthController extends Controller
             ]);
 
         } catch (\Throwable $e) {
-
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage(),
