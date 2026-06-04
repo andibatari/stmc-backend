@@ -146,7 +146,3 @@ Route::middleware(['auth:employee_logins'])->prefix('karyawan')->group(function 
 
 // Rute Publik untuk Validasi Keaslian PDF via Scan QR Code
 Route::get('/validasi-dokumen/{uuid}', [ValidationController::class, 'verifyPdf'])->name('validasi.pdf');
-Route::get('/buat-link-storage', function () {
-    \Illuminate\Support\Facades\Artisan::call('storage:link');
-    return 'Selesai! Jembatan Storage Berhasil Dibuat di Hosting.';
-});

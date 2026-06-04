@@ -12,7 +12,7 @@
                     {{-- 🌟 Menambahkan deteksi dan render foto dari driver public --}}
                     <div class="w-20 h-20 md:w-24 md:h-24 mx-auto bg-white rounded-full p-1 shadow-lg ring-4 ring-white flex items-center justify-center overflow-hidden">
                         @if($pesertaMcu && $pesertaMcu->foto_profil)
-                            <img src="{{ Storage::disk('public')->url($pesertaMcu->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-full">
+                            <img src="{{ asset('storage/' . $pesertaMcu->foto_profil) }}" alt="Profil" class="w-full h-full object-cover">
                         @else
                             <div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300 rounded-full">
                                 <i class="fas fa-user text-3xl md:text-4xl"></i>
