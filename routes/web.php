@@ -77,7 +77,7 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
 
     // Manajemen Jadwal MCU
     Route::resource('jadwal', JadwalMcuController::class);
-    Route::get('/jadwal-mcu', [JadwalMcuController::class, 'index'])->name('jadwal.index');
+    // Route::get('/jadwal-mcu', [JadwalMcuController::class, 'index'])->name('jadwal.list');
     Route::get('/jadwal-mcu/create', [JadwalMcuController::class, 'create'])->name('jadwal.create');
     Route::delete('/jadwal/{jadwal}', [JadwalMcuController::class, 'destroy'])->name('jadwal.destroy');
     Route::get('/jadwal/{jadwal}/detail', \App\Livewire\QrPatientDetail::class)->name('qr-patient-detail');
