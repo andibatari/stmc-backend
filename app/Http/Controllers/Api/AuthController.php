@@ -241,6 +241,19 @@ class AuthController extends Controller
 
             $user = $request->user('sanctum');
 
+            // 🚨 KODE DETEKTIF: Cek apakah file benar-benar sampai ke Laravel
+            if (!$request->hasFile('foto_profil')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Laravel sama sekali tidak mendeteksi file foto.',
+                    'info_server' => [
+                        'upload_limit_aktif' => ini_get('upload_max_filesize'),
+                        'post_limit_aktif' => ini_get('post_max_size'),
+                    ],
+                    'data_yang_masuk_dari_flutter' => $request->keys(),
+                ], 422);
+            }
+
             if ($user instanceof EmployeeLogin) {
                 $profile = $user->karyawan;
             } elseif ($user instanceof PesertaMcuLogin) {
