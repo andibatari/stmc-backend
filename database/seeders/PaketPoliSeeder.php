@@ -32,9 +32,8 @@ class PaketPoliSeeder extends Seeder
         Poli::create(['nama_poli' => 'EKG']);
         Poli::create(['nama_poli' => 'AUDIOMETRI']);
         Poli::create(['nama_poli' => 'SPIROMETRI']);
-        Poli::create(['nama_poli' => 'KEBUGARAN']);
+        Poli::create(['nama_poli' => 'KEBUGARAN/TREADMILL']);
         Poli::create(['nama_poli' => 'THORAX PHOTO']);
-        Poli::create(['nama_poli' => 'TREADMILL']);
         Poli::create(['nama_poli' => 'USG']);
 
         // Mengaktifkan kembali pemeriksaan foreign key
