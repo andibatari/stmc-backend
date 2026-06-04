@@ -252,24 +252,18 @@ class AuthController extends Controller
         }
         
         try {
+            // Coba upload dengan driver yang sudah terkonfigurasi
             $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
             
-            if (!$path) {
-                return response()->json([
-                    'status' => 'error', 
-                    'message' => 'RADAR GAGAL GCS: File diterima PHP, tapi GAGAL disimpan ke GCS.'
-                ], 500);
-            }
-
             return response()->json([
-                'status' => 'error', 
-                'message' => 'RADAR SUKSES: File berhasil masuk ke GCS! Path: ' . $path
-            ], 400); // Sengaja error 400 agar tetap memunculkan pop-up merah untuk dibaca
-            
+                'status' => 'success',
+                'user_profile' => ['foto' => Storage::disk('gcs')->url($path)] // Tes langsung URL
+            ]);
+                
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error', 
-                'message' => 'RADAR CRASH GCS: ' . $e->getMessage()
+                'message' => 'ERROR GCS: ' . $e->getMessage()
             ], 500);
         }
     
