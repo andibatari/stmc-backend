@@ -244,11 +244,23 @@ class AuthController extends Controller
         // ========================================================
         // 🚨 RADAR DETEKTOR SERVER (TARUH SEMENTARA DI SINI) 🚨
         // ========================================================
-        if (!$request->hasFile('foto_profil')) {
-            return response()->json([
-                'status' => 'error', 
-                'message' => 'RADAR KOSONG: Laravel SAMA SEKALI TIDAK MENERIMA FILE FOTO! Isi $_FILES: ' . json_encode($_FILES)
-            ], 422); // Sengaja dibuat error agar memunculkan pop-up merah
+        if ($request->hasFile('foto_profil')) {
+            // 1. Hapus foto lama jika ada
+            if ($profile->foto_profil) {
+                Storage::disk('gcs')->delete($profile->foto_profil);
+            }
+            
+            // 2. Upload foto baru & tangkap hasilnya
+            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
+            
+            // 3. VALIDASI PENTING: Apakah $path berisi data?
+            if ($path) {
+                $profile->foto_profil = $path; // Simpan path ke variabel $profile
+                $profile->save();              // SIMPAN KE DATABASE SEKARANG!
+            } else {
+                // Jika $path kosong, kembalikan error agar kita tahu
+                return response()->json(['status' => 'error', 'message' => 'Gagal mendapatkan path file dari GCS.'], 500);
+            }
         }
         
         try {
@@ -328,15 +340,20 @@ class AuthController extends Controller
         $profile->fill(array_filter($updateData));
         $profile->save();
 
-// 4. PERBAIKAN: Load relasi secara spesifik berdasarkan tipe user
+        // 🚨 KUNCI PERBAIKAN: Load relasi kembali agar getProfileData punya data 🚨
+        $user->refresh(); 
         if ($user instanceof \App\Models\EmployeeLogin) {
-            // Hanya load relasi yang ada pada model EmployeeLogin (karyawan)
-            $user->load(['karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen']);
-        } elseif ($user instanceof \App\Models\PesertaMcuLogin) {
-            // Hanya load relasi yang ada pada model PesertaMcuLogin (pasien)
-            $user->load(['pasien.provinsi']);
-        }       
-        $user->refresh();
+            $user->load('karyawan.provinsi', 'karyawan.unitKerja', 'karyawan.departemen');
+        } else {
+            $user->load('pasien.provinsi');
+        }
+
+        $profileData = $this->getProfileData($user);
+
+        // 🚨 DEBUG: Jika ini null, berarti getProfileData gagal mengambil data
+        if (!$profileData) {
+            return response()->json(['status' => 'error', 'message' => 'Gagal mengambil data profil terbaru'], 500);
+        }
 
         return response()->json([
             'status' => 'success',
