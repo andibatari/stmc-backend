@@ -173,7 +173,7 @@ class AuthController extends Controller
                 'no_hp' => $karyawan->no_hp,
                 'foto_path' => $karyawan->foto_profil,
                 'foto' => !empty($karyawan->foto_profil)
-                    ? Storage::disk('gcs')->url($karyawan->foto_profil)
+                    ? Storage::disk('public')->url($karyawan->foto_profil)
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
@@ -212,7 +212,7 @@ class AuthController extends Controller
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
                 'foto' => !empty($pasien->foto_profil)
-                    ? Storage::disk('gcs')->url($pasien->foto_profil)
+                    ? Storage::disk('public')->url($pasien->foto_profil)
                     : null,
                 'tanggal_lahir' => $pasien->tanggal_lahir,
                 'umur' => $pasien->umur,
@@ -274,12 +274,12 @@ class AuthController extends Controller
                     // Hapus foto lama di GCS jika ada (Diberi try-catch agar tidak error jika file lama hilang)
                     if (!empty($profile->foto_profil)) {
                         try {
-                            Storage::disk('gcs')->delete($profile->foto_profil);
+                            Storage::disk('public')->delete($profile->foto_profil);
                         } catch (\Exception $e) {}
                     }
 
                     // Simpan ke Google Cloud Storage (GCS)
-                    $path = $file->store('profile_photos', 'gcs');
+                    $path = $file->store('profile_photos', 'public');
 
                     // Jika GCS gagal menyimpan secara diam-diam
                     if (!$path) {
