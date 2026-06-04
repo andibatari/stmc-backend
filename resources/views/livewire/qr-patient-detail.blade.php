@@ -168,7 +168,7 @@
                                         @php
                                             $poliData = $jadwalPoliData[$poli->id] ?? (object)['status' => 'Pending', 'id' => null];
                                             $shortName = match(strtoupper($poli->nama_poli)) {
-                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
+                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'LAB', 'FISIK' => 'FISIK', 'GIGI' => 'GIGI', 'EKG' => 'EKG', 'AUDIOMETRI' => 'AUDIO', 'SPIROMETRI' => 'SPIRO', 'THORAX PHOTO' => 'THORAX', 'KEBUGARAN' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
                                             };
                                         @endphp
                                         <tr class="hover:bg-slate-50/80 transition-colors">
@@ -328,7 +328,7 @@
                             <div class="p-4 md:p-7">
                                 @if (strtoupper($poli->nama_poli) === 'GIGI')
                                     @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $jadwalPoliData[$poli->id] ])
-                                @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
+                                @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN/TREADMILL')
                                     @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
                                 @elseif (strtoupper($poli->nama_poli) === 'FISIK')
                                     @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
