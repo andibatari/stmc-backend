@@ -80,12 +80,15 @@ class JadwalMcuApiController extends Controller
                 $nextNumber = 1;
             }
 
+            $jadwalDokter = \App\Models\JadwalDokter::whereDate('tanggal', $tanggal)->first();
+            $dokterId = $jadwalDokter ? $jadwalDokter->dokter_id : null;
+
             $jadwal = JadwalMcu::create([
                 'qr_code_id'       => (string) Str::uuid(),
                 'tanggal_mcu'      => $tanggal,
                 'tanggal_pendaftaran' => now()->toDateString(),
                 'paket_mcus_id'    => $request->paket_mcu,
-                'dokter_id'        => null,
+                'dokter_id'        => $dokterId,
                 'no_antrean'       => 'C' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT),
                 'status'           => 'Scheduled',
                 'nama_pasien'      => $user->nama ?? $user->nama_lengkap,
