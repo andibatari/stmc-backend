@@ -37,6 +37,12 @@
                     <textarea wire:model.defer="broadcastMessage" rows="3" class="w-full bg-slate-50 border-slate-200 rounded-lg focus:bg-white focus:border-red-500 focus:ring-red-500 shadow-sm p-2 text-xs resize-none"></textarea>
                     @error('broadcastMessage') <span class="text-[10px] font-bold text-rose-500 block">{{ $message }}</span> @enderror
                 </div>
+                {{-- 🌟 INPUT LINK LAMPIRAN --}}
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tautan / Link Lampiran (Opsional)</label>
+                    <input type="url" wire:model.defer="broadcastLink" placeholder="Cth: https://forms.gle/..." class="w-full bg-slate-50 border-slate-200 rounded-lg focus:bg-white focus:border-red-500 focus:ring-red-500 shadow-sm p-2 text-xs font-medium">
+                    @error('broadcastLink') <span class="text-[10px] font-bold text-rose-500 block mt-1">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">

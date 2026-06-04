@@ -20,6 +20,7 @@ class NotificationDashboard extends Component
     public $broadcastMessage = '';
     public $broadcastTargetType = 'all'; 
     public $broadcastTargetDeptId = '';
+    public $broadcastLink = ''; // 🌟 TAMBAHAN: Properti untuk link lampiran
     
     // Properti Baru untuk Pencarian Multi-Karyawan
     public $searchEmployeeQuery = '';
@@ -112,6 +113,7 @@ class NotificationDashboard extends Component
             'broadcastTitle' => 'required|string|max:255',
             'broadcastMessage' => 'required|string',
             'broadcastTargetType' => 'required|in:all,dept,individual',
+            'broadcastLink' => 'nullable|url', // 🌟 TAMBAHAN: Validasi opsional harus berupa URL
         ]);
 
         $targets = collect();
@@ -145,7 +147,8 @@ class NotificationDashboard extends Component
                 $statusFCM = \App\Services\FCMService::sendPushNotification(
                     $karyawan->fcm_token,
                     $this->broadcastTitle,
-                    $this->broadcastMessage
+                    $this->broadcastMessage,
+                    $this->broadcastLink // 🌟 TAMBAHAN: Kirim link sebagai parameter ke-4
                 );
 
                 if ($statusFCM) {
@@ -166,7 +169,7 @@ class NotificationDashboard extends Component
 
         // 5. Bersihkan Form dan Tampilkan Pesan Sukses
         session()->flash('message', "Broadcast Selesai! Berhasil terkirim ke $fcmSuccessCount perangkat HP.");
-        $this->reset(['broadcastTitle', 'broadcastMessage', 'selectedIndividualEmployees', 'searchEmployeeQuery']);
+        $this->reset(['broadcastTitle', 'broadcastMessage', 'broadcastLink', 'selectedIndividualEmployees', 'searchEmployeeQuery']);
         $this->broadcastTargetType = 'individual';
     }
     

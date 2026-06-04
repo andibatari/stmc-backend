@@ -8,7 +8,8 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FCMService
 {
-    public static function sendPushNotification($fcmToken, $title, $body)
+    // 🌟 PERBAIKAN 1: Tambahkan parameter $link = null di sini
+    public static function sendPushNotification($fcmToken, $title, $body, $link = null)
     {
         try {
             $credentialsPath = storage_path('app/firebase_credentials.json');
@@ -23,7 +24,6 @@ class FCMService
             $projectId = $json['project_id'];
 
             // Menggunakan Laravel Http Client untuk mengirim ke Firebase HTTP v1 API
-            // (Sederhana tanpa library tambahan)
             $response = Http::withToken(self::getAccessToken($credentialsPath))
                 ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", [
                     'message' => [
@@ -31,6 +31,11 @@ class FCMService
                         'notification' => [
                             'title' => $title,
                             'body' => $body,
+                        ],
+                        // 🌟 PERBAIKAN 2: Tambahkan payload 'data' untuk mengirimkan link ke Flutter
+                        'data' => [
+                            // Jika $link kosong (null), kita kirim string kosong ("") agar Firebase tidak error
+                            'link' => $link ?? '', 
                         ],
                         'android' => [
                             'priority' => 'high',
