@@ -274,8 +274,9 @@ class AuthController extends Controller
                     // 🌟 METODE CIPUT: Amankan dengan internal try-catch khusus GCS Driver
                     try {
                         // Menggunakan putFile untuk fleksibilitas penyimpanan stream ke Google Cloud
-                        $path = Storage::disk('gcs')->putFile('profile_photos', $file);
-                        
+                        $path = Storage::disk('gcs')->putFile('profile_photos', $file, [
+                            'visibility' => 'private'
+                        ]);
                         if (!$path) {
                             throw new \Exception("Google Cloud Driver menolak penyimpanan file.");
                         }
