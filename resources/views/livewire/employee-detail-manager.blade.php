@@ -30,7 +30,7 @@
                     <div class="w-20 h-20 md:w-24 md:h-24 mx-auto bg-white rounded-full p-1 shadow-md ring-4 ring-white relative z-10 flex items-center justify-center overflow-hidden">
                         {{-- Memeriksa ketersediaan foto profil dari public atau Storage. Jika null, render icon placeholder --}}
                         @if($activeUser && $activeUser->foto_profil)
-                            <img src="{{ asset('storage/' . $activeUser->foto_profil) }}" alt="Profil" class="w-full h-full object-cover">
+                            <img src="{{ asset('storage/' . $activeUser->foto_profil) }}" alt="Profil" class="w-full h-full object-cover rounded-full">
                         @else
                             <div class="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
                                 <i class="fas fa-user text-3xl"></i>
