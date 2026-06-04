@@ -101,10 +101,6 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
 
     Route::prefix('lingkungan')->group(function () {
         Route::get('pemantauan', PemantauanLingkunganIndex::class)->name('pemantauan.index');
-        Route:
-    });
-    Route::prefix('lingkungan')->group(function () {
-        Route::get('pemantauan', PemantauanLingkunganIndex::class)->name('pemantauan.index');
         Route::get('pemantauan/tambah', PemantauanLingkunganForm::class)->name('pemantauan.create');
     });
 
