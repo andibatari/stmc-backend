@@ -239,6 +239,16 @@ class AuthController extends Controller
     {
         try {
 
+            // 🚨 1. KODE RADAR PELACAK (TAMBAHKAN DI SINI) 🚨
+            return response()->json([
+                'status' => 'error', // Sengaja kita buat error 422 agar ditangkap pop-up Flutter
+                'PESAN_DARI_RADAR' => $request->hasFile('foto_profil') 
+                                        ? '✅ FILE FOTO MASUK!' 
+                                        : '❌ FILE KOSONG / HILANG DI JALAN!',
+                'file_yang_terdeteksi' => array_keys($request->allFiles()),
+                'ukuran_dikirim' => $request->server('CONTENT_LENGTH') . ' bytes'
+            ], 422);
+
             $user = $request->user('sanctum');
 
             // 🚨 KODE DETEKTIF: Cek apakah file benar-benar sampai ke Laravel
