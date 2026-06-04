@@ -317,4 +317,31 @@ class JadwalMcuApiController extends Controller
             ], 500);
         }
     }
+
+    public function checkKetersediaan(Request $request)
+    {
+        $tanggal = $request->query('tanggal');
+
+        // 1. Cek Kuota (Maksimal 30 orang per hari)
+        $jumlahTerdaftar = \App\Models\JadwalMcu::whereDate('tanggal_mcu', $tanggal)
+            ->whereNotIn('status', ['Canceled']) // Yang batal tidak dihitung
+            ->count();
+            
+        $sisaKuota = 30 - $jumlahTerdaftar;
+        if ($sisaKuota < 0) $sisaKuota = 0;
+
+        // 2. Cari Jadwal Dokter pada tanggal tersebut
+        // Sesuaikan dengan struktur tabel JadwalDokter kamu
+        $jadwalDokter = \App\Models\JadwalDokter::whereDate('tanggal', $tanggal)->with('dokter')->first();
+        
+        $namaDokter = $jadwalDokter && $jadwalDokter->dokter 
+                      ? $jadwalDokter->dokter->nama_lengkap 
+                      : 'Dokter Piket (Belum Ditentukan)';
+
+        return response()->json([
+            'success' => true,
+            'sisa_kuota' => $sisaKuota,
+            'dokter' => $namaDokter
+        ]);
+    }
 }

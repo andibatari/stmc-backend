@@ -65,5 +65,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/ajukan', [JadwalMcuApiController::class, 'store']);
         Route::get('/riwayat', [JadwalMcuApiController::class, 'getRiwayatByUser']);
         Route::get('/paket', [JadwalMcuApiController::class, 'getPaketMcu']);
+        Route::get('/check-ketersediaan', [\App\Http\Controllers\Api\JadwalMcuApiController::class, 'checkKetersediaan']);
     });
 });
