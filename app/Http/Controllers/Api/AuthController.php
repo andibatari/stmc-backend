@@ -175,7 +175,7 @@ class AuthController extends Controller
                 'email' => $karyawan->email,
                 'no_hp' => $karyawan->no_hp,
                 'foto' => $karyawan->foto_profil 
-                    ? Storage::disk('s3')->url($karyawan->foto_profil) 
+                    ? Storage::disk('gcs')->url($karyawan->foto_profil) 
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
@@ -214,7 +214,7 @@ class AuthController extends Controller
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
                 'foto' => $pasien->foto_profil
-                    ? Storage::disk('s3')->url($pasien->foto_profil)
+                    ? Storage::disk('gcs')->url($pasien->foto_profil)
                     : null,
                 'tanggal_lahir' => $pasien->tanggal_lahir,
                 'umur' => $pasien->umur,
@@ -265,15 +265,15 @@ class AuthController extends Controller
             'foto_profil'   => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Handle Upload Foto ke S3 (DigitalOcean Spaces)
+        // 2. Handle Upload Foto ke GCS (Google Cloud Storage)
         if ($request->hasFile('foto_profil')) {
-            // Hapus foto lama dari S3 jika ada path tersimpan
+            // Hapus foto lama dari GCS jika ada path tersimpan
             if ($profile->foto_profil) {
-                Storage::disk('s3')->delete($profile->foto_profil);
+                Storage::disk('gcs')->delete($profile->foto_profil);
             }
             
-            // Simpan file baru ke folder 'profile_photos' di disk 's3'
-            $path = $request->file('foto_profil')->store('profile_photos', 's3');
+            // Simpan file baru ke folder 'profile_photos' di disk 'gcs'
+            $path = $request->file('foto_profil')->store('profile_photos', 'gcs');
             
             // Update kolom foto_profil di model
             $profile->foto_profil = $path;
