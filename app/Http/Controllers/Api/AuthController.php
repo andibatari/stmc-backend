@@ -173,7 +173,7 @@ class AuthController extends Controller
                 'no_hp' => $karyawan->no_hp,
                 'foto_path' => $karyawan->foto_profil,
                 'foto' => !empty($karyawan->foto_profil)
-                    ? Storage::disk('public')->url($karyawan->foto_profil)
+                    ? asset('storage/' . $karyawan->foto_profil)
                     : null,
                 'jabatan' => $karyawan->jabatan,
                 'tanggal_lahir' => $karyawan->tanggal_lahir,
@@ -212,7 +212,7 @@ class AuthController extends Controller
                 'email' => $pasien->email,
                 'no_hp' => $pasien->no_hp,
                 'foto' => !empty($pasien->foto_profil)
-                    ? Storage::disk('public')->url($pasien->foto_profil)
+                    ? asset('storage/' . $pasien->foto_profil)
                     : null,
                 'tanggal_lahir' => $pasien->tanggal_lahir,
                 'umur' => $pasien->umur,
