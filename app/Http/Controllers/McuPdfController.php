@@ -21,11 +21,9 @@ class McuPdfController extends Controller
 {
     public function viewPdf($id) {
         $poliData = JadwalPoli::findOrFail($id);
-        
         if ($poliData->file_path && Storage::disk('public')->exists($poliData->file_path)) {
             return redirect(Storage::disk('public')->url($poliData->file_path));
         }
-        
         abort(404, "File tidak ditemukan di Local Storage.");
     }
 
@@ -54,31 +52,22 @@ class McuPdfController extends Controller
     protected function generateResumePdfObject(JadwalMcu $jadwal)
     {
         $jadwal->load(['dokter', 'paketMcu']);
-        
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
         if (!$patient) return null;
         
         $doctor = $jadwal->dokter;
-        $doctorName = 'Dokter Tidak Ditunjuk';
-        $doctorNip = 'NIP. N/A';
-
-        if ($doctor) {
-            $doctorName = $doctor->nama_lengkap ?? $doctor->name ?? $doctor->nama ?? 'Dokter Tidak Ditunjuk';
-            $doctorNip = $doctor->nip ?? 'NIP. XXXXXXXXXXXXX';
-        }
+        $doctorName = $doctor->nama_lengkap ?? $doctor->name ?? $doctor->nama ?? 'Dokter Tidak Ditunjuk';
+        $doctorNip = $doctor->nip ?? 'NIP. N/A';
 
         $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
-
         $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
         $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
         
         $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
-
         $logoStmc = \App\Models\Setting::where('key', 'logo_stmc')->value('value') ?? 'images/logo-stmc.png';
         $logoTonasa = \App\Models\Setting::where('key', 'logo_tonasa')->value('value') ?? 'images/logo-semen-tonasa.png';
         
         $linkValidasiPublik = route('validasi.pdf', $jadwal->qr_code_id);
-
         $qrCode = new QrCode($linkValidasiPublik);
         $qrCode->setSize(150); 
         $qrCode->setMargin(0); 
@@ -87,36 +76,21 @@ class McuPdfController extends Controller
 
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
-        
         $qrCodeBase64 = base64_encode($result->getString());
 
         $data = [
-            'jadwal' => $jadwal,
-            'patient' => $patient,
-            'tanggal_mcu' => Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y'),
-            'tanggal_cetak' => Carbon::now()->format('d/m/Y'),
-            'resume_body_raw' => $jadwal->resume_body,
-            'resume_saran' => $jadwal->resume_saran,
-            'resume_kategori' => $jadwal->resume_kategori,
-            'qrCodeBase64' => $qrCodeBase64, 
-            'doctor_data' => [
-                'nama' => $doctorName,
-                'nip' => $doctorNip,
-            ],
+            'jadwal' => $jadwal, 'patient' => $patient, 'tanggal_mcu' => Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y'),
+            'tanggal_cetak' => Carbon::now()->format('d/m/Y'), 'resume_body_raw' => $jadwal->resume_body,
+            'resume_saran' => $jadwal->resume_saran, 'resume_kategori' => $jadwal->resume_kategori,
+            'qrCodeBase64' => $qrCodeBase64, 'doctor_data' => ['nama' => $doctorName, 'nip' => $doctorNip],
             'patient_data' => [
-                'nama' => $patient->nama_lengkap ?? $patient->nama_karyawan,
-                'alamat' => $patient->alamat ?? 'N/A',
-                'tgl_lahir' => $patient->tanggal_lahir ?? 'N/A',
-                'jenis_kelamin' => $patient->jenis_kelamin ?? 'N/A',
-                'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A',
-                'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
-                'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A',
-                'nab_suhu_kerja' => 28.0 
+                'nama' => $patient->nama_lengkap ?? $patient->nama_karyawan, 'alamat' => $patient->alamat ?? 'N/A',
+                'tgl_lahir' => $patient->tanggal_lahir ?? 'N/A', 'jenis_kelamin' => $patient->jenis_kelamin ?? 'N/A',
+                'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A', 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
+                'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A', 'nab_suhu_kerja' => 28.0 
             ],
-            'setting_kepala_klinik' => $namaKepalaKlinik,
-            'setting_disclaimer'  => $teksDisclaimerFinal,
-            'setting_logo_stmc'   => $logoStmc,
-            'setting_logo_tonasa' => $logoTonasa,
+            'setting_kepala_klinik' => $namaKepalaKlinik, 'setting_disclaimer'  => $teksDisclaimerFinal,
+            'setting_logo_stmc'   => $logoStmc, 'setting_logo_tonasa' => $logoTonasa,
         ];
 
         return Pdf::loadView('pdfs.mcu_resume', $data);
@@ -126,7 +100,6 @@ class McuPdfController extends Controller
     {
          $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu', 'paketMcu','dokter'])->findOrFail($jadwalId);
          $resumePdf = $this->generateResumePdfObject($jadwal);
-         
          $patientName = ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_lengkap ?? ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_karyawan ?? 'Pasien';
          $fileName = 'Resume_MCU_' . str_replace(' ', '_', $patientName) . '_' . $jadwal->tanggal_mcu . '.pdf';
          
@@ -158,11 +131,10 @@ class McuPdfController extends Controller
         foreach ($jadwal->jadwalPoli as $jp) {
             $filePath = $jp->file_path;
 
-            // Bersihkan path jika data lama terlanjur tersimpan sebagai URL lengkap
+            // PERBAIKAN: Bersihkan URL lengkap yang tersimpan, dan perbaiki string encodernya (seperti %20)
             if ($filePath && str_contains($filePath, 'http')) {
                 $parsedUrl = parse_url($filePath, PHP_URL_PATH);
-                // Menghapus nama bucket dari string path agar fungsi exists() bisa membaca path relatifnya
-                $filePath = ltrim(str_replace('/stmc-health-bucket/', '', $parsedUrl), '/');
+                $filePath = urldecode(ltrim(str_replace('/stmc-health-bucket/', '', $parsedUrl), '/'));
             }
 
             if ($filePath && Storage::disk('gcs')->exists($filePath)) {
@@ -175,9 +147,13 @@ class McuPdfController extends Controller
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
                     
-                    \Log::info("GCS File Retrieved: " . $filePath);
+                    \Log::info("Berhasil mengambil file GCS untuk digabung: " . $filePath);
                 } catch (\Exception $e) {
                     \Log::error("Gagal mengambil file GCS: " . $filePath . " Error: " . $e->getMessage());
+                }
+            } else {
+                if ($filePath) {
+                    \Log::warning("File poli di-skip saat merge karena tidak ditemukan di Bucket GCS: " . $filePath);
                 }
             }
         }

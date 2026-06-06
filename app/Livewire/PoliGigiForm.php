@@ -9,11 +9,9 @@ use App\Models\PesertaMcu;
 use App\Models\PoliGigiResult; 
 use App\Models\UnitKerja; 
 use App\Models\Dokter; 
-use Spatie\Browsershot\Browsershot; 
 use Illuminate\Support\Facades\Storage; 
 use Illuminate\Support\Facades\View; 
 use Illuminate\Support\Facades\Log; 
-use Illuminate\Support\Facades\URL; 
 
 class PoliGigiForm extends Component
 {
@@ -34,7 +32,6 @@ class PoliGigiForm extends Component
     protected $rules = [
         'dataForm.ekstraOral.kelenjar_submandibular' => 'nullable',
         'dataForm.ekstraOral.kelenjar_leher' => 'nullable',
-        
         'dataForm.intraOral.oklusi' => 'required',
         'dataForm.intraOral.torus_palatinus' => 'required',
         'dataForm.intraOral.torus_mandibularis' => 'required',
@@ -44,7 +41,6 @@ class PoliGigiForm extends Component
         'dataForm.intraOral.ginggiva' => 'required',
         'dataForm.intraOral.karang_gigi' => 'required',
         'dataForm.intraOral.lain_lain' => 'nullable',
-        
         'keterangan' => 'nullable|string',
         'kesimpulan' => 'nullable|string',
         'gigiKlinis' => 'nullable|array',
@@ -59,7 +55,6 @@ class PoliGigiForm extends Component
         try {
             $this->listDokter = Dokter::all();
         } catch (\Exception $e) {
-            Log::error('Gagal memuat daftar dokter: ' . $e->getMessage());
             $this->listDokter = collect([]); 
         }
 
@@ -79,30 +74,21 @@ class PoliGigiForm extends Component
         } 
         
         if ($this->patient) {
-            
             if ($this->isKaryawan) {
                 $unitKerja = $this->patient->unitKerja->nama_unit_kerja ?? 'Unit Kerja Tidak Diketahui';
                 $this->instansiPasien = "PT SEMEN TONASA (Unit: {$unitKerja})";
-                
                 $this->patient->nama_lengkap = $this->patient->nama_karyawan ?? $jadwalMcu->nama_pasien ?? 'N/A';
                 $this->patient->nik_pasien = $this->patient->nik_karyawan ?? 'N/A';
                 $this->patient->no_sap = $this->patient->id ?? 'N/A';
                 $this->patient->nomor_hp = $this->patient->nomor_hp ?? 'N/A';
             } else {
                 $perusahaanAsal = $this->patient->perusahaan_asal ?? $jadwalMcu->perusahaan_asal ?? null; 
-                
-                if ($perusahaanAsal) {
-                    $this->instansiPasien = $perusahaanAsal;
-                } else {
-                    $this->instansiPasien = 'NON-KARYAWAN/UMUM';
-                }
-                
+                $this->instansiPasien = $perusahaanAsal ? $perusahaanAsal : 'NON-KARYAWAN/UMUM';
                 $this->patient->nama_lengkap = $this->patient->nama_lengkap ?? $jadwalMcu->nama_pasien ?? 'N/A';
                 $this->patient->nik_pasien = $this->patient->nik_pasien ?? 'N/A';
                 $this->patient->no_sap = 'N/A'; 
                 $this->patient->nomor_hp = $this->patient->nomor_hp ?? 'N/A';
             }
-
             $this->patient->alamat = $this->patient->alamat ?? 'N/A';
             $this->patient->jenis_kelamin = $this->patient->jenis_kelamin ?? 'N/A';
             $this->patient->tanggal_lahir = $this->patient->tanggal_lahir ?? now()->toDateString(); 
@@ -130,20 +116,11 @@ class PoliGigiForm extends Component
             $this->dokterId = $this->poliGigiResult->dokter_id; 
         } else {
             $this->dataForm = [
-                'ekstraOral' => [
-                    'kelenjar_submandibular' => 'Tak ada', 
-                    'kelenjar_leher' => 'Tak ada'
-                ],
+                'ekstraOral' => ['kelenjar_submandibular' => 'Tak ada', 'kelenjar_leher' => 'Tak ada'],
                 'intraOral' => [
-                    'oklusi' => 'Normal', 
-                    'torus_palatinus' => 'Tidak ada', 
-                    'torus_mandibularis' => 'Tidak ada', 
-                    'palatum' => 'Dalam/Sedang/Rendah', 
-                    'diastema' => 'Tidak Ada', 
-                    'gigi_anomali' => 'Tidak Ada', 
-                    'ginggiva' => 'Normal', 
-                    'karang_gigi' => 'Tak ada', 
-                    'lain_lain' => null
+                    'oklusi' => 'Normal', 'torus_palatinus' => 'Tidak ada', 'torus_mandibularis' => 'Tidak ada', 
+                    'palatum' => 'Dalam/Sedang/Rendah', 'diastema' => 'Tidak Ada', 'gigi_anomali' => 'Tidak Ada', 
+                    'ginggiva' => 'Normal', 'karang_gigi' => 'Tak ada', 'lain_lain' => null
                 ],
             ];
             $this->gigiKlinis = [];
@@ -154,15 +131,9 @@ class PoliGigiForm extends Component
     public function toggleGigiKlinis($gigiId)
     {
         $currentStatus = $this->gigiKlinis[$gigiId] ?? 'Normal';
-        
         $nextStatus = match ($currentStatus) {
-            'Normal' => 'Caries',
-            'Caries' => 'Missing',
-            'Missing' => 'Tambal',
-            'Tambal' => 'Normal',
-            default => 'Normal', 
+            'Normal' => 'Caries', 'Caries' => 'Missing', 'Missing' => 'Tambal', 'Tambal' => 'Normal', default => 'Normal', 
         };
-
         if ($nextStatus === 'Normal') {
             unset($this->gigiKlinis[$gigiId]);
         } else {
@@ -199,10 +170,7 @@ class PoliGigiForm extends Component
             return; 
         }
 
-        $dataPemeriksaan = [
-            'dataForm' => $this->dataForm,
-            'gigiKlinis' => $this->gigiKlinis,
-        ];
+        $dataPemeriksaan = ['dataForm' => $this->dataForm, 'gigiKlinis' => $this->gigiKlinis];
         
         $this->poliGigiResult->jadwal_poli_id = $this->poliData->id;
         $this->poliGigiResult->fill([
@@ -217,14 +185,13 @@ class PoliGigiForm extends Component
         $safeIdentifier = str_replace(' ', '_', $safeIdentifier);
         $safeIdentifier = substr($safeIdentifier, 0, 50); 
 
-        $fileName = 'Hasil Pemeriksaan Poli Gigi ' . $safeIdentifier . ' Jadwal ' . $this->poliGigiResult->jadwal_poli_id .' '. time(). '.pdf';
+        // PERBAIKAN: Menghilangkan spasi pada nama file menggunakan underscore (_)
+        $fileName = 'Hasil_Pemeriksaan_Poli_Gigi_' . $safeIdentifier . '_Jadwal_' . $this->poliGigiResult->jadwal_poli_id .'_'. time(). '.pdf';
         
         $folderPath = 'pdf_reports';
         $storagePath = $folderPath . '/' . $fileName; 
 
         try {
-            Log::info("Mencoba membuat PDF Poli Gigi dengan Dompdf. Target Path: " . $storagePath);
-            
             $data = [
                 'dynamicCss' => $this->getDynamicCssProperty(), 
                 'patient' => $this->patient,
@@ -240,33 +207,31 @@ class PoliGigiForm extends Component
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-gigi-report', $data);
 
-            Storage::disk('gcs')->put($storagePath, $pdf->output(), 'public'); 
+            // PERBAIKAN: Pengecekan ketat apakah proses upload ke GCS benar-benar berhasil
+            $uploadSuccess = Storage::disk('gcs')->put($storagePath, $pdf->output());
+            if (!$uploadSuccess) {
+                throw new \Exception("Sistem Gagal Mengunggah PDF ke Google Cloud Storage. Pastikan file JSON kredensial valid dan koneksi internet stabil.");
+            }
                         
             $this->poliGigiResult->file_path = $storagePath;
             $this->poliGigiResult->save(); 
 
-            // REVISI: Cukup simpan $storagePath-nya agar bisa digabung
             $this->poliData->file_path = $storagePath;
             $this->poliData->status = 'Done';
             $this->poliData->save();
             
             session()->flash('success', 'Hasil pemeriksaan gigi dan laporan PDF berhasil disimpan!');
+            $this->dispatch('status-updated', ['message' => 'Poli Gigi Selesai.']);
             
         } catch (\Exception $e) {
-            Log::error('PDF Generation GAGAL (Poli Gigi): ' . $e->getMessage() . " | Trace: " . $e->getTraceAsString());
-            session()->flash('error', 'Gagal membuat file PDF. Error: ' . $e->getMessage());
+            Log::error('PDF Generation GAGAL (Poli Gigi): ' . $e->getMessage());
+            session()->flash('error', 'Gagal membuat/menyimpan file PDF. Error: ' . $e->getMessage());
         }
-
-        $this->poliData->status = 'Done';
-        $this->poliData->save();
-
-        $this->dispatch('status-updated', ['message' => 'Poli Gigi Selesai.']);
     }
 
     public function render()
     {
         $this->poliGigiResult = PoliGigiResult::firstOrNew(['jadwal_poli_id' => $this->poliData->id]);
-        
         return view('livewire.poli-gigi-form');
     }
 }
