@@ -291,14 +291,16 @@ class PoliGigiForm extends Component
 
             // Simpan ke S3 atau Public Disk (Pilih salah satu)
             // Jika Anda ingin digabungkan ke laporan utama (S3), gunakan 's3'
-            Storage::disk('gcs')->put($storagePath, $pdf->output());
+            Storage::disk('gcs')->put($storagePath, $pdf->output(), 'public'); // Pastikan visibility 'public' agar bisa diakses via URL
                         
             // 3. SIMPAN PATH FILE KE DATABASE POLI_GIGI_RESULTS
             $this->poliGigiResult->file_path = $storagePath;
             $this->poliGigiResult->save(); // Simpan hasil pemeriksaan dan path file ke tabel poli_gigi_results
 
             // KRITIS: Simpan path LENGKAP ke database
-            $this->poliData->file_path = $storagePath; // Hasil: pdf_reports/Hasil_Pemeriksaan_...pdf
+            $pdfUrl = Storage::disk('gcs')->url($storagePath);
+
+            $this->poliData->file_path = $pdfUrl;
             $this->poliData->status = 'Done';
             $this->poliData->save();
             
