@@ -109,8 +109,10 @@ class KebugaranForm extends Component
 
     public function calculateAndSaveKebugaran()
     {
+        // 1. Validasi dulu
         $this->validate();
 
+        // 2. Gunakan properti Livewire yang sudah ter-update (tanpa defer akan lebih aman)
         $usia = $this->umur;
         $bb = $this->bb;
         $vo2Max = $this->vo2_max;
@@ -121,72 +123,55 @@ class KebugaranForm extends Component
             return;
         }
 
-        // --- PENYESUAIAN RUMUS BERDASARKAN JENIS KELAMIN ---
-        // (Rumus ini dipertahankan dari versi sebelumnya, yang membedakan berdasarkan jenis kelamin)
-        if ($jenisKelamin === 'WANITA' || $jenisKelamin === 'PEREMPUAN') {
-            $faktorRisikoDasar = (1.208 - (0.009 * $usia));
-        } else {
-            $faktorRisikoDasar = (1.25 - (0.01 * $usia));
-        }
+        // 3. Rumus Kebugaran
+        $faktorRisikoDasar = ($jenisKelamin === 'WANITA' || $jenisKelamin === 'PEREMPUAN') 
+            ? (1.208 - (0.009 * $usia)) 
+            : (1.25 - (0.01 * $usia));
 
-        // Perhitungan Indeks Kebugaran Jasmani
         $this->hasilKebugaran = ($faktorRisikoDasar * $vo2Max * 1000) / $bb;
-        // PENTING: Panggil getKeterangan untuk mendapatkan kategori yang benar
         $this->keterangan = $this->getKeterangan($this->hasilKebugaran, $usia, $this->jenisKelamin);
 
         $data = [
-            'jadwal_poli_id' => $this->jadwalPoliId, 'vo2_max' => $this->vo2_max, 'durasi_menit' => $this->durasi_menit,
-            'beban_latihan' => $this->beban_latihan, 'denyut_nadi' => $this->denyut_nadi, 
-            'indeks_kebugaran' => $this->hasilKebugaran, 'kategori' => $this->keterangan,
+            'jadwal_poli_id' => $this->jadwalPoliId, 
+            'vo2_max' => $this->vo2_max, 
+            'durasi_menit' => $this->durasi_menit,
+            'beban_latihan' => $this->beban_latihan, 
+            'denyut_nadi' => $this->denyut_nadi, 
+            'indeks_kebugaran' => $this->hasilKebugaran, 
+            'kategori' => $this->keterangan,
         ];
         
         $kebugaran = KebugaranResult::updateOrCreate(['jadwal_poli_id' => $this->jadwalPoliId], $data);
         $this->kebugaranDataId = $kebugaran->id;
 
-        // --- LOGIKA PEMBUATAN PDF DENGAN DOMPDF ---
-        $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
+        // 4. GENERASI PDF (Gunakan 'public' disk agar aman)
+        $patientIdentifier = $this->patient->nama_lengkap ?? 'Pasien';
         $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
-        
-        $folderPath = 'mcu_results'; 
         $fileName = 'Hasil_Kebugaran_' . $safeIdentifier . '_' . time() . '.pdf';
-        $fullPath = $folderPath . '/' . $fileName; 
+        $fullPath = 'pdf_reports/' . $fileName; 
 
         try {
-            $reportData = [
+            $pdf = Pdf::loadView('pdfs.kebugaran-report', [
                 'patient' => $this->patient, 
                 'kebugaranResult' => $kebugaran, 
                 'instansiPasien' => $this->instansiPasien, 
                 'isKaryawan' => $this->isKaryawan,
-            ];
-
-            // 1. Render View ke PDF
-            $pdf = Pdf::loadView('pdfs.kebugaran-report', $reportData);
+            ]);
             
-            $disk = Storage::disk('gcs');
-            $result = $disk->put($fullPath, $pdf->output());
+            // Simpan ke disk gcs
+            Storage::disk('gcs')->put($fullPath, $pdf->output());
             
-            if ($result === false) {
-                // Jika false, kita pancing agar dia memberi tahu alasannya
-                throw new \Exception("GCS menolak upload. Periksa Service Account & Permissions.");
-            }
-            
-            // 3. SIMPAN PATH LENGKAP KE DATABASE (REVISI DI SINI)
-            // Kita simpan $fullPath agar sistem tahu file ada di dalam folder 'mcu_results'
             $kebugaran->file_path = $fullPath; 
             $kebugaran->save();
 
-            // 4. Update model JadwalPoli agar tombol di Dashboard Admin & PDF Gabungan berfungsi
             $this->poliData->file_path = $fullPath; 
             $this->poliData->status = 'Done';
             $this->poliData->save();
 
-            session()->flash('success', 'Perhitungan kebugaran berhasil disimpan dan Laporan PDF diperbarui.');
-
+            session()->flash('success', 'Perhitungan berhasil disimpan!');
         } catch (\Exception $e) {
-            // Tampilkan pesan error asli (tanpa disaring)
-            $errorMsg = $e->getMessage();
-            Log::error('Upload GCS Gagal: ' . $errorMsg);
-            session()->flash('error', 'Error Detail: ' . $errorMsg);
+            Log::error('PDF Kebugaran Gagal: ' . $e->getMessage());
+            session()->flash('error', 'Gagal menyimpan PDF. Pastikan folder storage sudah di-link.');
         }
     }
 

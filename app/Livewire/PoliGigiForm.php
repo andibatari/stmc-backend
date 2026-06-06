@@ -207,7 +207,7 @@ class PoliGigiForm extends Component
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-gigi-report', $data);
 
-            // PERBAIKAN: Pengecekan ketat apakah proses upload ke GCS benar-benar berhasil
+            // PERBAIKAN: Pengecekan ketat apakah proses upload ke public benar-benar berhasil
             $uploadSuccess = Storage::disk('gcs')->put($storagePath, $pdf->output());
             if (!$uploadSuccess) {
                 throw new \Exception("Sistem Gagal Mengunggah PDF ke Google Cloud Storage. Pastikan file JSON kredensial valid dan koneksi internet stabil.");

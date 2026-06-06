@@ -372,12 +372,18 @@
 
                                     {{-- Tombol Lihat/Unduh PDF yang sudah diupload --}}
                                     @if (isset($jadwalPoliData[$poli->id]) && $jadwalPoliData[$poli->id]->file_path)
+                                        @php
+                                            $path = $jadwalPoliData[$poli->id]->file_path;
+                                            // Jika path sudah berupa URL HTTP utuh, langsung gunakan. Jika tidak, arahkan ke lokal storage
+                                            $fileUrl = str_contains($path, 'http') ? $path : asset('storage/' . $path);
+                                        @endphp
+
                                         <div class="mt-5 md:mt-6 flex flex-col sm:flex-row gap-2 md:gap-3">
-                                            <a href="{{ asset('storage/' . $jadwalPoliData[$poli->id]->file_path) }}" target="_blank"
+                                            <a href="{{ $fileUrl }}" target="_blank"
                                                 class="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 md:py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs md:text-sm transition-colors border border-slate-200">
                                                 <i class="fas fa-external-link-alt mr-2 text-slate-500"></i> Buka File
                                             </a>
-                                            <a href="{{ asset('storage/' . $jadwalPoliData[$poli->id]->file_path) }}" target="_blank" download 
+                                            <a href="{{ $fileUrl }}" target="_blank" download 
                                                 class="w-full sm:w-auto justify-center inline-flex items-center px-4 py-2 md:py-2.5 bg-white hover:bg-emerald-50 text-emerald-700 rounded-xl font-bold text-xs md:text-sm transition-colors border border-emerald-200">
                                                 <i class="fas fa-download mr-2 text-emerald-500"></i> Unduh File
                                             </a>

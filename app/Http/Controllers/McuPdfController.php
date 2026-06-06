@@ -131,29 +131,37 @@ class McuPdfController extends Controller
         foreach ($jadwal->jadwalPoli as $jp) {
             $filePath = $jp->file_path;
 
-            // PERBAIKAN: Bersihkan URL lengkap yang tersimpan, dan perbaiki string encodernya (seperti %20)
+            // Bersihkan URL jika terlanjur tersimpan sebagai string HTTPS
             if ($filePath && str_contains($filePath, 'http')) {
                 $parsedUrl = parse_url($filePath, PHP_URL_PATH);
                 $filePath = urldecode(ltrim(str_replace('/stmc-health-bucket/', '', $parsedUrl), '/'));
             }
 
-            if ($filePath && Storage::disk('gcs')->exists($filePath)) {
+            if ($filePath) {
+                $fileContent = null;
+
+                // LOGIKA BARU: Cek GCS dulu, kalau gagal/tidak ada, cek Local Storage (public)
                 try {
-                    $fileContent = Storage::disk('gcs')->get($filePath);
-                    
+                    if (Storage::disk('gcs')->exists($filePath)) {
+                        $fileContent = Storage::disk('gcs')->get($filePath);
+                        \Log::info("File ditemukan di GCS: " . $filePath);
+                    } elseif (Storage::disk('public')->exists($filePath)) {
+                        $fileContent = Storage::disk('public')->get($filePath);
+                        \Log::info("File ditemukan di Local Storage: " . $filePath);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error saat mengecek file {$filePath}: " . $e->getMessage());
+                }
+
+                // Jika file berhasil ditemukan di salah satu tempat, simpan ke temp untuk di-merge
+                if ($fileContent) {
                     $localTempPoli = $tempDirFullPath . '/poli_' . $jp->id . '_' . time() . '.pdf';
                     file_put_contents($localTempPoli, $fileContent);
                     
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
-                    
-                    \Log::info("Berhasil mengambil file GCS untuk digabung: " . $filePath);
-                } catch (\Exception $e) {
-                    \Log::error("Gagal mengambil file GCS: " . $filePath . " Error: " . $e->getMessage());
-                }
-            } else {
-                if ($filePath) {
-                    \Log::warning("File poli di-skip saat merge karena tidak ditemukan di Bucket GCS: " . $filePath);
+                } else {
+                    \Log::warning("File poli di-skip saat merge karena tidak ditemukan di GCS maupun Lokal: " . $filePath);
                 }
             }
         }
