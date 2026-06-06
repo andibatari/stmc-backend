@@ -52,7 +52,7 @@ return [
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
             'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'), // Pastikan ini ada dan path-nya benar!
-            'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', 'https://storage.googleapis.com'),
+            'storage_api_uri' => null, // Gunakan default Google Cloud Storage API URI
             'visibility' => 'public', // Agar file bisa diakses via URL
         ],
 
