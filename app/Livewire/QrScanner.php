@@ -81,18 +81,28 @@ class QrScanner extends Component
         $isMaintenance = Setting::where('key', 'maintenance_mode')->value('value') == '1';
         if ($isMaintenance) abort(503, 'Sistem Pendaftaran sedang dalam pemeliharaan.');
 
-        // 2. Cek Jam Buka
+        // 2. Cek Jam Buka (Logika Anti-Midnight Bug)
         $jamBuka = Setting::where('key', 'jam_buka')->value('value') ?? '08:00';
         $jamTutup = Setting::where('key', 'jam_tutup')->value('value') ?? '15:00';
-        $jamSekarang = now()->format('H:i');
+        
+        // Kunci zona waktu ke WITA
+        $jamSekarang = Carbon::now('Asia/Makassar')->format('H:i');
 
-        if ($jamSekarang < $jamBuka || $jamSekarang > $jamTutup) {
-            abort(403, "Pendaftaran ditutup. Jam buka: {$jamBuka} - {$jamTutup} WITA.");
+        if ($jamBuka > $jamTutup) {
+            // Logika jika jam operasional melewati tengah malam (contoh: 20:00 - 01:00)
+            $isOpen = $jamSekarang >= $jamBuka || $jamSekarang <= $jamTutup;
+        } else {
+            // Logika jika jam operasional normal di hari yang sama (contoh: 08:00 - 15:00)
+            $isOpen = $jamSekarang >= $jamBuka && $jamSekarang <= $jamTutup;
+        }
+
+        if (!$isOpen) {
+            abort(403, "PENDAFTARAN DITUTUP. JAM BUKA: {$jamBuka} - {$jamTutup} WITA.");
         }
 
         // 3. Cek Kuota
         $kuotaHarian = Setting::where('key', 'kuota_harian')->value('value') ?? 50;
-        $jumlahPasienHariIni = JadwalMcu::whereDate('tanggal_mcu', Carbon::today())->count();
+        $jumlahPasienHariIni = JadwalMcu::whereDate('tanggal_mcu', Carbon::today('Asia/Makassar'))->count();
 
         if ($jumlahPasienHariIni >= $kuotaHarian) {
             abort(403, "Kuota pendaftaran hari ini penuh (Maks: {$kuotaHarian}).");
