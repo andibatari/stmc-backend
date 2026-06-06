@@ -124,7 +124,7 @@ class NotificationDashboard extends Component
             $targets = \App\Models\Karyawan::whereNotNull('fcm_token')->get();
         } elseif ($this->broadcastTargetType === 'dept') {
             $this->validate(['broadcastTargetDeptId' => 'required']);
-            $targets = \App\Models\Karyawan::where('departemen_id', $this->broadcastTargetDeptId)
+            $targets = \App\Models\Karyawan::where('departemens_id', $this->broadcastTargetDeptId)
                                            ->whereNotNull('fcm_token')->get();
         } elseif ($this->broadcastTargetType === 'individual') {
             $this->validate(['selectedIndividualEmployees' => 'required|array|min:1']);
