@@ -158,8 +158,8 @@ class KebugaranForm extends Component
                 'isKaryawan' => $this->isKaryawan,
             ]);
             
-            // Simpan ke disk gcs
-            Storage::disk('gcs')->put($fullPath, $pdf->output());
+            // Simpan ke disk public
+            Storage::disk('public')->put($fullPath, $pdf->output());
             
             $kebugaran->file_path = $fullPath; 
             $kebugaran->save();

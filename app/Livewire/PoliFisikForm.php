@@ -281,8 +281,8 @@ class PoliFisikForm extends Component
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-fisik-report', $reportData);
 
-            // PERBAIKAN: Pengecekan ketat apakah proses upload ke gcs benar-benar berhasil
-            $uploadSuccess = Storage::disk('gcs')->put($storagePath, $pdf->output());
+            // PERBAIKAN: Pengecekan ketat apakah proses upload ke public benar-benar berhasil
+            $uploadSuccess = Storage::disk('public')->put($storagePath, $pdf->output());
             if (!$uploadSuccess) {
                 throw new \Exception("Sistem Gagal Mengunggah PDF ke Google Cloud Storage. Pastikan file JSON kredensial valid dan koneksi internet stabil.");
             }

@@ -140,11 +140,11 @@ class McuPdfController extends Controller
             if ($filePath) {
                 $fileContent = null;
 
-                // LOGIKA BARU: Cek GCS dulu, kalau gagal/tidak ada, cek Local Storage (public)
+                // LOGIKA BARU: Cek public dulu, kalau gagal/tidak ada, cek Local Storage (public)
                 try {
-                    if (Storage::disk('gcs')->exists($filePath)) {
-                        $fileContent = Storage::disk('gcs')->get($filePath);
-                        \Log::info("File ditemukan di GCS: " . $filePath);
+                    if (Storage::disk('public')->exists($filePath)) {
+                        $fileContent = Storage::disk('public')->get($filePath);
+                        \Log::info("File ditemukan di public: " . $filePath);
                     } elseif (Storage::disk('public')->exists($filePath)) {
                         $fileContent = Storage::disk('public')->get($filePath);
                         \Log::info("File ditemukan di Local Storage: " . $filePath);
@@ -161,7 +161,7 @@ class McuPdfController extends Controller
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
                 } else {
-                    \Log::warning("File poli di-skip saat merge karena tidak ditemukan di GCS maupun Lokal: " . $filePath);
+                    \Log::warning("File poli di-skip saat merge karena tidak ditemukan di public maupun Lokal: " . $filePath);
                 }
             }
         }

@@ -194,8 +194,8 @@ class QrPatientDetail extends Component
                 
                 $folderPath = 'mcu_results'; 
 
-                // REVISI: Simpan ke disk 'gcs'
-                $path = $file->storeAs($folderPath, $fileName, 'gcs'); 
+                // REVISI: Simpan ke disk 'public'
+                $path = $file->storeAs($folderPath, $fileName, 'public'); 
                 
                 $jadwalPoli->file_path = $path; 
                 $jadwalPoli->status = 'Finished';
