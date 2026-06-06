@@ -236,7 +236,25 @@ class QrPatientDetail extends Component
             $jadwalPoli->save();
 
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
+            
+            // 1. Tembakan Pusher (Tetap jalan untuk update layar real-time)
             event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
+
+            // 2. AMBIL TOKEN HP PASIEN DARI DATABASE
+            // Asumsi: Token FCM HP pasien disimpan di tabel 'users' pada kolom 'fcm_token'
+            $fcmToken = null;
+            if ($this->jadwal->karyawan && $this->jadwal->karyawan->user) {
+                $fcmToken = $this->jadwal->karyawan->user->fcm_token;
+            } elseif ($this->jadwal->pesertaMcu && $this->jadwal->pesertaMcu->user) {
+                $fcmToken = $this->jadwal->pesertaMcu->user->fcm_token;
+            }
+
+            // 3. JIKA TOKEN HP PASIEN DITEMUKAN, KIRIM NOTIFIKASI!
+            if ($fcmToken) {
+                $this->sendFcmNotification($fcmToken, $namaPoli);
+            } else {
+                \Log::warning("Token FCM tidak ditemukan untuk jadwal ID: " . $this->jadwal->id);
+            }
 
             $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim ke HP Pasien!"]);
         }
@@ -288,4 +306,6 @@ class QrPatientDetail extends Component
         return view('livewire.qr-patient-detail', compact('polis', 'jadwalPoliData'))
             ->layout('layouts.app', ['title' => 'Detail Pasien MCU']);
     }
+
+    
 }
