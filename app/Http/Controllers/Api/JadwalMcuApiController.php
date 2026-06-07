@@ -169,76 +169,134 @@ class JadwalMcuApiController extends Controller
 
         try {
             // 2. Ambil data Jadwal beserta relasinya
-            $jadwal = JadwalMcu::with(['jadwalPoli', 'karyawan.departemen', 'karyawan.unitKerja', 'karyawan.provinsi', 'dokter', 'paketMcu'])
+            $jadwal = JadwalMcu::with(['jadwalPoli', 'karyawan.departemen', 'karyawan.unitKerja', 'karyawan.provinsi', 'pesertaMcu', 'dokter', 'paketMcu'])
                 ->findOrFail($id);
 
-            $karyawan = $jadwal->karyawan;
+            // Mendukung Pasien Karyawan maupun Pasien Umum
+            $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
+            if (!$patient) {
+                return response()->json(['message' => 'Data pasien tidak ditemukan'], 404);
+            }
 
-            // 3. Siapkan Data untuk View Resume (Sesuai struktur yang Anda berikan)
+            $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
+
+            // 🌟 3. AMBIL DATA SETTING (SAMA SEPERTI VERSI ADMIN)
+            $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
+            $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
+            $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
+
+            // 🌟 FUNGSI PENGUBAH GAMBAR KE BASE64
+            $getBase64Image = function($dbPath, $defaultPath) {
+                $fullPath = null;
+                if (!empty($dbPath)) {
+                    $cleanPath = str_replace('storage/', '', $dbPath);
+                    $storagePath = storage_path('app/public/' . $cleanPath);
+                    if (file_exists($storagePath)) $fullPath = $storagePath;
+                }
+                if (!$fullPath && file_exists(public_path($defaultPath))) {
+                    $fullPath = public_path($defaultPath);
+                }
+                if ($fullPath) {
+                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                    $data = file_get_contents($fullPath);
+                    return 'data:image/' . $type . ';base64,' . base64_encode($data);
+                }
+                return ''; 
+            };
+
+            // Konversi logo
+            $logoStmcBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_stmc')->value('value'), 'images/logo-stmc.png');
+            $logoTonasaBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_tonasa')->value('value'), 'images/logo-semen-tonasa.png');
+            
+            // Generate QR Code untuk segel tanda tangan
+            $linkValidasiPublik = route('validasi.pdf', $jadwal->qr_code_id);
+            $qrCode = new QrCode($linkValidasiPublik);
+            $qrCode->setSize(150); 
+            $qrCode->setMargin(0); 
+            $qrCode->setEncoding(new Encoding('UTF-8')); 
+            $qrCode->setErrorCorrectionLevel(ErrorCorrectionLevel::High); 
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
+            $qrCodeBase64 = base64_encode($result->getString());
+
+            // 4. Siapkan Data untuk View Resume Blade
             $dataResume = [
+                'jadwal' => $jadwal,
+                'patient' => $patient,
                 'patient_data' => [
-                    'nama'           => $karyawan->nama_karyawan,
-                    'tgl_lahir'      => $karyawan->tanggal_lahir,
-                    'alamat'         => $karyawan->alamat,
-                    'jenis_kelamin'  => $karyawan->jenis_kelamin,
-                    'nik_sap'        => $karyawan->no_sap ?? $karyawan->nik_karyawan,
+                    'nama'           => $patient->nama_karyawan ?? $patient->nama_lengkap ?? 'N/A',
+                    'tgl_lahir'      => $patient->tanggal_lahir ?? 'N/A',
+                    'alamat'         => $patient->alamat ?? 'N/A',
+                    'jenis_kelamin'  => $patient->jenis_kelamin ?? 'N/A',
+                    'nik_sap'        => $patient->no_sap ?? $patient->nik_karyawan ?? $patient->nik_pasien ?? 'N/A',
                     'paket_mcu'      => $jadwal->paketMcu->nama_paket ?? 'N/A',
-                    'unit_kerja'     => $karyawan->unitKerja->nama_unit_kerja ?? 'N/A',
+                    'unit_kerja'     => $patient->unitKerja->nama_unit_kerja ?? 'N/A',
                 ],
                 
-                // 3. Pastikan key di bawah ini sesuai dengan variabel di Blade
-                'tanggal_mcu'     => \Carbon\Carbon::parse($jadwal->tanggal_mcu)->format('d F Y'),
-                'resume_body_raw' => $jadwal->resume_body, // Data JSON dari database
+                'tanggal_mcu'     => $tanggalMcuFormatted,
+                'resume_body_raw' => $jadwal->resume_body, 
                 'resume_saran'    => $jadwal->resume_saran,
                 'resume_kategori' => $jadwal->resume_kategori,
                 'tanggal_cetak'   => now()->translatedFormat('d F Y'),
+                'qrCodeBase64'    => $qrCodeBase64,
                 
-                // 4. Data Dokter
                 'doctor_data'     => [
                     'nama' => $jadwal->dokter->nama_lengkap ?? 'Dokter Tidak Ditunjuk',
                     'nip'  => $jadwal->dokter->nip ?? '-'
                 ],
+
+                // 🌟 DATA SETTING DENGAN BASE64
+                'setting_kepala_klinik' => $namaKepalaKlinik, 
+                'setting_disclaimer'  => $teksDisclaimerFinal,
+                'setting_logo_stmc'   => $logoStmcBase64, 
+                'setting_logo_tonasa' => $logoTonasaBase64,
             ];
 
-            // 4. Inisialisasi Merger
+            // 5. Inisialisasi Merger
             $merger = new Merger();
 
             // --- LANGKAH A: GENERATE PDF RESUME (Halaman Pertama) ---
-            // Pastikan Anda sudah membuat file resources/views/pdfs/mcu_resume.blade.php
             $resumePdf = Pdf::loadView('pdfs.mcu_resume', $dataResume)->output();
             $merger->addRaw($resumePdf);
 
-            // --- LANGKAH B: AMBIL FILE DARI S3 (Halaman Berikutnya) ---
-            // Ambil semua path file poli yang statusnya 'Done'
+            // --- LANGKAH B: AMBIL SEMUA FILE POLI YANG SUDAH SELESAI ---
+            // 🌟 PERBAIKAN: Mengambil file dari Local Storage (disk 'public') jika disk s3 gagal/tidak dipakai
             $files = $jadwal->jadwalPoli->whereNotNull('file_path')->pluck('file_path')->toArray();
 
             foreach ($files as $filePath) {
-                // Gunakan disk 's3' (DigitalOcean Spaces)
-                if (Storage::disk('s3')->exists($filePath)) {
+                // Jika kamu menyimpan file di local storage (seperti pada saat upload dari admin)
+                if (Storage::disk('public')->exists($filePath)) {
+                    $fileContent = Storage::disk('public')->get($filePath);
+                    $merger->addRaw($fileContent);
+                } 
+                // Fallback jika file ternyata ada di S3
+                elseif (Storage::disk('s3')->exists($filePath)) {
                     $fileContent = Storage::disk('s3')->get($filePath);
                     $merger->addRaw($fileContent);
+                } else {
+                    \Log::warning("File poli tidak ditemukan saat diunduh via HP: " . $filePath);
                 }
             }
 
-            // 5. Proses Penggabungan Akhir
+            // 6. Proses Penggabungan Akhir
             $output = $merger->merge();
             
-            $safeName = Str::slug($karyawan->nama_karyawan);
+            $namaAman = $patient->nama_karyawan ?? $patient->nama_lengkap ?? 'Pasien';
+            $safeName = Str::slug($namaAman);
             $fileName = "Laporan_MCU_{$safeName}_{$jadwal->no_antrean}.pdf";
 
-            // 6. Return sebagai Stream PDF ke Browser/Flutter
+            // 7. Return sebagai Stream PDF ke Browser/Flutter
             return response($output)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', "inline; filename=\"$fileName\"");
 
         } catch (\Exception $e) {
-            \Log::error("Gagal Download Laporan Gabungan: " . $e->getMessage());
+            \Log::error("Gagal Download Laporan Gabungan (API): " . $e->getMessage() . " on line " . $e->getLine());
             return response()->json([
                 'message' => 'Gagal memproses laporan gabungan',
                 'error' => $e->getMessage()
             ], 500);
         }
-        
     }
     
     public function getPaketMcu()
