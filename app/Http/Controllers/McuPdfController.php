@@ -60,12 +60,22 @@ class McuPdfController extends Controller
         $doctorNip = $doctor->nip ?? 'NIP. N/A';
 
         $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
-        $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
-        $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
+        
+        // MENGGUNAKAN TRY-CATCH AGAR TIDAK ERROR JIKA TABEL SETTING TIDAK ADA
+        try {
+            $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
+            $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
+        } catch (\Exception $e) {
+            $namaKepalaKlinik = 'Dr. Penanggung Jawab';
+            $teksDisclaimerRaw = 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
+        }
         
         $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
-        $logoStmc = \App\Models\Setting::where('key', 'logo_stmc')->value('value') ?? 'images/logo-stmc.png';
-        $logoTonasa = \App\Models\Setting::where('key', 'logo_tonasa')->value('value') ?? 'images/logo-semen-tonasa.png';
+        
+        // 🌟 PERBAIKAN LOGO: Langsung tunjuk path gambar statis di folder public
+        // Pastikan gambar ini ada di dalam folder 'public/images/' Laravel kamu
+        $logoStmc = 'images/logo-stmc.png';
+        $logoTonasa = 'images/logo-semen-tonasa.png';
         
         $linkValidasiPublik = route('validasi.pdf', $jadwal->qr_code_id);
         $qrCode = new QrCode($linkValidasiPublik);
@@ -89,8 +99,11 @@ class McuPdfController extends Controller
                 'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A', 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
                 'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A', 'nab_suhu_kerja' => 28.0 
             ],
-            'setting_kepala_klinik' => $namaKepalaKlinik, 'setting_disclaimer'  => $teksDisclaimerFinal,
-            'setting_logo_stmc'   => $logoStmc, 'setting_logo_tonasa' => $logoTonasa,
+            // 🌟 PASTIKAN VARIABEL INI SAMA PERSIS DENGAN YANG DIBUTUHKAN DI BLADE
+            'setting_kepala_klinik' => $namaKepalaKlinik, 
+            'setting_disclaimer'  => $teksDisclaimerFinal,
+            'setting_logo_stmc'   => $logoStmc, 
+            'setting_logo_tonasa' => $logoTonasa,
         ];
 
         return Pdf::loadView('pdfs.mcu_resume', $data);

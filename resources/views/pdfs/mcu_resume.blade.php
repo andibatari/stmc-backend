@@ -48,8 +48,13 @@
     {{-- KOP SURAT / HEADER KLINIK STMC --}}
     <div class="header-container">
         <div class="header-cell header-left">
-            <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
-            <img class="header-logo" src="{{ public_path($setting_logo_tonasa) }}" alt="Logo Tonasa">
+            {{-- PENGAMAN LOGO: Hanya merender gambar jika variabel ada isinya --}}
+            @if(!empty($setting_logo_stmc))
+                <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
+            @endif
+            @if(!empty($setting_logo_tonasa))
+                <img class="header-logo" src="{{ public_path($setting_logo_tonasa) }}" alt="Logo Tonasa">
+            @endif
         </div>
         <div class="header-cell header-center">
             <p class="text-title">MEDICAL CHECK UP</p>
@@ -64,19 +69,19 @@
         <table>
             <tr><td colspan="6" style="padding-bottom: 3px;">Kepada Yth.</td></tr>
             <tr>
-                <td class="label-col">Nama</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['nama'] }}</td>
-                <td class="label-col">Tgl. Lahir</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['tgl_lahir'] }}</td>
+                <td class="label-col">Nama</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['nama'] ?? '-' }}</td>
+                <td class="label-col">Tgl. Lahir</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['tgl_lahir'] ?? '-' }}</td>
             </tr>
             <tr>
-                <td class="label-col">Alamat</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['alamat'] }}</td>
-                <td class="label-col">Jenis Kelamin</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['jenis_kelamin'] }}</td>
+                <td class="label-col">Alamat</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['alamat'] ?? '-' }}</td>
+                <td class="label-col">Jenis Kelamin</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['jenis_kelamin'] ?? '-' }}</td>
             </tr>
             <tr>
-                <td class="label-col">NIK / SAP</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['nik_sap'] }}</td>
-                <td class="label-col">Paket MCU</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['paket_mcu'] }}</td>
+                <td class="label-col">NIK / SAP</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['nik_sap'] ?? '-' }}</td>
+                <td class="label-col">Paket MCU</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['paket_mcu'] ?? '-' }}</td>
             </tr>
             <tr>
-                <td class="label-col">Unit Kerja</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['unit_kerja'] }}</td>
+                <td class="label-col">Unit Kerja</td><td class="colon-col">:</td><td class="value-col">{{ $patient_data['unit_kerja'] ?? '-' }}</td>
                 <td></td><td></td><td></td>
             </tr>
         </table>
@@ -85,12 +90,13 @@
     {{-- PARAGRAF SURAT PENGANTAR (DISCLAIMER) --}}
     <div class="greeting">
         <strong>Dengan Hormat,</strong><br>
-        {!! $setting_disclaimer !!}
+        {{-- PENGAMAN DISCLAIMER --}}
+        {!! $setting_disclaimer ?? 'Berikut adalah hasil pemeriksaan kesehatan Medical Check Up (MCU) Anda:' !!}
     </div>
 
     {{-- PEMBENTUKAN STRING BUTIR REKAM MEDIS --}}
     @php
-    $resumeData = ($resume_body_raw && is_string($resume_body_raw)) ? json_decode($resume_body_raw, true) : null; 
+    $resumeData = (!empty($resume_body_raw) && is_string($resume_body_raw)) ? json_decode($resume_body_raw, true) : null; 
     $resumeText = '';
     
     if ($resumeData) {
@@ -110,7 +116,7 @@
     }
     
     $saranArray = [];
-    if ($resume_saran) {
+    if (!empty($resume_saran)) {
         $saranTemp = preg_split("/[\r\n,]+/", $resume_saran, -1, PREG_SPLIT_NO_EMPTY);
         $saranArray = array_map('trim', $saranTemp);
         $saranArray = array_filter($saranArray); 
@@ -143,31 +149,30 @@
     {{-- OUTPUT KATEGORI KELAYAKAN AKHIR --}}
     <div class="content-section" style="margin-top: 10px;">
         <h4 style="border: none;">Kategori Akhir:</h4>
-        <p style="font-weight: 900; font-size: 12pt; margin: 0;">{{ $resume_kategori ?? 'N/A' }}</p>
+        <p style="font-weight: 900; font-size: 12pt; margin: 0;">{{ $resume_kategori ?? 'Belum Ditentukan' }}</p>
     </div>
     
-    {{-- 
-       TANDA TANGAN GANDA COMPACT DENGAN INTEGRASI QR VALIDATION SEAL:
-       page-break-inside: avoid mencegah kolom tanda tangan terpotong gantung di halaman yang berbeda.
-       Kolom tengah diisi segel gambar QR Code hasil konversi teks Base64 dari controller.
-    --}}
+    {{-- TANDA TANGAN GANDA COMPACT DENGAN INTEGRASI QR VALIDATION SEAL --}}
     <div class="content-section" style="page-break-inside: avoid; margin-top: 15px;">
         <table style="width: 100%; text-align: center; border-collapse: collapse; font-size: 10pt; table-layout: fixed;">
             <tr>
                 <td style="width: 35%;"></td>
                 <td style="width: 30%;"></td>
-                <td style="width: 35%; padding-bottom: 5px; font-size: 9.5pt; text-align: right;">Pangkep, {{ $tanggal_cetak }}</td>
+                <td style="width: 35%; padding-bottom: 5px; font-size: 9.5pt; text-align: right;">Pangkep, {{ $tanggal_cetak ?? date('d M Y') }}</td>
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: left; padding-left: 10px;">Mengetahui,<br>Kepala Klinik STMC,</td>
                 <td style="vertical-align: middle; text-align: center;">
-                    {{-- UBAH INI: width dan height diperbesar menjadi 100px --}}
-                    <img src="data:image/png;base64,{{ $qrCodeBase64 }}" alt="Segel Elektronik STMC" style="width: 100px; height: 100px;"><br>
-                    <span style="font-size: 8pt; font-weight: bold; color: #475569; font-family: monospace;">E-SIGN VERIFIED</span>
+                    {{-- PENGAMAN QR CODE --}}
+                    @if(!empty($qrCodeBase64))
+                        <img src="data:image/png;base64,{{ $qrCodeBase64 }}" alt="Segel Elektronik STMC" style="width: 100px; height: 100px;"><br>
+                        <span style="font-size: 8pt; font-weight: bold; color: #475569; font-family: monospace;">E-SIGN VERIFIED</span>
+                    @else
+                        <br><br><br>
+                    @endif
                 </td>
                 <td style="vertical-align: top; text-align: right; padding-right: 10px;">Dokter Pemeriksa,</td>
             </tr>
-            {{-- Spacer tinggi dihilangkan karena area tengah sudah diisi gambar QR Code --}}
             <tr>
                 <td style="height: 10px;"></td>
                 <td style="height: 10px;"></td>
@@ -175,7 +180,7 @@
             </tr>
             <tr>
                 <td style="vertical-align: top; text-align: left; padding-left: 10px;">
-                    <span style="font-weight: bold; text-decoration: underline;">{{ $setting_kepala_klinik }}</span>
+                    <span style="font-weight: bold; text-decoration: underline;">{{ $setting_kepala_klinik ?? 'dr. (Kepala Klinik)' }}</span>
                 </td>
                 <td></td>
                 <td style="vertical-align: top; text-align: right; padding-right: 10px;">
