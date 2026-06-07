@@ -185,28 +185,36 @@ class JadwalMcuController extends Controller
         // =========================================================
         if ($jadwal->status === 'Finished') {
             
-            // Cari tahu siapa pasiennya untuk dikirimi notifikasi
-            $jadwal->load(['karyawan.user', 'pesertaMcu.user']); // Load relasi user untuk mencegah N+1
-            $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
-            $user = $patient->user ?? null;
+            $user = null;
+
+            // Cari tahu akun login pasien berdasarkan tipe pasiennya
+            if ($jadwal->tipe_pasien === 'ptst') {
+                // Cari akun karyawan di model EmployeeLogin menggunakan no_sap / nik
+                $user = \App\Models\EmployeeLogin::where('no_sap', $jadwal->no_sap)
+                            ->orWhere('nik_karyawan', $jadwal->no_sap)
+                            ->first();
+            } else {
+                // Cari akun pasien umum di model PesertaMcuLogin menggunakan nik_pasien
+                $user = \App\Models\PesertaMcuLogin::where('nik_pasien', $jadwal->nik_pasien)->first();
+            }
 
             if ($user) {
                 // 1. Simpan riwayat notifikasi ke Database agar bisa dilihat di Inbox HP
                 try {
-                    // Catatan: Pastikan kamu sudah membuat migration untuk tabel 'notifications'
+                    // Catatan: Pastikan kolom user_id di tabel notifications siap menampung ID dari akun login ini
                     \App\Models\Notification::create([
                         'user_id' => $user->id,
                         'title' => 'Laporan MCU Selesai!',
                         'message' => "Medical Check Up Anda telah selesai. Laporan Gabungan lengkap dari semua poli sudah dapat diunduh.",
-                        'is_read' => false, // Default belum dibaca
+                        'is_read' => false, 
                     ]);
                 } catch (\Exception $e) {
-                    // Log error jika tabel notification belum dibuat, tapi biarkan proses berlanjut
                     \Log::error("Gagal menyimpan notifikasi ke DB: " . $e->getMessage());
                 }
 
                 // 2. Kirim sinyal ke Firebase agar HP pasien berbunyi saat itu juga
-                if ($user->fcm_token) {
+                // (Pastikan tabel employee_logins dan peserta_mcu_logins memiliki kolom fcm_token)
+                if (!empty($user->fcm_token)) {
                     $this->sendFcmNotification(
                         $user->fcm_token, 
                         "Laporan MCU Selesai!", 
