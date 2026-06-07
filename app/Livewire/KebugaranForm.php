@@ -165,7 +165,7 @@ class KebugaranForm extends Component
             $kebugaran->save();
 
             $this->poliData->file_path = $fullPath; 
-            $this->poliData->status = 'Done';
+            $this->poliData->status = 'Finished';
             $this->poliData->save();
 
             session()->flash('success', 'Perhitungan berhasil disimpan!');

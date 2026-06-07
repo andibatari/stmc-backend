@@ -291,7 +291,7 @@ class PoliFisikForm extends Component
             $this->fisikResult->save();
 
             $this->poliData->file_path = $storagePath;
-            $this->poliData->status = 'Done';
+            $this->poliData->status = 'Finished';
             $this->poliData->save();
 
             session()->flash('success', 'Hasil pemeriksaan fisik dan laporan PDF berhasil disimpan!');

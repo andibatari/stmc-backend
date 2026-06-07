@@ -217,7 +217,7 @@ class PoliGigiForm extends Component
             $this->poliGigiResult->save(); 
 
             $this->poliData->file_path = $storagePath;
-            $this->poliData->status = 'Done';
+            $this->poliData->status = 'Finished';
             $this->poliData->save();
             
             session()->flash('success', 'Hasil pemeriksaan gigi dan laporan PDF berhasil disimpan!');
