@@ -302,10 +302,10 @@ class JadwalMcuController extends Controller
     private function sendFcmNotification($fcmToken, $title, $body, $jadwalId)
     {
         try {
-            // 1. Tunjuk lokasi file JSON yang baru saja kamu buat
+            // 1. Tunjuk lokasi file JSON yang sudah kamu simpan di storage/app/
             $credentialsFilePath = storage_path('app/firebase-auth.json');
 
-            // 2. Buat Akses Token Sementara (Berlaku 1 Jam) menggunakan Google Client
+            // 2. Buat Akses Token (Google API)
             $client = new \Google\Client();
             $client->setAuthConfig($credentialsFilePath);
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
@@ -313,11 +313,11 @@ class JadwalMcuController extends Controller
             $tokenArray = $client->fetchAccessTokenWithAssertion();
             $accessToken = $tokenArray['access_token'];
 
-            // 3. ID Proyek Firebase milikmu (Diambil dari JSON)
+            // 3. ID Proyek Firebase milikmu
             $projectId = 'stmc-62e04';
             $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
-            // 4. Format Payload FCM v1 (Strukturnya berbeda dengan yang lama!)
+            // 4. Format Payload FCM v1
             $data = [
                 "message" => [
                     "token" => $fcmToken,
@@ -333,15 +333,15 @@ class JadwalMcuController extends Controller
                     ],
                     "data" => [
                         "type" => "mcu_finished",
-                        // FCM v1 mewajibkan semua data bertipe String
-                        "jadwal_id" => (string) $jadwalId 
+                        "jadwal_id" => (string) $jadwalId,
+                        // 🌟 TAMBAHAN LINK AGAR TOMBOL DI FLUTTER MUNCUL
+                        "link" => "https://stmc-health.my.id" 
                     ]
                 ]
             ];
 
-            // 5. Tembakkan notifikasi menggunakan Token yang didapat
-            \Illuminate\Support\Facades\Http::withToken($accessToken)
-                ->post($url, $data);
+            // 5. Tembakkan notifikasi
+            \Illuminate\Support\Facades\Http::withToken($accessToken)->post($url, $data);
 
         } catch (\Exception $e) {
             \Log::error("FCM v1 Send Error: " . $e->getMessage());
