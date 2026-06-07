@@ -179,6 +179,44 @@ class JadwalMcuController extends Controller
         ]);
         
         $jadwal->update(['status' => $validatedData['status']]);
+
+        // =========================================================
+        // 🌟 SISTEM NOTIFIKASI KETIKA STATUS BERUBAH MENJADI FINISHED
+        // =========================================================
+        if ($jadwal->status === 'Finished') {
+            
+            // Cari tahu siapa pasiennya untuk dikirimi notifikasi
+            $jadwal->load(['karyawan.user', 'pesertaMcu.user']); // Load relasi user untuk mencegah N+1
+            $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
+            $user = $patient->user ?? null;
+
+            if ($user) {
+                // 1. Simpan riwayat notifikasi ke Database agar bisa dilihat di Inbox HP
+                try {
+                    // Catatan: Pastikan kamu sudah membuat migration untuk tabel 'notifications'
+                    \App\Models\Notification::create([
+                        'user_id' => $user->id,
+                        'title' => 'Laporan MCU Selesai!',
+                        'message' => "Medical Check Up Anda telah selesai. Laporan Gabungan lengkap dari semua poli sudah dapat diunduh.",
+                        'is_read' => false, // Default belum dibaca
+                    ]);
+                } catch (\Exception $e) {
+                    // Log error jika tabel notification belum dibuat, tapi biarkan proses berlanjut
+                    \Log::error("Gagal menyimpan notifikasi ke DB: " . $e->getMessage());
+                }
+
+                // 2. Kirim sinyal ke Firebase agar HP pasien berbunyi saat itu juga
+                if ($user->fcm_token) {
+                    $this->sendFcmNotification(
+                        $user->fcm_token, 
+                        "Laporan MCU Selesai!", 
+                        "Medical Check Up Anda telah selesai. Laporan sudah dapat diunduh.",
+                        $jadwal->id
+                    );
+                }
+            }
+        }
+        // =========================================================
         
         return back()->with('success', 'Schedule status successfully updated!');
     }
@@ -246,6 +284,59 @@ class JadwalMcuController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan saat memperbarui jadwal: ' . $e->getMessage())->withInput();
+        }
+    }
+
+
+    // =========================================================
+    // 🌟 PRIVATE FUNCTION UNTUK MENGIRIM PUSH NOTIFICATION FCM
+    // =========================================================
+    private function sendFcmNotification($fcmToken, $title, $body, $jadwalId)
+    {
+        try {
+            // 1. Tunjuk lokasi file JSON yang baru saja kamu buat
+            $credentialsFilePath = storage_path('app/firebase-auth.json');
+
+            // 2. Buat Akses Token Sementara (Berlaku 1 Jam) menggunakan Google Client
+            $client = new \Google\Client();
+            $client->setAuthConfig($credentialsFilePath);
+            $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
+            
+            $tokenArray = $client->fetchAccessTokenWithAssertion();
+            $accessToken = $tokenArray['access_token'];
+
+            // 3. ID Proyek Firebase milikmu (Diambil dari JSON)
+            $projectId = 'stmc-62e04';
+            $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
+
+            // 4. Format Payload FCM v1 (Strukturnya berbeda dengan yang lama!)
+            $data = [
+                "message" => [
+                    "token" => $fcmToken,
+                    "notification" => [
+                        "title" => $title,
+                        "body" => $body
+                    ],
+                    "android" => [
+                        "notification" => [
+                            "sound" => "default",
+                            "channel_id" => "channel_panggilan_poli"
+                        ]
+                    ],
+                    "data" => [
+                        "type" => "mcu_finished",
+                        // FCM v1 mewajibkan semua data bertipe String
+                        "jadwal_id" => (string) $jadwalId 
+                    ]
+                ]
+            ];
+
+            // 5. Tembakkan notifikasi menggunakan Token yang didapat
+            \Illuminate\Support\Facades\Http::withToken($accessToken)
+                ->post($url, $data);
+
+        } catch (\Exception $e) {
+            \Log::error("FCM v1 Send Error: " . $e->getMessage());
         }
     }
 
