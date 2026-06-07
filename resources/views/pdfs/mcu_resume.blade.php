@@ -48,12 +48,11 @@
     {{-- KOP SURAT / HEADER KLINIK STMC --}}
     <div class="header-container">
         <div class="header-cell header-left">
-            {{-- PENGAMAN LOGO: Hanya merender gambar jika variabel ada isinya --}}
             @if(!empty($setting_logo_stmc))
-                <img class="header-logo" src="{{ public_path($setting_logo_stmc) }}" alt="Logo SIG">
+                <img class="header-logo" src="{{ $setting_logo_stmc }}" alt="Logo SIG">
             @endif
             @if(!empty($setting_logo_tonasa))
-                <img class="header-logo" src="{{ public_path($setting_logo_tonasa) }}" alt="Logo Tonasa">
+                <img class="header-logo" src="{{ $setting_logo_tonasa }}" alt="Logo Tonasa">
             @endif
         </div>
         <div class="header-cell header-center">

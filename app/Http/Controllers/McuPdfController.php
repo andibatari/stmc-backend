@@ -61,21 +61,38 @@ class McuPdfController extends Controller
 
         $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
         
-        // MENGGUNAKAN TRY-CATCH AGAR TIDAK ERROR JIKA TABEL SETTING TIDAK ADA
-        try {
-            $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
-            $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
-        } catch (\Exception $e) {
-            $namaKepalaKlinik = 'Dr. Penanggung Jawab';
-            $teksDisclaimerRaw = 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
-        }
-        
+        // 🌟 AMBIL DATA DARI DATABASE (System Settings)
+        $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
+        $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
         $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
-        
-        // 🌟 PERBAIKAN LOGO: Langsung tunjuk path gambar statis di folder public
-        // Pastikan gambar ini ada di dalam folder 'public/images/' Laravel kamu
-        $logoStmc = 'images/logo-stmc.png';
-        $logoTonasa = 'images/logo-semen-tonasa.png';
+
+        // 🌟 FUNGSI PENGUBAH GAMBAR KE BASE64 (Agar DomPDF pasti bisa membaca gambarnya)
+        $getBase64Image = function($dbPath, $defaultPath) {
+            $fullPath = null;
+            
+            // 1. Cek dari Database (Storage)
+            if ($dbPath) {
+                $cleanPath = str_replace('storage/', '', $dbPath);
+                $storagePath = storage_path('app/public/' . $cleanPath);
+                if (file_exists($storagePath)) $fullPath = $storagePath;
+            }
+            // 2. Jika tidak ada di Storage, pakai default dari public/images
+            if (!$fullPath && file_exists(public_path($defaultPath))) {
+                $fullPath = public_path($defaultPath);
+            }
+            
+            // 3. Konversi ke Base64
+            if ($fullPath) {
+                $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                $data = file_get_contents($fullPath);
+                return 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+            return ''; // Kosong jika tidak ada gambar sama sekali
+        };
+
+        // Konversi logo STMC dan Tonasa
+        $logoStmcBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_stmc')->value('value'), 'images/logo-stmc.png');
+        $logoTonasaBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_tonasa')->value('value'), 'images/logo-semen-tonasa.png');
         
         $linkValidasiPublik = route('validasi.pdf', $jadwal->qr_code_id);
         $qrCode = new QrCode($linkValidasiPublik);
@@ -99,11 +116,12 @@ class McuPdfController extends Controller
                 'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A', 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
                 'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A', 'nab_suhu_kerja' => 28.0 
             ],
-            // 🌟 PASTIKAN VARIABEL INI SAMA PERSIS DENGAN YANG DIBUTUHKAN DI BLADE
+            
+            // 🌟 KIRIM DATA YANG BENAR KE VIEW
             'setting_kepala_klinik' => $namaKepalaKlinik, 
             'setting_disclaimer'  => $teksDisclaimerFinal,
-            'setting_logo_stmc'   => $logoStmc, 
-            'setting_logo_tonasa' => $logoTonasa,
+            'setting_logo_stmc'   => $logoStmcBase64, 
+            'setting_logo_tonasa' => $logoTonasaBase64,
         ];
 
         return Pdf::loadView('pdfs.mcu_resume', $data);
