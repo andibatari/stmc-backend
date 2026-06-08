@@ -80,8 +80,6 @@ class CreateKaryawanForm extends Component
         'hubungan' => 'nullable|string',
         'jabatan' => 'nullable|string',
         'eselon' => 'nullable|string',
-        'suami_istri' => 'nullable|string',
-        'pekerjaan_suami_istri' => 'nullable|string',
         'provinsi_id' => 'nullable|integer|exists:provinsis,id',
         'nama_kabupaten' => 'nullable|string|max:255', // PERUBAHAN: String, bukan ID
         'nama_kecamatan' => 'nullable|string|max:255', // PERUBAHAN: String, bukan ID
