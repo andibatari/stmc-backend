@@ -71,7 +71,7 @@
             <form method="POST" action="{{ route('login') }}" class="space-y-5">
                 @csrf
                 <div>
-                    <label for="login_id" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2">Email / NIK / No. SAP</label>
+                    <label for="login_id" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-2"> No. SAP / NIK / Email</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
@@ -109,7 +109,7 @@
 
                 <div class="pt-2">
                     <button type="submit" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-red-600/30 text-sm font-black text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 hover:-translate-y-0.5 transition-all duration-300">
-                        Masuk ke Dashboard <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        Masuk<svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 </div>
             </form>
