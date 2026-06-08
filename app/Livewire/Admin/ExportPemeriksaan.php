@@ -66,9 +66,14 @@ class ExportPemeriksaan extends Component
                   ->where('karyawans.departemens_id', $this->departemens_id);
             $this->tipe_anggota = ''; 
         } elseif ($this->tipe_anggota) {
-            $query->where('peserta_mcus.tipe_anggota', $this->tipe_anggota);
-        } else {
-            $query->whereNotNull('jadwal_mcus.karyawan_id');
+            // Jika Kategori diisi, sesuaikan dengan filter baru
+            if ($this->tipe_anggota == 'Non-Karyawan') {
+                // Asumsi: Keluarga/Umum adalah semua yang BUKAN Karyawan
+                // Atau jika kamu punya flag spesifik, sesuaikan di sini
+                $query->whereNotIn('peserta_mcus.tipe_anggota', ['Karyawan']);
+            } else {
+                $query->where('peserta_mcus.tipe_anggota', $this->tipe_anggota);
+            }
         }
 
         $this->total_preview = $query->count();
@@ -91,7 +96,7 @@ class ExportPemeriksaan extends Component
         $statusLabels = ['Scheduled' => 'Terjadwal', 'Present' => 'Hadir / Proses', 'Finished' => 'Selesai', 'Canceled' => 'Dibatalkan'];
         
         // List Kategori Statis agar dropdown selalu muncul
-        $listKategori = ['Karyawan', 'Keluarga', 'Umum', 'Kontraktor'];
+        $listKategori = ['Karyawan', 'Non-Karyawan'];
 
         $listUnitKerja = collect();
         if ($this->tableDept) {
