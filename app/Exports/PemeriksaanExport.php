@@ -28,6 +28,7 @@ class PemeriksaanExport implements FromQuery, WithHeadings, WithMapping
             ->select([
                 'jadwal_mcus.*', 
                 'peserta_mcus.nama_lengkap as nama_umum',
+                'peserta_mcus.nik_pasien', // Pastikan nik_pasien ikut ditarik
                 'karyawans.nama_karyawan', 
                 'karyawans.no_sap as sap_karyawan',
                 'departemens.nama_departemen as dept_karyawan',
@@ -42,15 +43,17 @@ class PemeriksaanExport implements FromQuery, WithHeadings, WithMapping
             $query->where('jadwal_mcus.status', $this->filters['status_kehadiran']);
         }
 
-        // LOGIKA SINKRON: Mengunci data karyawan jika departemen atau default dipilih
+        // Filter Departemen
         if (!empty($this->filters['departemens_id'])) {
-            $query->whereNotNull('jadwal_mcus.karyawan_id')
-                ->where('karyawans.departemens_id', $this->filters['departemens_id']);
-        } elseif (!empty($this->filters['tipe_anggota'])) {
-            $query->where('peserta_mcus.tipe_anggota', $this->filters['tipe_anggota']);
-        } else {
-            // Jika tidak ada filter khusus, tampilkan hanya karyawan saja
-            $query->whereNotNull('jadwal_mcus.karyawan_id');
+            $query->where('karyawans.departemens_id', $this->filters['departemens_id']);
+        } 
+        // Filter Kategori (Karyawan vs Keluarga/Umum)
+        elseif (!empty($this->filters['tipe_anggota'])) {
+            if ($this->filters['tipe_anggota'] == 'Karyawan') {
+                $query->whereNotNull('jadwal_mcus.karyawan_id');
+            } else {
+                $query->whereNull('jadwal_mcus.karyawan_id'); // Ini untuk Keluarga/Umum
+            }
         }
 
         return $query->orderBy('jadwal_mcus.tanggal_mcu', 'desc');
@@ -60,16 +63,9 @@ class PemeriksaanExport implements FromQuery, WithHeadings, WithMapping
     {
         $resume = json_decode($jadwal->resume_body, true) ?? [];
         
-        // Logika Fallback agar Nama dan SAP tidak kosong di Excel
+        // Gunakan alias yang sudah didefinisikan di SELECT tadi
         $namaFinal = $jadwal->nama_karyawan ?: ($jadwal->nama_umum ?: $jadwal->nama_pasien);
-        $sapFinal = $jadwal->sap_karyawan ?: ($jadwal->no_sap ?: '-');
-
-        $statusIndo = [
-            'Scheduled' => 'Terjadwal',
-            'Present'   => 'Hadir',
-            'Finished'  => 'Selesai',
-            'Canceled'  => 'Dibatalkan'
-        ];
+        $sapFinal = $jadwal->sap_karyawan ?: ($jadwal->nik_pasien ?: '-');
 
         return [
             $sapFinal,
