@@ -58,16 +58,15 @@ class KaryawanImport implements ToModel, WithHeadingRow
         ]);
 
         $karyawan->save(); // Simpan karyawan untuk mendapatkan ID
+        // Kita gunakan fallback 'password' jika kolom password di excel kosong
+        $passwordLogin = $row['password'] ?? 'password';
 
-        // 2. Buat entri EmployeeLogin baru
-        if (isset($row['email']) && isset($row['password'])) {
-            $login = new EmployeeLogin([
-                'karyawan_id' => $karyawan->id, // Gunakan ID karyawan yang baru dibuat
-                'no_sap'       => $row['no_sap'],
-                'password'    => bcrypt($row['password']),
-            ]);
-            $login->save();
-        }
+        $login = new EmployeeLogin([
+            'karyawan_id' => $karyawan->id, 
+            'no_sap'      => $row['no_sap'],
+            'password'    => bcrypt($passwordLogin),
+        ]);
+        $login->save();
 
         DB::commit();
         return $karyawan;
