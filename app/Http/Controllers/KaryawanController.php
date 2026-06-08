@@ -81,7 +81,7 @@ class KaryawanController extends Controller
             'file_peserta_mcu' => 'required|mimes:xlsx,xls,csv'
         ]);
 
-        Excel::import(new PesertaMcuImport, $request->file('file_peserta_mcu'));
+        Excel::import(new pesertaMcuImport, $request->file('file_peserta_mcu'));
 
         return redirect()->back()->with('success', 'Data pasien berhasil diimport.');
     }
