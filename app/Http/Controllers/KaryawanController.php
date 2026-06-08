@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use App\Imports\KaryawanImport;
 use App\Imports\KaryawanExport;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\pesertaMcuImport;
+use App\Imports\PesertaMcuImport;
 use App\Models\PesertaMcu;
 
 class KaryawanController extends Controller
@@ -75,13 +75,13 @@ class KaryawanController extends Controller
         return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\KaryawanExport, 'Data Karyawan.xlsx');
     }
 
-    public function pesertaMcuImport(Request $request)
+    public function PesertaMcuImport(Request $request)
     {
         $request->validate([
             'file_peserta_mcu' => 'required|mimes:xlsx,xls,csv'
         ]);
 
-        Excel::import(new pesertaMcuImport, $request->file('file_peserta_mcu'));
+        Excel::import(new PesertaMcuImport, $request->file('file_peserta_mcu'));
 
         return redirect()->back()->with('success', 'Data pasien berhasil diimport.');
     }
