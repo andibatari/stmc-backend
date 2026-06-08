@@ -135,8 +135,7 @@ class CreateKaryawanForm extends Component
             'no_sap', 'nik_karyawan', 'nama_karyawan', 'jenis_kelamin',
             'pendidikan', 'kebangsaan', 'tempat_lahir', 'umur',
             'tinggi_badan', 'berat_badan', 'golongan_darah', 'pekerjaan', 'agama', 'status_pernikahan',
-            'hubungan', 'jabatan', 'eselon', 'suami_istri',
-            'pekerjaan_suami_istri', 'unit_kerjas_id', 'departemens_id',
+            'hubungan', 'jabatan', 'eselon', 'unit_kerjas_id', 'departemens_id',
             'tanggal_lahir', 'alamat', 'email', 'no_hp', 'password',
             'provinsi_id', 'nama_kabupaten', 'nama_kecamatan'
         ]);
