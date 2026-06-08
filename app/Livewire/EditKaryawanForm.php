@@ -197,8 +197,10 @@ class EditKaryawanForm extends Component
         if ($this->password) {
             $this->karyawan->employeeLogin()->updateOrCreate(
                 ['karyawan_id' => $this->karyawan->id],
-                ['password' => Hash::make($this->password)],
-                ['no_sap' => $this->no_sap] // Pastikan no_sap juga diperbarui di employee_logins
+                [
+                    'password' => Hash::make($this->password),
+                    'no_sap' => $this->no_sap,
+                ],
             );
         }
 
