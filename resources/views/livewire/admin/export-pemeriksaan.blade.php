@@ -50,9 +50,11 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Kategori Peserta</label>
-                        <select wire:model.live="tipe_anggota" {{ $departemens_id ? 'disabled' : '' }} class="w-full border border-slate-200 rounded-xl focus:border-red-500 focus:ring-red-500 shadow-sm p-3 text-sm font-medium transition-colors cursor-pointer {{ $departemens_id ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white' }}">
+                        <select wire:model.live="tipe_anggota" class="w-full border border-slate-200 bg-white rounded-xl focus:border-red-500 focus:ring-red-500 shadow-sm p-3 text-sm font-medium transition-colors cursor-pointer">
                             <option value="">Semua Kategori</option>
-                            @foreach($listKategori as $kat) <option value="{{ $kat }}">{{ $kat }}</option> @endforeach
+                            @foreach($listKategori as $kat) 
+                                <option value="{{ $kat }}">{{ $kat }}</option> 
+                            @endforeach
                         </select>
                     </div>
                     <div>
