@@ -42,7 +42,7 @@
                                 <option value="superadmin">Superadmin (Akses Penuh)</option>
                                 <option value="admin">Administrator Biasa</option>
                                 <option value="dokter">Dokter</option>
-                                <option value="karyawan">User Biasa</option>
+                                <option value="karyawan">Karyawan</option>
                             </select>
                         </div>
 
