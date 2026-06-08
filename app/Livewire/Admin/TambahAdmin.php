@@ -7,6 +7,7 @@ use App\Models\AdminUser;
 use App\Models\Dokter;
 use App\Models\Karyawan;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Livewire\WithPagination;
 
 class TambahAdmin extends Component
@@ -14,27 +15,30 @@ class TambahAdmin extends Component
     use WithPagination;
 
     public $adminId;
-    public $no_sap, $nik, $nama_lengkap, $email, $password, $role = 'admin';
+    public $no_sap, $nik, $nama_lengkap, $email, $password;
+    
+    // 🌟 PERBAIKAN: Memisahkan Sumber Data dan Hak Akses
+    public $tipe_personel = 'manual'; // manual, dokter, karyawan
+    public $role = 'admin'; // superadmin, admin, dokter, karyawan
+    
     public $editPasswordId = null;
     public $newPassword = '';
     public $isEditing = false;
     
     // Properti untuk Dokter
     public $listDokter = []; 
-    public $selectedDokterId; // ID Dokter yang dipilih dari dropdown
+    public $selectedDokterId; 
 
-    // --- PROPERTI BARU UNTUK PENCARIAN KARYAWAN (AUTOCOMPLETE) ---
-    public $searchQuery = ''; // Field pencarian Karyawan (diisi No. SAP/Nama)
-    public $searchedKaryawans = []; // Hasil daftar Karyawan yang ditemukan
-    public $selectedKaryawanId = null; // ID Karyawan yang dikonfirmasi
-    public $karyawanFound = false; // Status apakah Karyawan/Dokter sudah ditemukan dan diisi
-
+    // Properti untuk Pencarian Karyawan (AUTOCOMPLETE)
+    public $searchQuery = ''; 
+    public $searchedKaryawans = []; 
+    public $selectedKaryawanId = null; 
+    public $karyawanFound = false; 
 
     protected $rules = [
-        'no_sap' => 'nullable|string|max:50|unique:admin_users,no_sap',
+        'no_sap' => 'nullable|string|max:50',
         'nama_lengkap' => 'required|string|max:255',
-        'email' => 'required|email|unique:admin_users,email',
-        'password' => 'required|min:6',
+        'email' => 'required|email',
         'role' => 'required|string',
         'nik' => 'nullable|string',
     ];
@@ -45,138 +49,120 @@ class TambahAdmin extends Component
 
     public function mount()
     {
-        // 1. CEK HAK AKSES (GATEKEEPER)
-        // Jika yang login BUKAN superadmin atau admin, tendang keluar!
+        // CEK HAK AKSES (GATEKEEPER)
         if (!in_array(auth()->user()->role, ['superadmin', 'admin'])) {
             abort(403, 'Akses Ditolak! Halaman ini khusus untuk Superadmin/Admin.');
         }
 
-        // 2. Kode asli kamu tetap berjalan jika dia lolos pengecekan
         $this->listDokter = Dokter::pluck('nama_lengkap', 'id');
     }
 
     public function getAdminUsersProperty()
     {
-        // Gunakan with('dokter') untuk memuat data dokter yang berelasi
-        // Query ini tetap mengembalikan koleksi model AdminUser, tapi dengan data dokter yang sudah dimuat
         return AdminUser::with('dokter')->latest()->paginate(10);
     }
 
-    // Validasi email unik untuk mode UPDATE
     protected function getValidationRules()
     {
         $rules = $this->rules;
         $rules['email'] = [
             'required',
             'email',
-            // Pastikan email unik, kecuali admin yang sedang di edit
             Rule::unique('admin_users', 'email')->ignore($this->adminId), 
         ];
         
-        // Aturan validasi tambahan saat menyimpan
         if (!$this->isEditing && !$this->adminId) {
              $rules['password'] = 'required|min:6';
         }
         
-        // Jika role dokter, No. SAP wajib diisi (manual)
-        if ($this->role === 'dokter') {
-             $rules['no_sap'] = 'required|string|max:50|unique:admin_users,no_sap,' . $this->adminId;
+        // Validasi SAP diabaikan keunikan ketatnya disini agar fleksibel jika kosong
+        if (!empty($this->no_sap)) {
+             $rules['no_sap'] = [
+                 'nullable',
+                 'string',
+                 'max:50',
+                 Rule::unique('admin_users', 'no_sap')->ignore($this->adminId)
+             ];
         }
 
         return $rules;
     }
 
-    // --- LOGIKA PENCARIAN INSTAN KARYAWAN (AUTOCOMPLETE) ---
+    // 🌟 PERBAIKAN: Reset form HANYA saat sumber data (tipe personel) diubah
+    public function updatedTipePersonel($value)
+    {
+        $this->reset(['no_sap', 'nik', 'nama_lengkap', 'email', 'selectedDokterId', 'searchQuery', 'searchedKaryawans', 'selectedKaryawanId', 'karyawanFound']);
+        
+        // Auto-suggest role agar praktis, tapi user tetap bisa ubah
+        if ($value === 'dokter') $this->role = 'dokter';
+        if ($value === 'manual') $this->role = 'admin';
+    }
+
     public function updatedSearchQuery($value)
     {
-        // Pastikan kolom NIK, Nama, Email direset jika pengguna mengubah query
         $this->reset(['nik', 'nama_lengkap', 'email', 'no_sap', 'selectedKaryawanId', 'karyawanFound']);
         
-        // Hanya cari jika role adalah karyawan dan query minimal 2 karakter
-        if ($this->role !== 'karyawan' || strlen($value) < 2) { 
+        if ($this->tipe_personel !== 'karyawan' || strlen($value) < 2) { 
             $this->searchedKaryawans = [];
             return;
         }
 
-        // Cari berdasarkan No. SAP atau Nama Karyawan (maksimal 5 hasil)
         $this->searchedKaryawans = Karyawan::where('no_sap', 'like', '%'.$value.'%')
             ->orWhere('nama_karyawan', 'like', '%'.$value.'%')
             ->limit(5)
             ->get();
     }
     
-    // --- PILIH HASIL PENCARIAN KARYAWAN (Mengisi semua field) ---
     public function selectKaryawan($id)
     {
         $karyawan = Karyawan::find($id);
         if ($karyawan) {
-            // Isi form secara otomatis
             $this->no_sap = $karyawan->no_sap;
             $this->nama_lengkap = $karyawan->nama_karyawan;
             $this->nik = $karyawan->nik_karyawan;
             $this->email = $karyawan->email;
             
-            // Simpan ID sumber
             $this->selectedKaryawanId = $id;
             $this->karyawanFound = true; 
             
-            // Tutup hasil pencarian
             $this->searchQuery = $karyawan->no_sap . ' - ' . $karyawan->nama_karyawan;
             $this->searchedKaryawans = []; 
         }
     }
     
-    // --- PILIH DOKTER DARI DROPDOWN ---
     public function updatedSelectedDokterId($value)
     {
-        // Reset field yang terisi otomatis (kecuali password)
         $this->reset(['no_sap', 'nik', 'nama_lengkap', 'email', 'selectedKaryawanId', 'karyawanFound']);
         
         if (!empty($value)) {
             $dokter = Dokter::find($value);
             if ($dokter) {
-                // Isi form
                 $this->nama_lengkap = $dokter->nama_lengkap;
                 $this->nik = $dokter->nik;
                 $this->email = $dokter->email;
-                // No. SAP DIBIARKAN KOSONG untuk diisi manual
-                $this->karyawanFound = true; // Status ditemukan
+                $this->karyawanFound = true; 
             }
         } else {
-            // Reset jika dropdown dikosongkan
             $this->reset(['nama_lengkap', 'nik', 'email', 'no_sap', 'karyawanFound']);
         }
     }
 
-    public function updatedRole($value)
-    {
-        // Reset field yang dinamis saat role berubah
-        $this->reset(['no_sap', 'nik', 'nama_lengkap', 'email', 'password', 'selectedDokterId', 'searchQuery', 'searchedKaryawans', 'selectedKaryawanId', 'karyawanFound']);
-    }
-
     public function save()
     {
-        // Aturan validasi dinamis: Password hanya required saat mode tambah
-        $rules = $this->rules;
-        if (!$this->isEditing) {
-            $rules['password'] = 'required|min:6';
-        }
-        $this->validate($rules);
+        $this->validate($this->getValidationRules());
         
         $dokterId = null;
         $karyawanId = null;
         
-        // Tentukan ID Sumber yang Benar
-        if ($this->role === 'dokter') {
+        // 🌟 PERBAIKAN: Validasi berdasarkan tipe personel, bukan role
+        if ($this->tipe_personel === 'dokter') {
             $dokterId = $this->selectedDokterId;
-            // Validasi tambahan jika role dokter, dokter_id harus terisi
             if (empty($dokterId)) {
                  session()->flash('error', 'Silakan pilih Dokter dari daftar.');
                  return;
             }
-        } elseif ($this->role === 'karyawan') {
+        } elseif ($this->tipe_personel === 'karyawan') {
             $karyawanId = $this->selectedKaryawanId;
-            // Validasi tambahan jika role karyawan, karyawan_id harus terisi dari lookup
             if (empty($karyawanId)) {
                 session()->flash('error', 'Silakan cari dan pilih Karyawan yang valid.');
                 return;
@@ -194,7 +180,7 @@ class TambahAdmin extends Component
             'karyawan_id' => $karyawanId, 
         ]);
 
-        session()->flash('success', 'Admin baru berhasil ditambahkan.');
+        session()->flash('success', 'Akun pengguna sistem berhasil ditambahkan.');
         $this->reset(['no_sap', 'nama_lengkap', 'nik', 'email', 'password', 'selectedDokterId', 'selectedKaryawanId', 'searchQuery', 'karyawanFound']);
     }
 
@@ -209,33 +195,41 @@ class TambahAdmin extends Component
         $this->email = $admin->email;
         $this->role = $admin->role;
 
-        // Tentukan ID sumber saat edit
-        $this->selectedDokterId = $admin->dokter_id;
-        $this->selectedKaryawanId = $admin->karyawan_id;
-        $this->karyawanFound = ($admin->dokter_id || $admin->karyawan_id);
+        // 🌟 PERBAIKAN: Menentukan ulang tipe personel saat mode edit
+        if ($admin->karyawan_id) {
+            $this->tipe_personel = 'karyawan';
+            $this->selectedKaryawanId = $admin->karyawan_id;
+            $this->karyawanFound = true;
+        } elseif ($admin->dokter_id) {
+            $this->tipe_personel = 'dokter';
+            $this->selectedDokterId = $admin->dokter_id;
+            $this->karyawanFound = true;
+        } else {
+            $this->tipe_personel = 'manual';
+            $this->karyawanFound = false;
+        }
     }
 
     public function update()
     {
-        $validatedData = $this->validate([
-            'no_sap' => 'nullable|string|max:50|unique:admin_users,no_sap,' . $this->adminId,
-            'nama_lengkap' => 'required|string|max:255',
-            'nik' => 'nullable|string',
-            'email' => 'required|email|unique:admin_users,email,' . $this->adminId,
-            'role' => 'required|string',
-        ]);
+        $this->validate($this->getValidationRules());
 
         $admin = AdminUser::findOrFail($this->adminId);
-        $admin->update($validatedData);
+        $admin->update([
+            'no_sap' => $this->no_sap,
+            'nama_lengkap' => $this->nama_lengkap,
+            'nik' => $this->nik,
+            'email' => $this->email,
+            'role' => $this->role,
+        ]);
 
         session()->flash('success', 'Data admin berhasil diperbarui.');
-        $this->reset(['adminId', 'no_sap', 'nik','nama_lengkap', 'email', 'role']);
-        $this->isEditing = false;
+        $this->cancelEdit();
     }
 
     public function cancelEdit()
     {
-        $this->reset(['adminId', 'no_sap', 'nama_lengkap', 'nik','email', 'role']);
+        $this->reset(['adminId', 'no_sap', 'nama_lengkap', 'nik','email', 'role', 'tipe_personel', 'selectedKaryawanId', 'selectedDokterId', 'karyawanFound', 'searchQuery']);
         $this->isEditing = false;
     }
 
@@ -252,14 +246,14 @@ class TambahAdmin extends Component
         $admin->update([
             'password' => Hash::make($this->newPassword),
         ]);
-        session()->flash('success', 'Password admin berhasil diperbarui.');
+        session()->flash('success', 'Password akun berhasil diperbarui.');
         $this->reset(['editPasswordId', 'newPassword']);
     }
 
     public function delete($id)
     {
         AdminUser::find($id)->delete();
-        session()->flash('success', 'Admin berhasil dihapus.');
+        session()->flash('success', 'Akun berhasil dihapus.');
     }
 
     public function render()

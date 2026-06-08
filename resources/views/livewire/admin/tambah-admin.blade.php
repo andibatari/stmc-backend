@@ -1,4 +1,4 @@
-<div> {{-- ROOT ELEMENT LIVEWIRE WAJIB DI SINI --}}
+<div> 
     @section('title', 'Manajemen Admin & Sistem')
 
     <div class="px-3 md:px-6 py-4 md:py-6 min-h-screen">
@@ -15,33 +15,55 @@
                 </div>
             @endif
 
+            @if (session()->has('error'))
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 md:px-5 py-3 md:py-4 rounded-xl md:rounded-2xl flex items-center shadow-sm mb-6 animate-fade-in font-bold text-xs md:text-sm">
+                    <i class="fas fa-exclamation-circle text-lg md:text-xl mr-3"></i> {{ session('error') }}
+                </div>
+            @endif
+
             <form wire:submit.prevent="{{ $isEditing ? 'update' : 'save' }}" class="space-y-4 md:space-y-6">
                 <div class="bg-slate-50 p-5 md:p-6 rounded-2xl md:rounded-[2rem] border border-slate-100 relative z-20 shadow-inner">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+                        
+                        {{-- 🌟 1. DROPDOWN SUMBER PERSONEL --}}
                         <div>
-                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Pilih Role / Hak Akses</label>
-                            <select wire:model.live="role" class="block w-full px-4 py-3.5 md:py-3 text-sm font-black rounded-xl border border-slate-200 bg-white focus:border-red-500 text-red-600 cursor-pointer shadow-sm">
-                                <option value="admin">Administrator Root</option>
-                                <option value="dokter">Dokter Pemeriksa</option>
-                                <option value="karyawan">Karyawan PTST</option>
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Sumber Data Personel</label>
+                            <select wire:model.live="tipe_personel" class="block w-full px-4 py-3.5 md:py-3 text-sm font-black rounded-xl border border-slate-200 bg-white focus:border-red-500 text-slate-700 cursor-pointer shadow-sm" {{ $isEditing ? 'disabled' : '' }}>
+                                <option value="manual">Admin Luar (Ketik Manual)</option>
+                                <option value="karyawan">Karyawan PT. Semen Tonasa</option>
+                                <option value="dokter">Dokter Pemeriksa (Klinik)</option>
                             </select>
                         </div>
 
-                        <div class="relative">
-                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Penautan Akun (Pilih Personel)</label>
+                        {{-- 🌟 2. DROPDOWN HAK AKSES/ROLE --}}
+                        <div>
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Hak Akses Sistem (Role)</label>
+                            <select wire:model.live="role" class="block w-full px-4 py-3.5 md:py-3 text-sm font-black rounded-xl border border-slate-200 bg-white focus:border-red-500 text-red-600 cursor-pointer shadow-sm">
+                                <option value="superadmin">Superadmin (Akses Penuh)</option>
+                                <option value="admin">Administrator Biasa</option>
+                                <option value="dokter">Dokter</option>
+                                <option value="karyawan">User Biasa</option>
+                            </select>
+                        </div>
+
+                        {{-- 🌟 3. BLOK PENCARIAN/INPUT (Dinamis berubah lebar menyesuaikan tipe) --}}
+                        <div class="relative {{ $tipe_personel === 'manual' ? '' : 'md:col-span-2' }}">
+                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">
+                                {{ $tipe_personel === 'manual' ? 'Nama Lengkap' : 'Pencarian & Penautan Akun' }}
+                            </label>
                             
-                            @if ($role === 'dokter')
-                                <select wire:model.live="selectedDokterId" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 cursor-pointer shadow-sm">
+                            @if ($tipe_personel === 'dokter')
+                                <select wire:model.live="selectedDokterId" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 cursor-pointer shadow-sm" {{ $isEditing ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Dokter Terdaftar --</option>
                                     @foreach ($listDokter as $id => $nama) <option value="{{ $id }}">{{ $nama }}</option> @endforeach
                                 </select>
-                            @elseif ($role === 'karyawan')
+                            @elseif ($tipe_personel === 'karyawan')
                                 <div class="relative">
                                     <i class="fas fa-search absolute left-4 top-4 md:top-3.5 text-slate-400 text-sm"></i>
-                                    <input type="text" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari by SAP atau Nama..." class="block w-full pl-10 pr-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                                    <input type="text" wire:model.live.debounce.300ms="searchQuery" placeholder="Cari Karyawan by NIK, SAP, atau Nama..." class="block w-full pl-10 pr-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm" {{ $isEditing ? 'disabled' : '' }}>
                                 </div>
                                 
-                                @if (!empty($searchQuery) && count($searchedKaryawans) > 0)
+                                @if (!empty($searchQuery) && count($searchedKaryawans) > 0 && !$karyawanFound)
                                     <div class="absolute z-[100] w-full bg-white border border-slate-100 mt-2 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto overflow-hidden divide-y divide-slate-50">
                                         @foreach ($searchedKaryawans as $k)
                                             <p wire:click="selectKaryawan({{ $k->id }})" class="p-4 cursor-pointer hover:bg-slate-50 hover:text-red-600 text-sm font-bold text-slate-700 transition-colors">
@@ -54,20 +76,22 @@
                                 <input type="text" wire:model="nama_lengkap" placeholder="Ketik nama admin baru..." class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
                             @endif
 
-                            @if ($selectedKaryawanId || $selectedDokterId)
-                                 <p class="text-[10px] md:text-xs font-bold text-emerald-600 mt-2"><i class="fas fa-check-circle mr-1"></i> Data ditautkan: {{ $nama_lengkap }} ({{ $no_sap }})</p>
+                            @if ($karyawanFound)
+                                 <p class="text-[10px] md:text-xs font-bold text-emerald-600 mt-2"><i class="fas fa-check-circle mr-1"></i> Data ditautkan: {{ $nama_lengkap }} ({{ $no_sap ?? 'Tidak Ada SAP' }})</p>
                             @endif
                             @error('nama_lengkap') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
 
+                        {{-- 4. KOLOM SISA --}}
                         <div>
                             <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">No. SAP / ID Karyawan</label>
-                            <input type="text" wire:model="no_sap" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 font-mono shadow-sm {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin' && ($selectedKaryawanId || $selectedDokterId)) ? 'disabled' : '' }}>
+                            <input type="text" wire:model="no_sap" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 font-mono shadow-sm {{ ($tipe_personel !== 'manual' && $karyawanFound) ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($tipe_personel !== 'manual' && $karyawanFound) ? 'disabled' : '' }}>
+                            @error('no_sap') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
                         
                         <div>
                             <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Alamat Email (Login)</label>
-                            <input type="email" wire:model="email" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 shadow-sm {{ ($role !== 'admin') ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($role !== 'admin') ? 'disabled' : '' }}>
+                            <input type="email" wire:model="email" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 focus:border-red-500 shadow-sm {{ ($tipe_personel !== 'manual' && $karyawanFound) ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-transparent' : 'bg-white' }}" {{ ($tipe_personel !== 'manual' && $karyawanFound) ? 'disabled' : '' }}>
                             @error('email') <p class="mt-1 text-[10px] md:text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                         </div>
 
@@ -101,7 +125,7 @@
 
         {{-- TABEL ADMIN --}}
         <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-5 md:p-10 border border-slate-100 max-w-7xl mx-auto">
-            <h4 class="text-lg md:text-xl font-black text-slate-800 mb-5 md:mb-6 border-b border-slate-100 pb-4">Database Administrator</h4>
+            <h4 class="text-lg md:text-xl font-black text-slate-800 mb-5 md:mb-6 border-b border-slate-100 pb-4">Database Akun Sistem</h4>
             
             <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-2xl">
                 <table class="min-w-full text-left">
@@ -121,7 +145,14 @@
                             </td>
                             <td class="px-6 py-4">
                                 <p class="text-sm font-medium text-slate-600 mb-1"><i class="fas fa-envelope mr-1 opacity-50"></i> {{ $admin->email }}</p>
-                                <span class="px-2 py-0.5 bg-red-50 text-red-600 font-black text-[10px] rounded uppercase border border-red-100">{{ $admin->role }}</span>
+                                
+                                {{-- Warna Indikator Superadmin Baru --}}
+                                <span class="px-2 py-0.5 font-black text-[10px] rounded uppercase border 
+                                    {{ $admin->role === 'superadmin' ? 'bg-purple-50 text-purple-600 border-purple-100' : 
+                                      ($admin->role === 'admin' ? 'bg-red-50 text-red-600 border-red-100' : 
+                                      ($admin->role === 'dokter' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100')) }}">
+                                    {{ $admin->role }}
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex justify-center gap-2">
@@ -132,7 +163,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 text-sm font-medium">Tidak ada data admin.</td></tr>
+                        <tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 text-sm font-medium">Tidak ada data akun.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -142,12 +173,17 @@
             <div class="md:hidden space-y-4">
                 @forelse ($this->adminUsers as $admin)
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-2 h-full {{ $admin->role === 'admin' ? 'bg-red-500' : ($admin->role === 'dokter' ? 'bg-blue-500' : 'bg-emerald-500') }}"></div>
+                    <div class="absolute top-0 right-0 w-2 h-full 
+                        {{ $admin->role === 'superadmin' ? 'bg-purple-500' : 
+                          ($admin->role === 'admin' ? 'bg-red-500' : 
+                          ($admin->role === 'dokter' ? 'bg-blue-500' : 'bg-emerald-500')) }}">
+                    </div>
                     <p class="font-black text-slate-800 text-base leading-tight">{{ $admin->nama_lengkap }}</p>
                     <div class="mt-1 mb-3">
                         <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border 
-                            {{ $admin->role === 'admin' ? 'bg-red-50 border-red-100 text-red-600' : 
-                              ($admin->role === 'dokter' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600') }}">
+                            {{ $admin->role === 'superadmin' ? 'bg-purple-50 border-purple-100 text-purple-600' : 
+                              ($admin->role === 'admin' ? 'bg-red-50 border-red-100 text-red-600' : 
+                              ($admin->role === 'dokter' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-emerald-50 border-emerald-100 text-emerald-600')) }}">
                             {{ $admin->role }}
                         </span>
                     </div>
@@ -164,7 +200,7 @@
                     </div>
                 </div>
                 @empty
-                    <div class="text-center py-8 text-slate-400 text-sm font-medium bg-slate-50 rounded-2xl border border-slate-100">Tidak ada admin.</div>
+                    <div class="text-center py-8 text-slate-400 text-sm font-medium bg-slate-50 rounded-2xl border border-slate-100">Tidak ada akun.</div>
                 @endforelse
             </div>
 
