@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Console\Commands; // Sesuaikan dengan namespace asli Anda jika bukan console commands, abaikan baris ini jika berbeda dan pertahankan namespace App\Livewire;
+
 namespace App\Livewire;
 
 use Livewire\Component;
@@ -16,8 +18,8 @@ class SearchKaryawan extends Component
     // Filter Pencarian
     public $searchSap = '';
     public $searchNama = '';
-    public $searchUnitKerja = ''; // Sekarang menyimpan ID
-    public $searchDepartemen = ''; // Sekarang menyimpan ID
+    public $searchUnitKerja = ''; 
+    public $searchDepartemen = ''; 
 
     public $searchNik = '';
     public $searchNamaPasien = '';
@@ -29,10 +31,25 @@ class SearchKaryawan extends Component
     public $listDepartemen = [];
     public $listUnitKerja = [];
 
-    protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'];
+    // FIX: Daftarkan 'activeTab' ke dalam query string agar Livewire memantau perubahan tab di URL
+    protected $queryString = [
+        'activeTab' => ['except' => 'ptst', 'as' => 'tab'], // Menampilkan ?tab=non-ptst di URL
+        'searchSap', 
+        'searchNama', 
+        'searchUnitKerja', 
+        'searchDepartemen', 
+        'searchNik', 
+        'searchNamaPasien', 
+        'searchPerusahaanAsal'
+    ];
 
     public function mount()
     {
+        // FIX: Ambil parameter 'tab' langsung dari request URL saat halaman diakses pertama kali
+        if (request()->has('tab')) {
+            $this->activeTab = request()->query('tab');
+        }
+
         // Tarik semua data departemen saat halaman pertama dimuat
         $this->listDepartemen = Departemen::all();
         
