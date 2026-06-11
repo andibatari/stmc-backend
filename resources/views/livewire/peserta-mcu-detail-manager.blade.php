@@ -1,4 +1,17 @@
 <div class="w-full max-w-7xl mx-auto px-3 md:px-0">
+
+    {{-- Header navigasi menggunakan flexbox. flex-col pada mobile agar bertumpuk, flex-row pada layar >= sm agar sejajar --}}
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 md:mb-6 gap-3">
+        <div>
+            <h1 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Profil Pasien</h1>
+            <p class="text-[10px] md:text-xs font-medium text-slate-500 mt-0.5">Pusat data identitas dan histori medical check-up.</p>
+        </div>
+        {{-- Tombol kembali. Menggunakan w-full di mobile agar tap-area maksimal, dan w-auto di desktop --}}
+        <a href="{{ route('karyawan.index') }}" class="w-full sm:w-auto inline-flex items-center justify-center bg-white border border-slate-200 text-slate-600 font-bold py-2 md:py-2.5 px-4 rounded-xl hover:bg-slate-50 transition-colors text-xs shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali
+        </a>
+    </div>
+
     <div class="flex flex-col lg:flex-row gap-4 md:gap-6">
         
         {{-- Kolom Kiri: Ringkasan Identitas --}}
