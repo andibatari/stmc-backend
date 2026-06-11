@@ -1,4 +1,4 @@
-@section('title', 'Profil & Riwayat MCU')
+@section('title', 'Profil & Riwayat MCU Karyawan')
 
 {{-- Pembungkus utama dengan max-w-7xl agar layout tidak melebar tak terbatas pada monitor besar --}}
 <div class="w-full max-w-7xl mx-auto px-3 md:px-0"> 
@@ -140,54 +140,70 @@
                     @if ($activeTab === 'riwayat')
                         <div class="animate-fade-in">
                             @if ($activeUser)
-                                {{-- Kontrol Filter Berbasis Tahun --}}
-                                <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                                    <h3 class="font-black text-sm text-slate-800">Riwayat Medical Check-Up</h3>
+                                <div class="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3 md:pb-4">
+                                    <h3 class="font-black text-sm md:text-lg text-slate-800">Kunjungan Medical Check-Up</h3>
                                     <div class="flex items-center gap-2">
-                                        <label class="text-[9px] font-bold text-slate-500 uppercase">Tahun:</label>
-                                        {{-- Input filter select dengan model.live memicu render ulang secara seketika --}}
-                                        <select wire:model.live="selectedYear" class="block rounded-lg border border-slate-200 bg-white shadow-sm text-xs font-bold p-1.5 focus:border-red-500 focus:ring-red-500 cursor-pointer">
+                                        <label class="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Tahun:</label>
+                                        {{-- Filterisasi data berbasis rentang waktu tahun (men-trigger lifecycle hook di Livewire saat berubah) --}}
+                                        <select wire:model.live="selectedYear" class="block rounded-lg md:rounded-xl border border-slate-200 bg-white shadow-sm text-xs font-bold p-1.5 md:p-2 focus:border-red-500 cursor-pointer">
                                             <option value="">Semua</option>
-                                            @for ($year = date('Y'); $year >= 2020; $year--)
-                                                <option value="{{ $year }}">{{ $year }}</option>
-                                            @endfor
+                                            @for ($year = date('Y'); $year >= 2020; $year--) <option value="{{ $year }}">{{ $year }}</option> @endfor
                                         </select>
                                     </div>
                                 </div>
 
-                                {{-- Render Komponen Tabel Riwayat (Desktop) --}}
-                                <div class="hidden md:block">
-                                    @include('livewire.partials.riwayat-mcu-table', ['user' => $activeUser, 'riwayatMcu' => $activeUser->jadwalMcu])
+                                {{-- Desktop Table --}}
+                                <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-xl">
+                                    <table class="min-w-full text-xs bg-white border-collapse text-left">
+                                        <thead class="bg-slate-50 border-b border-slate-100">
+                                            <tr>
+                                                <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tgl Periksa</th>
+                                                <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Dokter PIC</th>
+                                                <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+                                                <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-50">
+                                            @forelse ($filteredRecords as $jadwalMcu)
+                                            <tr class="hover:bg-slate-50">
+                                                <td class="py-3 px-3 font-bold text-slate-700">{{ \Carbon\Carbon::parse($jadwalMcu->tanggal_mcu)->format('d/m/Y') }}</td>
+                                                <td class="py-3 px-3 font-medium text-slate-600 truncate">{{ $jadwalMcu->dokter->nama_lengkap ?? '-' }}</td>
+                                                <td class="py-3 px-3 text-center">
+                                                    <span class="px-2 py-0.5 rounded text-[9px] font-bold border @if($jadwalMcu->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @elseif($jadwalMcu->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @else bg-slate-50 text-slate-600 border-slate-200 @endif">{{ $jadwalMcu->status ?? '-' }}</span>
+                                                </td>
+                                                <td class="py-3 px-3 text-center">
+                                                    <a href="{{ route('qr-patient-detail', $jadwalMcu->id) }}" class="text-[10px] font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 px-2 py-1 rounded transition-colors">Buka Berkas</a>
+                                                </td>
+                                            </tr>
+                                            @empty
+                                            <tr><td colspan="4" class="py-6 text-center text-slate-400 italic">Belum ada data kunjungan medis.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
                                 </div>
                                 
-                                {{-- Render Komponen Kartu Riwayat (Mobile/HP) --}}
+                                {{-- Mobile Card untuk layout yang optimal di layar beresolusi sempit --}}
                                 <div class="md:hidden space-y-3">
-                                    @if($filteredRecords->count() > 0)
-                                        @foreach($filteredRecords as $index => $riwayat)
-                                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-3">
-                                                <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
-                                                    <div>
-                                                        <span class="text-[8px] font-black uppercase text-slate-400">Tgl Periksa</span>
-                                                        <p class="font-bold text-slate-800 text-xs mt-0.5">{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d F Y') }}</p>
-                                                    </div>
-                                                    {{-- Styling indikator status berbasis percabangan blade --}}
-                                                    <span class="px-2 py-0.5 rounded text-[8px] font-bold border @if($riwayat->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @elseif($riwayat->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @else bg-slate-50 text-slate-600 border-slate-200 @endif">
-                                                        {{ $riwayat->status ?? 'N/A' }}
-                                                    </span>
+                                    @forelse($filteredRecords as $riwayat)
+                                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-3.5">
+                                            <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                                                <div>
+                                                    <span class="text-[9px] font-black uppercase text-slate-400">Tgl Periksa</span>
+                                                    <p class="font-bold text-slate-800 text-xs mt-0.5">{{ \Carbon\Carbon::parse($riwayat->tanggal_mcu)->format('d/m/Y') }}</p>
                                                 </div>
-                                                <div class="mb-3">
-                                                    <span class="text-[8px] font-black uppercase text-slate-400">Dokter PIC</span>
-                                                    <p class="font-medium text-slate-600 text-xs mt-0.5 truncate"><i class="fas fa-user-md mr-1 opacity-50"></i>{{ $riwayat->dokter->nama_lengkap ?? 'Belum Ditentukan' }}</p>
-                                                </div>
-                                                <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="block w-full py-1.5 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">Buka Detail Lab</a>
+                                                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold border @if($riwayat->status === 'Scheduled') bg-amber-50 text-amber-600 border-amber-200 @elseif($riwayat->status === 'Finished') bg-emerald-50 text-emerald-600 border-emerald-200 @else bg-slate-50 text-slate-600 border-slate-200 @endif">{{ $riwayat->status ?? '-' }}</span>
                                             </div>
-                                        @endforeach
-                                    @else
-                                        <div class="py-6 bg-slate-50 text-center rounded-xl border border-slate-100">
-                                            <i class="fas fa-folder-open text-xl text-slate-300 mb-1"></i>
-                                            <p class="text-[10px] font-bold text-slate-400">Tidak ada riwayat tahun ini.</p>
+                                            <div class="mb-3">
+                                                <span class="text-[9px] font-black uppercase text-slate-400">Dokter</span>
+                                                <p class="font-medium text-slate-600 text-[11px] mt-0.5 truncate">{{ $riwayat->dokter->nama_lengkap ?? '-' }}</p>
+                                            </div>
+                                            <a href="{{ route('qr-patient-detail', $riwayat->id) }}" class="block w-full py-1.5 text-center text-[10px] font-bold text-slate-700 bg-slate-100 rounded hover:bg-slate-200 transition-colors">Buka Berkas Laboratorium</a>
                                         </div>
-                                    @endif
+                                    @empty
+                                        <div class="py-8 bg-slate-50 text-center rounded-xl border border-slate-100">
+                                            <p class="text-xs font-bold text-slate-400">Tidak ada riwayat untuk tahun ini.</p>
+                                        </div>
+                                    @endforelse
                                 </div>
                             @else
                                 <div class="py-8 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-xl border border-slate-100">Pilih anggota keluarga terlebih dahulu.</div>
