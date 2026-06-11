@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Manajemen Pasien / Daftar Pasien')
+@section('title', 'Manajemen Pasien')
 
 @section('content')
     {{-- Wrapper utama dengan padding minimum di perangkat kecil untuk efisiensi ruang --}}

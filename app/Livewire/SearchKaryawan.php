@@ -106,7 +106,7 @@ class SearchKaryawan extends Component
             $query->when($this->searchDepartemen, fn($q) => $q->where('departemens_id', $this->searchDepartemen));
             $query->when($this->searchUnitKerja, fn($q) => $q->where('unit_kerjas_id', $this->searchUnitKerja));
             
-            $items = $query->paginate(15, pageName: 'ptstPage');
+            $items = $query->paginate(10, pageName: 'ptstPage');
         } else {
             $query = PesertaMcu::query()->with('karyawan');
             
@@ -114,7 +114,7 @@ class SearchKaryawan extends Component
             $query->when($this->searchNamaPasien, fn($q) => $q->where('nama_lengkap', 'like', '%' . $this->searchNamaPasien . '%'));
             $query->when($this->searchPerusahaanAsal, fn($q) => $q->where('perusahaan_asal', 'like', '%' . $this->searchPerusahaanAsal . '%'));
 
-            $items = $query->paginate(15, pageName: 'nonPtstPage');
+            $items = $query->paginate(10, pageName: 'nonPtstPage');
         }
 
         return view('livewire.search-karyawan', [
