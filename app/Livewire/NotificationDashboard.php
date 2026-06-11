@@ -226,12 +226,26 @@ class NotificationDashboard extends Component
                       });
                 });
             }
-            $this->jadwalsToNotify = $query->get();
+
+            // 🌟 PERBAIKAN DI SINI: Ubah Collection menjadi Array murni dengan map()
+            $this->jadwalsToNotify = $query->get()->map(function($data) {
+                return [
+                    'target_id' => $data->id, // Pastikan ID ini konsisten
+                    'id' => $data->id,        // Simpan juga ID asli untuk jaga-jaga
+                    'karyawan' => $data->karyawan,
+                    'pesertaMcu' => $data->pesertaMcu,
+                    'nama_pasien' => $data->nama_pasien,
+                    'no_sap' => $data->no_sap,
+                    'nik_pasien' => $data->nik_pasien
+                ];
+            })->toArray(); 
+            
         } else {
-            $this->jadwalsToNotify = collect();
+            $this->jadwalsToNotify = []; // Gunakan array kosong []
         }
 
-        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
+        // 🌟 Sekarang array_column akan bekerja karena $this->jadwalsToNotify sudah jadi Array
+        $this->selectedRecipients = array_column($this->jadwalsToNotify, 'target_id');
     }
 
     public function loadKaryawanForSubmission()
@@ -324,10 +338,14 @@ class NotificationDashboard extends Component
 
     public function toggleSelectAll()
     {
-        if (count($this->selectedRecipients) === count($this->jadwalsToNotify)) {
+        // Pastikan $this->jadwalsToNotify diubah jadi array sebelum dihitung
+        $dataArray = is_array($this->jadwalsToNotify) ? $this->jadwalsToNotify : $this->jadwalsToNotify->toArray();
+        
+        if (count($this->selectedRecipients) === count($dataArray)) {
             $this->selectedRecipients = [];
         } else {
-            $this->selectedRecipients = array_column($this->jadwalsToNotify, 'target_id');
+            // Gunakan array_column dengan data array murni
+            $this->selectedRecipients = array_column($dataArray, 'target_id');
         }
     }
 
