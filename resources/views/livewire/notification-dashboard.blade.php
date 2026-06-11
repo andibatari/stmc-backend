@@ -159,7 +159,7 @@
                 
                 <div class="col-span-2 md:col-span-1 md:text-right pt-1">
                     <button wire:click="sendNotifications" wire:loading.attr="disabled" class="w-full px-4 py-2 bg-blue-600 rounded-lg font-bold text-xs text-white hover:bg-blue-700 shadow-md disabled:opacity-50">
-                        Kirim ({{ count($selectedRecipients) }})
+                        Kirim ({{ count(array_filter($selectedRecipients)) }})
                     </button>
                 </div>
             </div>
@@ -219,8 +219,8 @@
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" 
                                     wire:model="selectedRecipients" 
-                                    value="{{ $checkboxVal }}"  {{-- 🌟 GANTI JADI INI! --}}
-                                    wire:key="checkbox-{{ $checkboxVal }}" {{-- Tambahkan wire:key unik juga di sini --}}
+                                    value="{{ (string)$checkboxVal }}"  {{-- 🌟 PAKSA JADI STRING --}}
+                                    wire:key="cb-{{ $checkboxVal }}"    {{-- 🌟 BERI KEY UNIK --}}
                                     class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                             </td>
                             <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
@@ -239,6 +239,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="mt-4 p-2 bg-slate-100 text-[10px] font-mono">
+            Debug selectedRecipients: {{ json_encode($selectedRecipients) }}
         </div>
     </div>
 </div>
