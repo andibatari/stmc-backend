@@ -81,7 +81,7 @@
 
         {{-- HASIL PERHITUNGAN (BANNER) --}}
         @if($hasilKebugaran !== null)
-            <div class="mt-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div class="mt-10 bg-linear-to-br from-slate-800 to-slate-900 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
                 {{-- Efek Dekorasi Lingkaran Latar --}}
                 <div class="absolute top-0 right-0 -mr-8 -mt-8 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
                 <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-32 h-32 bg-red-500/20 rounded-full blur-2xl"></div>
@@ -99,8 +99,8 @@
                         <div>
                             <p class="text-xs font-bold text-slate-400 uppercase mb-1">Kategori Klinis</p>
                             <span class="inline-block px-5 py-2 rounded-xl text-lg font-black tracking-wide
-                                @if(stripos($keterangan, 'Baik') !== false) bg-emerald-500/20 text-emerald-400 border border-emerald-500/50
-                                @elseif(stripos($keterangan, 'Sedang') !== false) bg-amber-500/20 text-amber-400 border border-amber-500/50
+                                @if(stripos($keterangan, 'Baik') !== false) bg-emerald-500/20 text-emerald-400 border-emerald-500/50
+                                @elseif(stripos($keterangan, 'Sedang') !== false) bg-amber-500/20 text-amber-400 border-amber-500/50
                                 @else bg-red-500/20 text-red-400 border border-red-500/50 @endif">
                                 {{ $keterangan }}
                             </span>

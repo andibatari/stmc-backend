@@ -24,7 +24,7 @@
             {{-- KARTU 1: IDENTITAS PASIEN AKTIF --}}
             <div class="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-slate-100 text-center relative overflow-hidden">
                 {{-- Aksen gradient dekoratif di bagian atas kartu, menggunakan absolute positioning --}}
-                <div class="absolute top-0 left-0 w-full h-20 bg-gradient-to-br from-red-600 to-red-900 opacity-90 rounded-t-2xl"></div>
+                <div class="absolute top-0 left-0 w-full h-20 bg-linear-to-br from-red-600 to-red-900 opacity-90 rounded-t-2xl"></div>
                 
                 <div class="relative mt-4 mb-3">
                     <div class="w-20 h-20 md:w-24 md:h-24 mx-auto bg-white rounded-full p-1 shadow-md ring-4 ring-white relative z-10 flex items-center justify-center overflow-hidden">

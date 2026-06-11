@@ -19,7 +19,7 @@
             
             {{-- KARTU PROFIL UTAMA --}}
             <div class="bg-white p-5 md:p-6 rounded-2xl md:rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100 text-center relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-20 md:h-24 bg-gradient-to-br from-blue-600 to-indigo-800 opacity-90 rounded-t-2xl md:rounded-t-[2rem]"></div>
+                <div class="absolute top-0 left-0 w-full h-20 md:h-24 bg-linear-to-br from-blue-600 to-indigo-800 opacity-90 rounded-t-2xl md:rounded-t-[2rem]"></div>
                 
                 <div class="relative mt-4 md:mt-6 mb-3 md:mb-4">
                     {{-- 🌟 Menambahkan deteksi dan render foto dari driver public --}}

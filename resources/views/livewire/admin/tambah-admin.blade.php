@@ -64,7 +64,7 @@
                                 </div>
                                 
                                 @if (!empty($searchQuery) && count($searchedKaryawans) > 0 && !$karyawanFound)
-                                    <div class="absolute z-[100] w-full bg-white border border-slate-100 mt-2 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto overflow-hidden divide-y divide-slate-50">
+                                    <div class="absolute z-100 w-full bg-white border border-slate-100 mt-2 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.12)] max-h-60 overflow-y-auto overflow-hidden divide-y divide-slate-50">
                                         @foreach ($searchedKaryawans as $k)
                                             <p wire:click="selectKaryawan({{ $k->id }})" class="p-4 cursor-pointer hover:bg-slate-50 hover:text-red-600 text-sm font-bold text-slate-700 transition-colors">
                                                 <span class="font-mono text-xs text-slate-400 mr-2">{{ $k->no_sap }}</span> {{ $k->nama_karyawan }}

@@ -253,7 +253,7 @@
          @click="isOpen = false"
          @scroll.window="isOpen = false"
          x-cloak 
-         class="fixed inset-0 z-[9998]"></div>
+         class="fixed inset-0 z-9998"></div>
 
     {{-- KOTAK DROPDOWN AKSI TUNGGAL --}}
     {{-- Elemen ini dirender secara absolut dan posisi top/left diinjeksikan secara dinamis via x-bind:style berdasarkan posisi kursor event --}}
@@ -266,7 +266,7 @@
          x-transition:leave-start="transform opacity-100 scale-100" 
          x-transition:leave-end="transform opacity-0 scale-95" 
          x-bind:style="`top: ${top}px; left: ${left}px;`"
-         class="fixed w-48 rounded-xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] bg-white border border-slate-100 focus:outline-none z-[9999] py-1.5 overflow-hidden">
+         class="fixed w-48 rounded-xl shadow-[0_10px_40px_rgb(0,0,0,0.15)] bg-white border border-slate-100 focus:outline-none z-9999 py-1.5 overflow-hidden">
 
         {{-- Menggunakan element <template> Alpine.js untuk merender opsi aksi secara kondisional bergantung status data saat ini --}}
         <template x-if="currentStatus === 'Pending'">
