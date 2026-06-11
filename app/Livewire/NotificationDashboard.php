@@ -34,7 +34,7 @@ class NotificationDashboard extends Component
     public $specificDate;
     public $searchQuery = ''; 
     public $jadwalsToNotify;
-    public $selectedRecipients = []; 
+    public array $selectedRecipients = [];
     public $notificationMode = 'scheduled'; 
     public $filterDepartemenId = '';
     public $departemenOptions; 
