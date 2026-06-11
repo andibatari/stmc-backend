@@ -92,38 +92,40 @@
     <div class="bg-slate-50 p-4 md:p-6 rounded-xl border border-slate-100">
         <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-map-marker-alt mr-1.5 text-slate-400"></i> Kontak & Domisili</h3>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
+        {{-- UBAH DISINI: grid-cols-1 menjadi grid-cols-2 untuk mobile --}}
+        <div class="grid grid-cols-2 gap-3 md:gap-4 mb-3">
             <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">No Handphone</label>
-                <input type="text" wire:model="no_hp" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white font-mono">
+                <input type="text" wire:model="no_hp" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white font-mono">
             </div>
             <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Email</label>
-                <input type="email" wire:model="email" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="email" wire:model="email" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-4 pt-3 border-t border-slate-200">
-            <div>
+        {{-- UBAH DISINI: Pengaturan col-span agar pas di layar HP --}}
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mt-4 pt-3 border-t border-slate-200">
+            <div class="col-span-2 md:col-span-1">
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Provinsi</label>
-                <select wire:model.live="provinsi_id" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white cursor-pointer">
+                <select wire:model.live="provinsi_id" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white cursor-pointer">
                     <option value="">Pilih Provinsi</option>
                     @foreach($provinsis as $provinsi)
                         <option value="{{ $provinsi->id }}">{{ $provinsi->nama_provinsi }}</option>
                     @endforeach
                 </select>
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Kabupaten/Kota</label>
-                <input type="text" wire:model="nama_kabupaten" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="text" wire:model="nama_kabupaten" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
-            <div>
+            <div class="col-span-1">
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Kecamatan</label>
-                <input type="text" wire:model="nama_kecamatan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="text" wire:model="nama_kecamatan" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
-            <div class="col-span-1 md:col-span-3">
+            <div class="col-span-2 md:col-span-3">
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Alamat Lengkap</label>
-                <input type="text" wire:model="alamat" placeholder="Jalan, RT/RW, Perumahan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="text" wire:model="alamat" placeholder="Jalan, RT/RW, Perumahan" class="block w-full px-3 py-2 text-[10px] md:text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
         </div>
     </div>
