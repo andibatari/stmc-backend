@@ -170,21 +170,6 @@
         
         <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80 hide-scrollbar">
             <table class="min-w-full text-left whitespace-nowrap">
-                <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-                    <tr>
-                        <th class="px-3 py-2 text-center w-10">
-                            <input type="checkbox" 
-                                @if($jadwalsToNotify->isNotEmpty()) 
-                                    wire:click="$set('selectedRecipients', $selectedRecipients ? [] : $jadwalsToNotify->pluck('{{ $notificationMode === 'scheduled' ? 'id' : 'target_id' }}')->toArray())" 
-                                @endif 
-                                @checked(count($selectedRecipients) === $jadwalsToNotify->count() && $jadwalsToNotify->count() > 0) 
-                                class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
-                        </th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan / Pasien</th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Dept / Tipe</th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">SAP / NIK</th>
-                    </tr>
-                </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($jadwalsToNotify as $data)
                         @php
@@ -229,11 +214,10 @@
                                 </div>
                             </td>
                         </tr>
-                    @endforelse
-                    
-                    @if ($jadwalsToNotify->isEmpty())
+                    @empty
+                        {{-- Ini pengganti @if yang error tadi --}}
                         <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs font-medium">Tidak ada data.</td></tr>
-                    @endif
+                    @endforelse
                 </tbody>
             </table>
         </div>
