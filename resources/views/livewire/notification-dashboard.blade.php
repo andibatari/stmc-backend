@@ -19,7 +19,6 @@
     @endif
 
     {{-- TAB 1: BROADCAST --}}
-    {{-- Kotak form diminimalkan (p-4 md:p-6), spasi form diperkecil (gap-4) agar hemat tempat vertikal --}}
     <div x-show="activeTab === 'broadcast'" x-transition class="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-100">
         <h3 class="text-base font-black mb-1 flex items-center text-slate-800"><i class="fas fa-bullhorn text-red-500 mr-2"></i> Pengumuman Massal</h3>
         <p class="text-[10px] md:text-xs text-slate-500 mb-4 border-b border-slate-100 pb-3">Kirim notifikasi langsung ke layar HP karyawan.</p>
@@ -33,11 +32,9 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Isi Pesan</label>
-                    {{-- Tinggi textarea dikurangi (rows="3") untuk menghemat ruang --}}
                     <textarea wire:model.defer="broadcastMessage" rows="3" class="w-full bg-slate-50 border-slate-200 rounded-lg focus:bg-white focus:border-red-500 focus:ring-red-500 shadow-sm p-2 text-xs resize-none"></textarea>
                     @error('broadcastMessage') <span class="text-[10px] font-bold text-rose-500 block">{{ $message }}</span> @enderror
                 </div>
-                {{-- 🌟 INPUT LINK LAMPIRAN --}}
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Tautan / Link Lampiran (Opsional)</label>
                     <input type="url" wire:model.defer="broadcastLink" placeholder="Cth: https://forms.gle/..." class="w-full bg-slate-50 border-slate-200 rounded-lg focus:bg-white focus:border-red-500 focus:ring-red-500 shadow-sm p-2 text-xs font-medium">
@@ -77,7 +74,6 @@
                     @if(!empty($searchEmployeeQuery) && !empty($employeeSearchResults))
                     <ul class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-40 rounded-lg border border-slate-100 overflow-auto">
                         @foreach($employeeSearchResults as $emp)
-                        {{-- PERBAIKAN: Menggunakan kurung siku ['id'], bukan panah ->id. Perhatikan juga penambahan tanda kutip satu (' ') pada parameter fungsi karena ID sekarang berupa teks 'K_1' atau 'P_1' --}}
                         <li wire:click="addEmployeeToBroadcast('{{ $emp['id'] }}', '{{ addslashes($emp['name']) }}', '{{ $emp['sap'] }}')" class="cursor-pointer hover:bg-blue-50 px-3 py-2 border-b border-slate-50 text-xs">
                             <div class="font-bold text-slate-800">{{ $emp['name'] }}</div>
                             <div class="text-[9px] text-slate-400 mt-0.5">SAP/NIK: {{ $emp['sap'] }}</div>
@@ -92,7 +88,6 @@
                             @foreach($selectedIndividualEmployees as $selected)
                             <span class="inline-flex items-center bg-white border border-blue-200 text-slate-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
                                 {{ $selected['name'] }}
-                                {{-- PERBAIKAN: Penambahan tanda kutip satu (' ') di dalam tanda kurung --}}
                                 <button type="button" wire:click="removeEmployeeFromBroadcast('{{ $selected['id'] }}')" class="ml-1.5 text-rose-500 hover:text-rose-700"><i class="fas fa-times"></i></button>
                             </span>
                             @endforeach
@@ -173,59 +168,38 @@
         <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80 hide-scrollbar">
             <table class="min-w-full text-left whitespace-nowrap">
                 <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
-                    @php
-                        // Ambil semua ID dengan aman untuk fitur "Pilih Semua"
-                        $allIds = $notificationMode === 'scheduled' 
-                            ? collect($jadwalsToNotify)->pluck('id')->toArray() 
-                            : array_column($jadwalsToNotify, 'target_id');
-                        $allIdsJson = json_encode($allIds);
-                        $isCheckedAll = count($selectedRecipients) === count($allIds) && count($allIds) > 0;
-                    @endphp
                     <tr>
                         <th class="px-3 py-2 text-center w-10">
                             <input type="checkbox" 
-                                @if(!empty($jadwalsToNotify)) 
-                                    wire:click="toggleSelectAll" 
-                                @endif
-                                @checked(count($selectedRecipients) === count($jadwalsToNotify) && count($jadwalsToNotify) > 0) 
+                                @if($jadwalsToNotify->isNotEmpty()) wire:click="toggleSelectAll" @endif
+                                @checked(count($selectedRecipients) === $jadwalsToNotify->count() && $jadwalsToNotify->count() > 0) 
                                 class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                         </th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan / Pasien</th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Dept / Tipe</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Departemen</th>
                         <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">SAP / NIK</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($jadwalsToNotify as $data)
-                        @php
-                            $isScheduled = $notificationMode === 'scheduled';
-                            
-                            // LOGIKA: Pisahkan cara membaca Model dan Array
-                            if ($isScheduled) {
-                                $nama = $data->karyawan->nama_karyawan ?? $data->pesertaMcu->nama_lengkap ?? $data->nama_pasien ?? 'N/A';
-                                $dept = $data->karyawan->departemen->nama_departemen ?? 'Umum / Keluarga';
-                                $sapVal = $data->no_sap ?? $data->karyawan->no_sap ?? $data->pesertaMcu->no_sap ?? '-';
-                                $nikVal = $data->karyawan->nik_karyawan ?? $data->pesertaMcu->nik_pasien ?? $data->nik_pasien ?? '-';
-                                $checkboxVal = $data->id;
-                            } else {
-                                $nama = $data['nama'];
-                                $dept = $data['dept'];
-                                $sapVal = $data['sap'];
-                                $nikVal = $data['nik'];
-                                $checkboxVal = $data['target_id'];
-                            }
-                        @endphp
-                        <tr wire:key="row-{{ $data['target_id'] }}" class="hover:bg-slate-50">
+                        <tr wire:key="row-{{ $data->id }}" class="hover:bg-slate-50">
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" 
                                     wire:model="selectedRecipients" 
-                                    value="{{ (string)$checkboxVal }}"  {{-- 🌟 PAKSA JADI STRING --}}
-                                    wire:key="cb-{{ $checkboxVal }}"    {{-- 🌟 BERI KEY UNIK --}}
+                                    value="{{ $data->id }}" 
                                     class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                             </td>
-                            <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
-                            <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ $dept }}</td>
+                            <td class="px-3 py-2 text-xs font-bold text-slate-800">
+                                {{ $notificationMode === 'scheduled' ? ($data->karyawan->nama_karyawan ?? $data->nama_pasien ?? 'N/A') : $data->nama_karyawan }}
+                            </td>
+                            <td class="px-3 py-2 text-[10px] font-bold text-slate-500">
+                                {{ $notificationMode === 'scheduled' ? ($data->karyawan->departemen->nama_departemen ?? 'N/A') : ($data->departemen->nama_departemen ?? 'N/A') }}
+                            </td>
                             <td class="px-3 py-2 text-[10px] font-mono">
+                                @php
+                                    $sapVal = $notificationMode === 'scheduled' ? ($data->no_sap ?? $data->karyawan->no_sap ?? '-') : ($data->no_sap ?? '-');
+                                    $nikVal = $notificationMode === 'scheduled' ? ($data->karyawan->nik_karyawan ?? '-') : ($data->nik_karyawan ?? '-');
+                                @endphp
                                 <div class="font-bold text-slate-700">
                                     {{ $sapVal !== '-' ? $sapVal : $nikVal }}
                                 </div>
@@ -239,9 +213,6 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-        <div class="mt-4 p-2 bg-slate-100 text-[10px] font-mono">
-            Debug selectedRecipients: {{ json_encode($selectedRecipients) }}
         </div>
     </div>
 </div>
