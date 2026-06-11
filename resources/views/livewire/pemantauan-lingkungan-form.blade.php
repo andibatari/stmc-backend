@@ -9,7 +9,16 @@
     </div>
 
     <form wire:submit.prevent="simpanPemantauan" class="space-y-6 md:space-y-8">
-        
+        @if ($errors->any())
+            <div class="bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-4 rounded-r-lg shadow-sm mb-4 text-xs font-bold">
+                <h5 class="mb-2 uppercase tracking-wider"><i class="fas fa-exclamation-circle text-rose-500 mr-1"></i> Data gagal disimpan karena:</h5>
+                <ul class="list-disc pl-5 space-y-1 font-medium">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         {{-- KARTU 1: SETUP LOKASI --}}
         {{-- PERBAIKAN CSS: "overflow-hidden" DIHAPUS agar dropdown tidak terpotong (squished) --}}
         <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100">
@@ -29,11 +38,11 @@
                     <div class="flex flex-col gap-5">
                         <div>
                             <label class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nama Area / Gedung <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model.defer="area" class="w-full rounded-xl border-slate-200 focus:border-blue-500 text-xs md:text-sm p-3 shadow-sm bg-slate-50 focus:bg-white transition-colors" placeholder="Cth: Gedung Diklat, Pabrik Tonasa 5...">
+                            <input type="text" wire:model="area" class="w-full rounded-xl border-slate-200 focus:border-blue-500 text-xs md:text-sm p-3 shadow-sm bg-slate-50 focus:bg-white transition-colors" placeholder="Cth: Gedung Diklat, Pabrik Tonasa 5...">
                         </div>
                         <div>
                             <label class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Tanggal Pemantauan <span class="text-red-500">*</span></label>
-                            <input type="date" wire:model.defer="tanggal_pemantauan" class="w-full rounded-xl border-slate-200 focus:border-blue-500 text-xs md:text-sm p-3 shadow-sm">
+                            <input type="date" wire:model="tanggal_pemantauan" class="w-full rounded-xl border-slate-200 focus:border-blue-500 text-xs md:text-sm p-3 shadow-sm">
                         </div>
                     </div>
                 </div>
@@ -44,7 +53,7 @@
                         @foreach (['nabCahaya' => 'Cahaya', 'nabBising' => 'Bising', 'nabDebu' => 'Debu', 'nabSuhu' => 'Suhu'] as $model => $label)
                             <div>
                                 <label class="block text-[9px] md:text-[10px] font-bold text-amber-700 uppercase mb-1.5">{{ $label }}</label>
-                                <input type="{{ $model == 'nabDebu' ? 'text' : 'number' }}" step="0.01" wire:model.defer="{{ $model }}" class="w-full rounded-lg border-amber-200 focus:border-amber-500 focus:ring-amber-500 text-xs md:text-sm p-2.5 bg-white shadow-sm">
+                                <input type="{{ $model == 'nabDebu' ? 'text' : 'number' }}" step="0.01" wire:model="{{ $model }}" class="w-full rounded-lg border-amber-200 focus:border-amber-500 focus:ring-amber-500 text-xs md:text-sm p-2.5 bg-white shadow-sm">
                             </div>
                         @endforeach
                     </div>
@@ -80,7 +89,7 @@
                             {{ $index + 1 }}
                         </div>
                         <div class="flex-1 max-w-md">
-                            <input type="text" wire:model.defer="lokasiData.{{ $index }}.lokasi" placeholder="Ketik nama spesifik ruangan/titik..." class="w-full border-0 border-b-2 border-slate-300 focus:border-blue-500 bg-transparent text-sm md:text-base font-bold text-slate-800 focus:ring-0 p-0 transition-colors pb-1" required>
+                            <input type="text" wire:model="lokasiData.{{ $index }}.lokasi" placeholder="Ketik nama spesifik ruangan/titik..." class="w-full border-0 border-b-2 border-slate-300 focus:border-blue-500 bg-transparent text-sm md:text-base font-bold text-slate-800 focus:ring-0 p-0 transition-colors pb-1" required>
                         </div>
                     </div>
 
@@ -88,14 +97,14 @@
                         @foreach (['cahaya'=>'Cahaya', 'bising'=>'Bising', 'debu'=>'Debu', 'suhu_basah'=>'S.Basah', 'suhu_kering'=>'S.Kering', 'suhu_radiasi'=>'S.Rad', 'isbb_indoor'=>'ISBB In', 'isbb_outdoor'=>'ISBB Out', 'rh'=>'RH%'] as $key => $label)
                             <div>
                                 <label class="block text-[8px] md:text-[9px] font-bold text-slate-500 uppercase mb-1.5">{{ $label }}</label>
-                                <input type="number" step="0.01" wire:model.defer="lokasiData.{{ $index }}.pemantauan.{{ $key }}" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500 shadow-sm">
+                                <input type="number" step="0.01" wire:model="lokasiData.{{ $index }}.pemantauan.{{ $key }}" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500 shadow-sm">
                             </div>
                         @endforeach
                     </div>
 
                     <div>
                         <label class="block text-[9px] md:text-[10px] font-bold text-slate-500 uppercase mb-1.5">Kesimpulan Singkat / Rekomendasi (Opsional)</label>
-                        <textarea rows="2" wire:model.defer="lokasiData.{{ $index }}.kesimpulan" placeholder="Tuliskan catatan atau rekomendasi tindakan perbaikan di titik ini jika diperlukan..." class="w-full rounded-xl border-slate-200 text-xs p-3 focus:border-blue-500 shadow-sm resize-none"></textarea>
+                        <textarea rows="2" wire:model="lokasiData.{{ $index }}.kesimpulan" placeholder="Tuliskan catatan atau rekomendasi tindakan perbaikan di titik ini jika diperlukan..." class="w-full rounded-xl border-slate-200 text-xs p-3 focus:border-blue-500 shadow-sm resize-none"></textarea>
                     </div>
                 </div>
                 @endforeach
