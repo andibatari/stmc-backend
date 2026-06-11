@@ -31,9 +31,11 @@ class PesertaMcuExport implements FromCollection, WithHeadings, WithMapping
         // Peta data dari model PesertaMcu ke baris Excel
         return [
             $pesertaMcu->id,
+            $pesertaMcu->karyawan_id, // Akan null untuk pasien non-PTST, tapi tetap kita sertakan untuk referensi
             $pesertaMcu->no_sap,
             $pesertaMcu->nik_pasien,
             $pesertaMcu->nama_lengkap,
+            $pesertaMcu->tipe_anggota,
             $pesertaMcu->jenis_kelamin,
             $pesertaMcu->tempat_lahir,
             $pesertaMcu->tanggal_lahir,
@@ -60,9 +62,11 @@ class PesertaMcuExport implements FromCollection, WithHeadings, WithMapping
         // Tentukan nama-nama kolom (header) untuk file Excel
         return [
             'ID',
+            'Karyawan ID', // Ini akan membantu mengidentifikasi jika pasien terkait dengan karyawan atau tidak
             'SAP',
             'NIK Pasien',
             'Nama Lengkap',
+            'Tipe Pasien',
             'Jenis Kelamin',
             'Tempat Lahir',
             'Tanggal Lahir',
