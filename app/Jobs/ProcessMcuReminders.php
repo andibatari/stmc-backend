@@ -9,6 +9,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Models\JadwalMcu;
 use App\Services\FCMService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ProcessMcuReminders implements ShouldQueue
 {
@@ -17,7 +19,7 @@ class ProcessMcuReminders implements ShouldQueue
     protected $recipientIds;
     protected $log;
 
-    public function __construct($recipientIds, $log)
+    public function __construct(array $recipientIds, $log)
     {
         $this->recipientIds = $recipientIds;
         $this->log = $log;
@@ -25,26 +27,41 @@ class ProcessMcuReminders implements ShouldQueue
 
     public function handle()
     {
-        // Ambil data jadwal berdasarkan ID yang dipilih beserta relasi karyawannya
-        $jadwals = JadwalMcu::whereIn('id', $this->recipientIds)->with('karyawan')->get();
+        // 🌟 PERBAIKAN 1: Ambil relasi karyawan DAN peserta_mcu (Pasien Umum)
+        $jadwals = JadwalMcu::whereIn('id', $this->recipientIds)
+                    ->with(['karyawan', 'pesertaMcu'])
+                    ->get();
+                    
         $fcmSuccessCount = 0;
 
         foreach ($jadwals as $jadwal) {
-            $karyawan = $jadwal->karyawan;
+            // 🌟 PERBAIKAN 2: Cek apakah ini Karyawan PTST atau Pasien Umum
+            $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
 
-            if ($karyawan && !empty($karyawan->fcm_token)) {
+            if ($targetUser && !empty($targetUser->fcm_token)) {
+                // Tarik nama sesuai struktur tabelnya
+                $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
+                
+                // 🌟 PERBAIKAN 3: Format tanggal agar teksnya akurat
+                Carbon::setLocale('id'); // Pastikan format bahasa Indonesia
+                $tanggal = Carbon::parse($jadwal->tanggal_mcu)->translatedFormat('l, d F Y');
+
                 $title = "Pengingat Jadwal MCU";
-                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal Medical Check Up kamu besok ya! Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
+                $body = "Halo {$nama}, pengingat jadwal Medical Check Up kamu pada {$tanggal}. Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
 
-                // Kirim lewat FCMService
-                $statusFCM = FCMService::sendPushNotification(
-                    $karyawan->fcm_token,
-                    $title,
-                    $body
-                );
+                try {
+                    // Kirim lewat FCMService
+                    $statusFCM = FCMService::sendPushNotification(
+                        $targetUser->fcm_token,
+                        $title,
+                        $body
+                    );
 
-                if ($statusFCM) {
-                    $fcmSuccessCount++;
+                    if ($statusFCM) {
+                        $fcmSuccessCount++;
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning("Gagal kirim FCM pengingat jadwal MCU ke {$nama}. Error: " . $e->getMessage());
                 }
             }
         }

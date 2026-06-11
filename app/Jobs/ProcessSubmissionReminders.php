@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Karyawan;
+use App\Models\PesertaMcu;
 use App\Models\NotificationLog;
 use App\Mail\SubmissionReminderMail;
 use App\Notifications\McuSubmissionNotification;
@@ -20,33 +21,63 @@ class ProcessSubmissionReminders implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $karyawanIds;
+    protected $recipientIds; // Diubah namanya agar lebih umum (Karyawan & Peserta)
     protected $notificationLog;
 
-    public function __construct(array $karyawanIds, $log)
+    public function __construct(array $recipientIds, $log)
     {
-        $this->karyawanIds = $karyawanIds;
+        $this->recipientIds = $recipientIds;
         $this->notificationLog = $log;
     }
 
     public function handle()
     {
-        // Eager load departemen untuk template email
-        $recipients = Karyawan::with('departemen')->whereIn('id', $this->karyawanIds)->get();
-        
         $successEmailCount = 0;
         $successAppCount = 0;
         $failedRecipients = [];
 
-        foreach ($recipients as $karyawan) {
-            $email = $karyawan->email_karyawan ?? null;
-            $fcmToken = $karyawan->fcm_token ?? null;
-            $nik = $karyawan->nik_karyawan ?? 'N/A';
+        foreach ($this->recipientIds as $targetId) {
+            // 🌟 1. MEMBELAH ID (Contoh: "K_1" menjadi "K" dan "1")
+            $parts = explode('_', $targetId);
             
-            // --- 1. PROSES PENGIRIMAN EMAIL ---
+            // Keamanan tambahan jika format ID tidak sesuai
+            if (count($parts) !== 2) continue; 
+            
+            $type = $parts[0];
+            $id = $parts[1];
+
+            $userTarget = null;
+            $email = null;
+            $fcmToken = null;
+            $nik = 'N/A';
+
+            // 🌟 2. AMBIL DATA BERDASARKAN TIPE PENGGUNA
+            if ($type === 'K') {
+                $userTarget = Karyawan::with('departemen')->find($id);
+                if ($userTarget) {
+                    $email = $userTarget->email_karyawan ?? $userTarget->email ?? null;
+                    $fcmToken = $userTarget->fcm_token ?? null;
+                    $nik = $userTarget->nik_karyawan ?? 'N/A';
+                }
+            } elseif ($type === 'P') {
+                $userTarget = PesertaMcu::find($id);
+                if ($userTarget) {
+                    $email = $userTarget->email ?? null;
+                    $fcmToken = $userTarget->fcm_token ?? null;
+                    $nik = $userTarget->nik_pasien ?? 'N/A';
+                }
+            }
+
+            // Jika akun sudah terhapus di database
+            if (!$userTarget) {
+                $failedRecipients[] = ['nik' => $targetId, 'type' => 'All', 'reason' => 'Data pengguna tidak ditemukan di database.'];
+                continue;
+            }
+
+            // --- 3. PROSES PENGIRIMAN EMAIL ---
             if ($email) {
                 try {
-                    Mail::to($email)->send(new SubmissionReminderMail($karyawan, $this->notificationLog->scheduled_date));
+                    Mail::to($email)->send(new SubmissionReminderMail($userTarget, $this->notificationLog->scheduled_date));
                     $successEmailCount++;
                 } catch (Throwable $e) {
                     Log::warning("Gagal kirim EMAIL pengajuan MCU ke NIK {$nik}. Error: " . $e->getMessage());
@@ -56,11 +87,11 @@ class ProcessSubmissionReminders implements ShouldQueue
                 $failedRecipients[] = ['nik' => $nik, 'type' => 'Email', 'reason' => 'Alamat email tidak tersedia.'];
             }
 
-            // --- 2. PROSES PENGIRIMAN NOTIFIKASI APLIKASI (FCM) ---
+            // --- 4. PROSES PENGIRIMAN NOTIFIKASI APLIKASI (FCM) ---
             if ($fcmToken) {
                 try {
-                    // Panggil notifikasi pada Model Karyawan
-                    $karyawan->notify(new McuSubmissionNotification($karyawan, $this->notificationLog->scheduled_date));
+                    // Panggil notifikasi pada Model (Pastikan PesertaMcu juga menggunakan trait Notifiable)
+                    $userTarget->notify(new McuSubmissionNotification($userTarget, $this->notificationLog->scheduled_date));
                     $successAppCount++;
                 } catch (Throwable $e) {
                     Log::warning("Gagal kirim FCM pengajuan MCU ke NIK {$nik}. Error: " . $e->getMessage());
@@ -71,7 +102,7 @@ class ProcessSubmissionReminders implements ShouldQueue
             }
         }
 
-        // --- 3. PEMBARUAN LOG ---
+        // --- 5. PEMBARUAN LOG ---
         try {
             $this->notificationLog->update([
                 'email_success' => $successEmailCount,

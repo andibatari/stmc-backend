@@ -172,32 +172,48 @@
         
         <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-80 hide-scrollbar">
             <table class="min-w-full text-left whitespace-nowrap">
+                <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+                    @php
+                        // Ambil semua ID dengan aman untuk fitur "Pilih Semua"
+                        $allIds = $notificationMode === 'scheduled' 
+                            ? collect($jadwalsToNotify)->pluck('id')->toArray() 
+                            : array_column($jadwalsToNotify, 'target_id');
+                        $allIdsJson = json_encode($allIds);
+                        $isCheckedAll = count($selectedRecipients) === count($allIds) && count($allIds) > 0;
+                    @endphp
+                    <tr>
+                        <th class="px-3 py-2 text-center w-10">
+                            <input type="checkbox" 
+                                @if(!empty($allIds)) 
+                                    wire:click="$set('selectedRecipients', $selectedRecipients ? [] : {{ $allIdsJson }})" 
+                                @endif 
+                                @checked($isCheckedAll) 
+                                class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                        </th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan / Pasien</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Dept / Tipe</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">SAP / NIK</th>
+                    </tr>
+                </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($jadwalsToNotify as $data)
                         @php
                             $isScheduled = $notificationMode === 'scheduled';
                             
-                            // LOGIKA NAMA
-                            $nama = $isScheduled 
-                                ? ($data->karyawan->nama_karyawan ?? $data->pesertaMcu->nama_lengkap ?? $data->nama_pasien ?? 'N/A')
-                                : ($data->nama_karyawan ?? $data->nama_lengkap ?? 'N/A');
-                            
-                            // LOGIKA DEPT
-                            $dept = $isScheduled
-                                ? ($data->karyawan->departemen->nama_departemen ?? 'Umum / Keluarga')
-                                : ($data->departemen->nama_departemen ?? 'Umum / Keluarga');
-
-                            // LOGIKA SAP & NIK (Menarik kedua data)
-                            $sapVal = $isScheduled
-                                ? ($data->no_sap ?? $data->karyawan->no_sap ?? $data->pesertaMcu->no_sap ?? '-')
-                                : ($data->no_sap ?? '-');
-                                
-                            $nikVal = $isScheduled
-                                ? ($data->karyawan->nik_karyawan ?? $data->pesertaMcu->nik_pasien ?? $data->nik_pasien ?? '-')
-                                : ($data->nik_karyawan ?? $data->nik_pasien ?? '-');
-
-                            // LOGIKA CHECKBOX
-                            $checkboxVal = $isScheduled ? $data->id : $data->target_id;
+                            // LOGIKA: Pisahkan cara membaca Model dan Array
+                            if ($isScheduled) {
+                                $nama = $data->karyawan->nama_karyawan ?? $data->pesertaMcu->nama_lengkap ?? $data->nama_pasien ?? 'N/A';
+                                $dept = $data->karyawan->departemen->nama_departemen ?? 'Umum / Keluarga';
+                                $sapVal = $data->no_sap ?? $data->karyawan->no_sap ?? $data->pesertaMcu->no_sap ?? '-';
+                                $nikVal = $data->karyawan->nik_karyawan ?? $data->pesertaMcu->nik_pasien ?? $data->nik_pasien ?? '-';
+                                $checkboxVal = $data->id;
+                            } else {
+                                $nama = $data['nama'];
+                                $dept = $data['dept'];
+                                $sapVal = $data['sap'];
+                                $nikVal = $data['nik'];
+                                $checkboxVal = $data['target_id'];
+                            }
                         @endphp
                         <tr class="hover:bg-slate-50">
                             <td class="px-3 py-2 text-center">
@@ -206,18 +222,15 @@
                             <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
                             <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ $dept }}</td>
                             <td class="px-3 py-2 text-[10px] font-mono">
-                                {{-- Tampilkan SAP utama, jika SAP kosong/strip, maka jadikan NIK sebagai teks utama (tebal) --}}
                                 <div class="font-bold text-slate-700">
                                     {{ $sapVal !== '-' ? $sapVal : $nikVal }}
                                 </div>
-                                {{-- Sub-teks untuk informasi tambahan di bawahnya --}}
                                 <div class="text-[9px] text-slate-400 mt-0.5">
                                     {{ $sapVal !== '-' ? 'NIK: ' . $nikVal : 'SAP: -' }}
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        {{-- Ini pengganti @if yang error tadi --}}
                         <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs font-medium">Tidak ada data.</td></tr>
                     @endforelse
                 </tbody>

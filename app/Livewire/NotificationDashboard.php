@@ -236,12 +236,13 @@ class NotificationDashboard extends Component
 
     public function loadKaryawanForSubmission()
     {
-        $this->jadwalsToNotify = collect(); 
+        // 🌟 PERBAIKAN: Gunakan array biasa, bukan collection
+        $this->jadwalsToNotify = []; 
         
         $recentKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))->pluck('karyawan_id')->toArray();
         $recentPesertaIds = JadwalMcu::whereNotNull('peserta_mcus_id')->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))->pluck('peserta_mcus_id')->toArray();
 
-        // 1. Tarik Data Karyawan
+        // 1. Tarik Data Karyawan (Ubah jadi Array Biasa)
         $karyawanQuery = Karyawan::with('departemen')->whereNotIn('id', $recentKaryawanIds);
         if ($this->filterDepartemenId) $karyawanQuery->where('departemens_id', $this->filterDepartemenId);
         if ($this->searchQuery) {
@@ -251,12 +252,17 @@ class NotificationDashboard extends Component
             });
         }
         $karyawans = $karyawanQuery->get()->map(function($k) {
-            $k->target_id = 'K_' . $k->id; // ID Unik Karyawan
-            return $k;
-        });
+            return [
+                'target_id' => 'K_' . $k->id,
+                'nama' => $k->nama_karyawan,
+                'dept' => $k->departemen->nama_departemen ?? 'N/A',
+                'sap' => $k->no_sap ?? '-',
+                'nik' => $k->nik_karyawan ?? '-'
+            ];
+        })->toArray();
 
-        // 2. Tarik Data Pasien Umum (Hanya jika "Semua Dept" dipilih)
-        $pesertas = collect();
+        // 2. Tarik Data Pasien Umum (Ubah jadi Array Biasa)
+        $pesertas = [];
         if (empty($this->filterDepartemenId)) {
             $pesertaQuery = PesertaMcu::whereNotIn('id', $recentPesertaIds);
             if ($this->searchQuery) {
@@ -266,13 +272,19 @@ class NotificationDashboard extends Component
                 });
             }
             $pesertas = $pesertaQuery->get()->map(function($p) {
-                $p->target_id = 'P_' . $p->id; // ID Unik Peserta Umum
-                return $p;
-            });
+                return [
+                    'target_id' => 'P_' . $p->id,
+                    'nama' => $p->nama_lengkap,
+                    'dept' => 'Umum / Keluarga',
+                    'sap' => $p->no_sap ?? '-',
+                    'nik' => $p->nik_pasien ?? '-'
+                ];
+            })->toArray();
         }
 
-        $this->jadwalsToNotify = $karyawans->concat($pesertas);
-        $this->selectedRecipients = $this->jadwalsToNotify->pluck('target_id')->toArray();
+        // 🌟 GABUNGKAN SEBAGAI ARRAY MURNI AGAR LIVEWIRE TIDAK BINGUNG
+        $this->jadwalsToNotify = array_merge($karyawans, $pesertas);
+        $this->selectedRecipients = array_column($this->jadwalsToNotify, 'target_id');
     }
 
     public function updatedFilterDate() { $this->loadData(); }
