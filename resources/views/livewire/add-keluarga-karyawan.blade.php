@@ -4,7 +4,7 @@
     <div class="bg-slate-50 p-4 md:p-6 rounded-xl border border-slate-100">
         <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-id-card mr-1.5 text-slate-400"></i> Identitas</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div class="col-span-2">
+            <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
                 <input type="text" wire:model="nama_lengkap" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500" required>
             </div>
