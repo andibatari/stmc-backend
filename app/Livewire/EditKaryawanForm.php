@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Livewire\Attributes\On;
 use Livewire\Component;
 use App\Models\Karyawan;
 use App\Models\EmployeeLogin;
@@ -128,6 +129,28 @@ class EditKaryawanForm extends Component
     {
         $this->unit_kerjas_id = null; // Reset unit kerja saat departemen berubah
         $this->unitKerjas = UnitKerja::where('departemens_id', $value)->get();
+    }
+
+    /**
+     * Menangkap event 'departemenUpdated' dari komponen child (SearchableDepartemen)
+     * Menggunakan sintaks parameter array sesuai dengan dispatch di child.
+     */
+    // [On('departemenUpdated')]
+    public function updateDepartemenId($data)
+    {
+        $this->departemens_id = $data['id'];
+        
+        // Reset unit kerja karena departemen berubah
+        $this->unit_kerjas_id = null; 
+    }
+
+    /**
+     * Menangkap event 'unitKerjaUpdated' dari komponen child (SearchableDepartemen)
+     */
+    // On('unitKerjaUpdated')]
+    public function updateUnitKerjaId($data)
+    {
+        $this->unit_kerjas_id = $data['id'];
     }
     
     /**

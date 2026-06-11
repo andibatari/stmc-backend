@@ -17,6 +17,7 @@ class SearchKaryawan extends Component
     public $searchSap = '';
     public $searchNama = '';
     public $searchUnitKerja = '';
+    public $searchDepartemen = '';
 
     public $searchNik = '';
     public $searchNamaPasien = '';
@@ -25,12 +26,12 @@ class SearchKaryawan extends Component
     public $activeTab = 'ptst';
 
     // The queryString configuration is correct for keeping the search in the URL
-    protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'];
+    protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'];
 
     // This method handles resetting the page when any search property changes
     public function updating($key)
     {
-        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'])) {
+        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'])) {
             $this->resetPage();
         }
     }
@@ -42,7 +43,7 @@ class SearchKaryawan extends Component
         $this->searchSap = '';
         $this->searchNama = '';
         $this->searchUnitKerja = '';
-
+        $this->searchDepartemen = '';
         $this->searchNik = '';
         $this->searchNamaPasien = '';
         $this->searchPerusahaanAsal = '';
@@ -60,7 +61,7 @@ class SearchKaryawan extends Component
             $query->when($this->searchSap, fn($q) => $q->where('no_sap', 'like', '%' . $this->searchSap . '%'));
             $query->when($this->searchNama, fn($q) => $q->where('nama_karyawan', 'like', '%' . $this->searchNama . '%'));
             $query->when($this->searchUnitKerja, fn($q) => $q->whereHas('unitKerja', fn($sq) => $sq->where('nama_unit_kerja', 'like', '%' . $this->searchUnitKerja . '%')));
-            
+            $query->when($this->searchDepartemen, fn($q) => $q->whereHas('departemen', fn($sq) => $sq->where('nama_departemen', 'like', '%' . $this->searchDepartemen . '%')));
             $items = $query->paginate(15, pageName: 'ptstPage');
         } else {
             $query = PesertaMcu::query()

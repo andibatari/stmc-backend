@@ -60,6 +60,12 @@
                     <i class="fas fa-font absolute left-3 top-3 text-slate-400 text-xs"></i>
                     <input type="text" wire:model.live.debounce.500ms="searchNama" placeholder="Cari by Nama..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
                 </div>
+                {{-- TAMBAHAN: Filter Departemen --}}
+                <div class="relative">
+                    <i class="fas fa-sitemap absolute left-3 top-3 text-slate-400 text-xs"></i>
+                    <input type="text" wire:model.live.debounce.500ms="searchDepartemen" placeholder="Cari by Departemen..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
+                </div>
+
                 <div class="relative">
                     <i class="fas fa-building absolute left-3 top-3 text-slate-400 text-xs"></i>
                     <input type="text" wire:model.live.debounce.500ms="searchUnitKerja" placeholder="Cari by Unit Kerja..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
