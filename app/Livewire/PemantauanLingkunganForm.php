@@ -32,15 +32,21 @@ class PemantauanLingkunganForm extends Component
     ];
     
     // Setter methods untuk event yang dipancarkan
-    public function setDepartemenId($data)
+    public function setDepartemenId($data = null)
     {
-        $this->departemens_id = $data['id'];
+        // Cek apakah $data berbentuk Array (['id' => 1]) atau Angka langsung (1)
+        $id = is_array($data) ? ($data['id'] ?? null) : $data;
+        
+        $this->departemens_id = $id;
         $this->unit_kerjas_id = null; // Reset Unit Kerja ketika Departemen berubah
     }
     
-    public function setUnitKerjaId($data)
+    public function setUnitKerjaId($data = null)
     {
-        $this->unit_kerjas_id = $data['id'];
+        // Cek apakah $data berbentuk Array atau Angka langsung
+        $id = is_array($data) ? ($data['id'] ?? null) : $data;
+        
+        $this->unit_kerjas_id = $id;
     }
 
     protected $rules = [
