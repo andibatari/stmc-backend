@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\Log;
 use App\Events\PanggilPasienEvent;
 use Livewire\Component;
 use App\Models\JadwalMcu;
@@ -28,21 +29,22 @@ class QrPatientDetail extends Component
     public $resumeData = [];
     public $resumeSaran;
     public $resumeKategori;
-    
+
     public $uploadedFileNames = [];
-    
+
     public $uploadablePoliNames = ['LABORATORIUM', 'SPIROMETRI', 'AUDIOMETRI', 'EKG', 'THORAX PHOTO', 'TREADMILL', 'USG'];
 
     protected $listeners = [
         'updatePoliStatus',
         'changeTab'
-        ];
-    
-    public function handleUploadError($name, $errors, $isMultiple) {
+    ];
+
+    public function handleUploadError($name, $errors, $isMultiple)
+    {
         $this->dispatch('error', ['message' => 'File terlalu besar atau koneksi terputus.']);
     }
 
-    public function changeTab($tabName) 
+    public function changeTab($tabName)
     {
         if ($tabName) {
             $this->activeTab = $tabName;
@@ -69,7 +71,7 @@ class QrPatientDetail extends Component
         'resumeSaran' => 'nullable|string|max:5000',
         'resumeKategori' => 'nullable|string|max:255',
     ];
-    
+
     public function mount(JadwalMcu $jadwal)
     {
         $this->jadwal = $jadwal;
@@ -90,7 +92,7 @@ class QrPatientDetail extends Component
             if ($weight > 0 && $height > 0) {
                 $heightInMeter = $height / 100;
                 $bmiValue = $weight / ($heightInMeter * $heightInMeter);
-                
+
                 $this->resumeData['bmi'] = number_format($bmiValue, 1);
             }
         }
@@ -102,10 +104,18 @@ class QrPatientDetail extends Component
     protected function getDefaultResumeData()
     {
         return [
-            'bmi' => null, 'laboratorium' => null, 'ecg' => null,
-            'gigi' => null, 'mata' => null, 'spirometri' => null,
-            'audiometri' => null, 'kesegaran' => null, 'temuan_lain' => null, 'thorax_photo' => null,
-            'treadmill' => null, 'usg' => null,
+            'bmi' => null,
+            'laboratorium' => null,
+            'ecg' => null,
+            'gigi' => null,
+            'mata' => null,
+            'spirometri' => null,
+            'audiometri' => null,
+            'kesegaran' => null,
+            'temuan_lain' => null,
+            'thorax_photo' => null,
+            'treadmill' => null,
+            'usg' => null,
         ];
     }
 
@@ -115,14 +125,13 @@ class QrPatientDetail extends Component
 
         try {
             $this->jadwal->update([
-                'resume_body' => json_encode($this->resumeData), 
+                'resume_body' => json_encode($this->resumeData),
                 'resume_saran' => $this->resumeSaran,
                 'resume_kategori' => $this->resumeKategori,
             ]);
 
             $this->dispatch('status-updated', ['message' => 'Resume berhasil disimpan!']);
-            $this->jadwal->refresh(); 
-            
+            $this->jadwal->refresh();
         } catch (\Throwable $e) {
             \Log::error("Gagal menyimpan resume: " . $e->getMessage());
             $this->dispatch('error', ['message' => 'Gagal menyimpan resume. Silakan coba lagi.']);
@@ -131,14 +140,14 @@ class QrPatientDetail extends Component
 
     public function downloadAllPdfs()
     {
-        $this->jadwal->refresh(); 
-        
+        $this->jadwal->refresh();
+
         if (!$this->jadwal || !$this->jadwal->id) {
             $this->dispatch('show-error', ['message' => 'ID Jadwal tidak dapat diakses untuk penggabungan file.']);
             return;
         }
 
-        $this->dispatch('view-merged-pdf', jadwalId: $this->jadwal->id); 
+        $this->dispatch('view-merged-pdf', jadwalId: $this->jadwal->id);
     }
 
     public function saveStatus($poliId)
@@ -149,17 +158,17 @@ class QrPatientDetail extends Component
         }
     }
 
-    public function updatePoliStatus($poliId, $status) 
+    public function updatePoliStatus($poliId, $status)
     {
         $this->jadwal->refresh();
         $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
-        
+
         if ($jadwalPoli) {
             $jadwalPoli->status = $status;
             $jadwalPoli->save();
 
             event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
-            
+
             $this->jadwal->load('jadwalPoli.poli');
             $this->dispatch('status-updated', ['message' => 'Status poli berhasil diperbarui.']);
         }
@@ -177,37 +186,36 @@ class QrPatientDetail extends Component
             $this->dispatch('error', ['message' => 'Data jadwal poli tidak ditemukan.']);
             return;
         }
-        
+
         if (isset($this->pdfFiles[$poliId])) {
             try {
                 $file = $this->pdfFiles[$poliId];
-                
+
                 $patientName = $this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien';
                 $safePatientName = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $patientName));
-                
+
                 $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
                 $safeNamaPoli = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $namaPoli));
-                
+
                 $tahun = now()->format('Y');
-                
+
                 $fileName = 'Hasil_Pemeriksaan_' . $safeNamaPoli . '_' . $safePatientName . '_' . $tahun . '_' . now()->timestamp . '.pdf';
-                
-                $folderPath = 'mcu_results'; 
+
+                $folderPath = 'mcu_results';
 
                 // REVISI: Simpan ke disk 'public'
-                $path = $file->storeAs($folderPath, $fileName, 'public'); 
-                
-                $jadwalPoli->file_path = $path; 
+                $path = $file->storeAs($folderPath, $fileName, 'public');
+
+                $jadwalPoli->file_path = $path;
                 $jadwalPoli->status = 'Finished';
                 $jadwalPoli->save();
 
                 event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
 
                 $this->uploadedFileNames[$poliId] = $fileName;
-                $this->pdfFiles[$poliId] = null; 
-                
-                $this->dispatch('status-updated', ['message' => 'File berhasil diunggah ke Cloud Storage!']);
+                $this->pdfFiles[$poliId] = null;
 
+                $this->dispatch('status-updated', ['message' => 'File berhasil diunggah ke Cloud Storage!']);
             } catch (\Throwable $e) {
                 \Log::error("S3 Upload Error: " . $e->getMessage());
                 $this->dispatch('error', ['message' => 'Gagal mengunggah ke Cloud: ' . $e->getMessage()]);
@@ -216,12 +224,12 @@ class QrPatientDetail extends Component
             $this->dispatch('error', ['message' => 'Silakan pilih file PDF untuk diunggah.']);
         }
     }
-    
+
     public function markAsDone($poliId)
     {
         $this->updatePoliStatus($poliId, 'Finished');
     }
-    
+
     public function markAsPending($poliId)
     {
         $this->updatePoliStatus($poliId, 'Pending');
@@ -230,13 +238,13 @@ class QrPatientDetail extends Component
     public function panggilPasien($poliId)
     {
         $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
-        
+
         if ($jadwalPoli) {
-            $jadwalPoli->status = 'Calling'; 
+            $jadwalPoli->status = 'Calling';
             $jadwalPoli->save();
 
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
-            
+
             // 1. Tembakan Pusher (Tetap jalan untuk update layar real-time)
             event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
 
@@ -259,12 +267,12 @@ class QrPatientDetail extends Component
             $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim ke HP Pasien!"]);
         }
     }
-    
+
     public function render()
     {
-        $this->jadwal->refresh()->load(['karyawan', 'pesertaMcu', 'paketMcu.poli', 'jadwalPoli.poli','dokter']);
+        $this->jadwal->refresh()->load(['karyawan', 'pesertaMcu', 'paketMcu.poli', 'jadwalPoli.poli', 'dokter']);
         $relatedPatient = $this->jadwal->karyawan ?? $this->jadwal->pesertaMcu;
-        
+
         if ($relatedPatient) {
             $this->patient = $relatedPatient;
         } else {
@@ -288,10 +296,10 @@ class QrPatientDetail extends Component
                 $result = $writer->write($qrCode);
                 $this->qrCodeImage = base64_encode($result->getString());
             } catch (\Exception $e) {
-                $this->qrCodeImage = null; 
+                $this->qrCodeImage = null;
             }
         }
-    
+
         $polis = $this->jadwal->paketMcu ? $this->jadwal->paketMcu->poli : collect();
         $jadwalPoliData = $this->jadwal->jadwalPoli->keyBy('poli_id');
 
@@ -306,6 +314,4 @@ class QrPatientDetail extends Component
         return view('livewire.qr-patient-detail', compact('polis', 'jadwalPoliData'))
             ->layout('layouts.app', ['title' => 'Detail Pasien MCU']);
     }
-
-    
 }

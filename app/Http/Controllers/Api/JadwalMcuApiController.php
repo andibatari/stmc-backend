@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use App\Models\JadwalMcu;
@@ -20,6 +22,7 @@ use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
+
 
 class JadwalMcuApiController extends Controller
 {

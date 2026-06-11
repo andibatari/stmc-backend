@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Models\JadwalMcu;
-use App\Models\JadwalPoli; 
+use App\Models\JadwalPoli;
 use App\Models\PoliGigiResult;
 use App\Models\KebugaranResult;
 use App\Models\FisikResult;
@@ -11,7 +12,7 @@ use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
-use setasign\Fpdi\Tcpdf\Fpdi; 
+use setasign\Fpdi\Tcpdf\Fpdi;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Encoding\Encoding;
@@ -19,7 +20,8 @@ use Endroid\QrCode\ErrorCorrectionLevel;
 
 class McuPdfController extends Controller
 {
-    public function viewPdf($id) {
+    public function viewPdf($id)
+    {
         $poliData = JadwalPoli::findOrFail($id);
         if ($poliData->file_path && Storage::disk('public')->exists($poliData->file_path)) {
             return redirect(Storage::disk('public')->url($poliData->file_path));
@@ -27,49 +29,53 @@ class McuPdfController extends Controller
         abort(404, "File tidak ditemukan di Local Storage.");
     }
 
-    public function viewPdfGigi($id) {
+    public function viewPdfGigi($id)
+    {
         $result = PoliGigiResult::where('jadwal_poli_id', $id)->firstOrFail();
         return $this->redirectLocal($result->file_path);
     }
 
-    public function viewPdfKebugaran($id) {
+    public function viewPdfKebugaran($id)
+    {
         $result = KebugaranResult::where('jadwal_poli_id', $id)->firstOrFail();
         return $this->redirectLocal($result->file_path);
     }
 
-    public function viewPdfFisik($id) {
+    public function viewPdfFisik($id)
+    {
         $result = FisikResult::where('jadwal_poli_id', $id)->firstOrFail();
         return $this->redirectLocal($result->file_path);
     }
 
-    private function redirectLocal($filePath) {
+    private function redirectLocal($filePath)
+    {
         if ($filePath && Storage::disk('public')->exists($filePath)) {
             return redirect(Storage::disk('public')->url($filePath));
         }
         abort(404, "File tidak ditemukan di Local Storage.");
     }
-    
+
     protected function generateResumePdfObject(JadwalMcu $jadwal)
     {
         $jadwal->load(['dokter', 'paketMcu']);
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
         if (!$patient) return null;
-        
+
         $doctor = $jadwal->dokter;
         $doctorName = $doctor->nama_lengkap ?? $doctor->name ?? $doctor->nama ?? 'Dokter Tidak Ditunjuk';
         $doctorNip = $doctor->nip ?? 'NIP. N/A';
 
         $tanggalMcuFormatted = Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y');
-        
+
         // 🌟 AMBIL DATA DARI DATABASE (System Settings)
         $namaKepalaKlinik = \App\Models\Setting::where('key', 'nama_kepala_klinik')->value('value') ?? 'Dr. Penanggung Jawab';
         $teksDisclaimerRaw = \App\Models\Setting::where('key', 'teks_disclaimer')->value('value') ?? 'Pada Pemeriksaan Kesehatan Berkala di Klinik Semen Tonasa Medical Centre yang dilakukan pada tanggal <b>[TANGGAL]</b>...';
         $teksDisclaimerFinal = str_replace('[TANGGAL]', $tanggalMcuFormatted, $teksDisclaimerRaw);
 
         // 🌟 FUNGSI PENGUBAH GAMBAR KE BASE64 (Agar DomPDF pasti bisa membaca gambarnya)
-        $getBase64Image = function($dbPath, $defaultPath) {
+        $getBase64Image = function ($dbPath, $defaultPath) {
             $fullPath = null;
-            
+
             // 1. Cek dari Database (Storage)
             if ($dbPath) {
                 $cleanPath = str_replace('storage/', '', $dbPath);
@@ -80,7 +86,7 @@ class McuPdfController extends Controller
             if (!$fullPath && file_exists(public_path($defaultPath))) {
                 $fullPath = public_path($defaultPath);
             }
-            
+
             // 3. Konversi ke Base64
             if ($fullPath) {
                 $type = pathinfo($fullPath, PATHINFO_EXTENSION);
@@ -93,48 +99,57 @@ class McuPdfController extends Controller
         // Konversi logo STMC dan Tonasa
         $logoStmcBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_stmc')->value('value'), 'images/logo-stmc.png');
         $logoTonasaBase64 = $getBase64Image(\App\Models\Setting::where('key', 'logo_tonasa')->value('value'), 'images/logo-semen-tonasa.png');
-        
+
         $linkValidasiPublik = route('validasi.pdf', $jadwal->qr_code_id);
         $qrCode = new QrCode($linkValidasiPublik);
-        $qrCode->setSize(150); 
-        $qrCode->setMargin(0); 
-        $qrCode->setEncoding(new Encoding('UTF-8')); 
-        $qrCode->setErrorCorrectionLevel(ErrorCorrectionLevel::High); 
+        $qrCode->setSize(150);
+        $qrCode->setMargin(0);
+        $qrCode->setEncoding(new Encoding('UTF-8'));
+        $qrCode->setErrorCorrectionLevel(ErrorCorrectionLevel::High);
 
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
         $qrCodeBase64 = base64_encode($result->getString());
 
         $data = [
-            'jadwal' => $jadwal, 'patient' => $patient, 'tanggal_mcu' => Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y'),
-            'tanggal_cetak' => Carbon::now()->format('d/m/Y'), 'resume_body_raw' => $jadwal->resume_body,
-            'resume_saran' => $jadwal->resume_saran, 'resume_kategori' => $jadwal->resume_kategori,
-            'qrCodeBase64' => $qrCodeBase64, 'doctor_data' => ['nama' => $doctorName, 'nip' => $doctorNip],
+            'jadwal' => $jadwal,
+            'patient' => $patient,
+            'tanggal_mcu' => Carbon::parse($jadwal->tanggal_mcu)->format('d/m/Y'),
+            'tanggal_cetak' => Carbon::now()->format('d/m/Y'),
+            'resume_body_raw' => $jadwal->resume_body,
+            'resume_saran' => $jadwal->resume_saran,
+            'resume_kategori' => $jadwal->resume_kategori,
+            'qrCodeBase64' => $qrCodeBase64,
+            'doctor_data' => ['nama' => $doctorName, 'nip' => $doctorNip],
             'patient_data' => [
-                'nama' => $patient->nama_lengkap ?? $patient->nama_karyawan, 'alamat' => $patient->alamat ?? 'N/A',
-                'tgl_lahir' => $patient->tanggal_lahir ?? 'N/A', 'jenis_kelamin' => $patient->jenis_kelamin ?? 'N/A',
-                'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A', 'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
-                'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A', 'nab_suhu_kerja' => 28.0 
+                'nama' => $patient->nama_lengkap ?? $patient->nama_karyawan,
+                'alamat' => $patient->alamat ?? 'N/A',
+                'tgl_lahir' => $patient->tanggal_lahir ?? 'N/A',
+                'jenis_kelamin' => $patient->jenis_kelamin ?? 'N/A',
+                'paket_mcu' => $jadwal->paketMcu->nama_paket ?? 'N/A',
+                'nik_sap' => $patient->no_sap ?? $patient->nik_karyawan ?? 'N/A',
+                'unit_kerja' => $patient->unitKerja->nama_unit_kerja ?? 'N/A',
+                'nab_suhu_kerja' => 28.0
             ],
-            
+
             // 🌟 KIRIM DATA YANG BENAR KE VIEW
-            'setting_kepala_klinik' => $namaKepalaKlinik, 
+            'setting_kepala_klinik' => $namaKepalaKlinik,
             'setting_disclaimer'  => $teksDisclaimerFinal,
-            'setting_logo_stmc'   => $logoStmcBase64, 
+            'setting_logo_stmc'   => $logoStmcBase64,
             'setting_logo_tonasa' => $logoTonasaBase64,
         ];
 
         return Pdf::loadView('pdfs.mcu_resume', $data);
     }
-    
+
     public function downloadResume($jadwalId)
     {
-         $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu', 'paketMcu','dokter'])->findOrFail($jadwalId);
-         $resumePdf = $this->generateResumePdfObject($jadwal);
-         $patientName = ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_lengkap ?? ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_karyawan ?? 'Pasien';
-         $fileName = 'Resume_MCU_' . str_replace(' ', '_', $patientName) . '_' . $jadwal->tanggal_mcu . '.pdf';
-         
-         return $resumePdf->stream($fileName);
+        $jadwal = JadwalMcu::with(['karyawan', 'pesertaMcu', 'paketMcu', 'dokter'])->findOrFail($jadwalId);
+        $resumePdf = $this->generateResumePdfObject($jadwal);
+        $patientName = ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_lengkap ?? ($jadwal->karyawan ?? $jadwal->pesertaMcu)->nama_karyawan ?? 'Pasien';
+        $fileName = 'Resume_MCU_' . str_replace(' ', '_', $patientName) . '_' . $jadwal->tanggal_mcu . '.pdf';
+
+        return $resumePdf->stream($fileName);
     }
 
     public function downloadMcuSummary($jadwalId)
@@ -143,7 +158,7 @@ class McuPdfController extends Controller
         $patient = $jadwal->karyawan ?? $jadwal->pesertaMcu;
         $patientName = $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'Pasien';
 
-        $tempFiles = []; 
+        $tempFiles = [];
         $pdfFilesToMerge = [];
 
         $tempDirFullPath = storage_path('app/temp_pdf');
@@ -188,7 +203,7 @@ class McuPdfController extends Controller
                 if ($fileContent) {
                     $localTempPoli = $tempDirFullPath . '/poli_' . $jp->id . '_' . time() . '.pdf';
                     file_put_contents($localTempPoli, $fileContent);
-                    
+
                     $pdfFilesToMerge[] = $localTempPoli;
                     $tempFiles[] = $localTempPoli;
                 } else {
@@ -198,8 +213,8 @@ class McuPdfController extends Controller
         }
 
         $pdfMerger = new Fpdi();
-        $pdfMerger->setPrintHeader(false); 
-        $pdfMerger->setPrintFooter(false); 
+        $pdfMerger->setPrintHeader(false);
+        $pdfMerger->setPrintFooter(false);
 
         foreach ($pdfFilesToMerge as $file) {
             try {
