@@ -159,7 +159,7 @@
                 
                 <div class="col-span-2 md:col-span-1 md:text-right pt-1">
                     <button wire:click="sendNotifications" wire:loading.attr="disabled" class="w-full px-4 py-2 bg-blue-600 rounded-lg font-bold text-xs text-white hover:bg-blue-700 shadow-md disabled:opacity-50">
-                        Kirim ({{ $jadwalsToNotify->count() }})
+                        Kirim ({{ count($jadwalsToNotify) }})
                     </button>
                 </div>
             </div>
@@ -187,7 +187,7 @@
                                 @if(!empty($allIds)) 
                                     wire:click="$set('selectedRecipients', $selectedRecipients ? [] : {{ $allIdsJson }})" 
                                 @endif 
-                                @checked($isCheckedAll) 
+                                @checked(count($selectedRecipients) === count($jadwalsToNotify) && count($jadwalsToNotify) > 0) 
                                 class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                         </th>
                         <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan / Pasien</th>
