@@ -65,8 +65,30 @@
     });
 
     Livewire.on('show-success-popup', (event) => {
+        let data = event[0]; 
         Swal.fire({
-            title: event[0].title, text: event[0].message, icon: 'success', confirmButtonColor: '#dc2626', customClass: { popup: 'rounded-2xl' }
+            title: data.title, 
+            text: data.message, 
+            icon: 'success', 
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#dc2626', 
+            allowOutsideClick: false,
+            customClass: { popup: 'rounded-2xl' }
+        }).then((result) => {
+            // Logika Redirect: Pindah ke halaman daftar pasien setelah diklik
+            if (result.isConfirmed && data.redirect) {
+                window.location.href = data.redirect;
+            }
+        });
+    });
+
+    Livewire.on('show-error-popup', (event) => {
+        Swal.fire({
+            title: event[0].title, 
+            text: event[0].message, 
+            icon: 'error', 
+            confirmButtonColor: '#dc2626', 
+            customClass: { popup: 'rounded-2xl' }
         });
     });
 </script>
