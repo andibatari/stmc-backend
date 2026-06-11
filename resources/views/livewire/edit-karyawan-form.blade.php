@@ -108,6 +108,9 @@
                 
                 {{-- Modul dinamis untuk memilih data hirarki perusahaan (Departemen->Unit) --}}
                 @livewire('searchable-departemen', ['initialDepartemenId' => $departemens_id, 'initialUnitKerjaId' => $unit_kerjas_id])
+                {{-- Tambahkan 2 baris ini --}}
+                @error('departemens_id') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
+                @error('unit_kerjas_id') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             {{-- SECTION 4: Alamat & Kontak --}}
