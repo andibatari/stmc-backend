@@ -136,21 +136,23 @@ class EditKaryawanForm extends Component
      * Menggunakan sintaks parameter array sesuai dengan dispatch di child.
      */
     #[On('departemenUpdated')]
-    public function updateDepartemenId($id)
+    public function updateDepartemenId($data)
     {
-        $this->departemens_id = $id;
+        // Jika $data berbentuk array, ambil ['id']. Jika bukan, langsung ambil nilainya.
+        $this->departemens_id = is_array($data) ? ($data['id'] ?? null) : $data;
         
         // Reset unit kerja karena departemen berubah
         $this->unit_kerjas_id = null; 
     }
 
     /**
-     * Menangkap event 'unitKerjaUpdated' dari komponen child (SearchableDepartemen)
+     * Menangkap event 'unitKerjaUpdated' dari komponen child
      */
     #[On('unitKerjaUpdated')]
-    public function updateUnitKerjaId($id)
+    public function updateUnitKerjaId($data)
     {
-        $this->unit_kerjas_id = $id;
+        // Jika $data berbentuk array, ambil ['id']. Jika bukan, langsung ambil nilainya.
+        $this->unit_kerjas_id = is_array($data) ? ($data['id'] ?? null) : $data;
     }
     
     /**
@@ -201,9 +203,14 @@ class EditKaryawanForm extends Component
 
     public function updateKaryawan()
     {
-        // Validasi semua properti publik
-        $validatedData = $this->validate();
-
+        // Trik Debugging: Tangkap error validasi dan tulis ke log
+        try {
+            $validatedData = $this->validate();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Ini akan mencatat semua error validasi ke file storage/logs/laravel.log
+            Log::error('Validasi Gagal di EditKaryawan:', $e->errors());
+            throw $e;
+        }
         
         // Logging data yang divalidasi untuk debugging
         Log::info('Validated Data:', $validatedData);
