@@ -38,6 +38,7 @@ class EditKaryawanForm extends Component
     public $no_hp;
     public $email;
     public $password = ''; // Nilai awal kosong agar tidak terisi secara otomatis
+    public $password_confirmation = '';
 
     // Properti baru untuk tinggi dan berat badan
     public $tinggi_badan;
@@ -192,7 +193,7 @@ class EditKaryawanForm extends Component
             'email' => ['nullable', 'email', Rule::unique('karyawans', 'email')->ignore($this->karyawan->id)],
             'alamat' => 'nullable|string',
             'no_hp' => 'nullable|string',
-            'password' => 'nullable|min:6',
+            'password' => 'nullable|min:6|confirmed', // Menambahkan aturan konfirmasi password
             'tinggi_badan' => 'nullable|numeric|min:1',
             'berat_badan' => 'nullable|numeric|min:1',
         ];

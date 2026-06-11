@@ -117,25 +117,15 @@
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center"><i class="fas fa-map-marker-alt mr-1.5 text-slate-400"></i> Kontak & Domisili</h3>
                 
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-3">
-                    <div class="col-span-2 lg:col-span-1">
+                {{-- Ganti grid menjadi 2 kolom saja karena password sudah dipindah --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-3">
+                    <div>
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">No Handphone</label>
                         <input type="text" wire:model.live="no_hp" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500 font-mono">
                     </div>
-                    <div class="col-span-2 lg:col-span-1">
+                    <div>
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Email Akses</label>
                         <input type="email" wire:model.live="email" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-[9px] font-bold text-slate-600 mb-1">Ganti Password <span class="text-slate-400 font-normal">(Kosongkan jika tidak diubah)</span></label>
-                        <div class="relative">
-                            <input type="password" id="pass_edit_kar" wire:model.live="password" placeholder="Password baru..." class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500 shadow-sm transition-all">
-                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kar', 'eyeOpen_ek', 'eyeClosed_ek')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none">
-                                <img id="eyeOpen_ek" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
-                                <img id="eyeClosed_ek" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
-                            </button>
-                        </div>
-                        @error('password') <span class="text-red-500 text-[10px] font-bold mt-0.5 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
@@ -157,6 +147,42 @@
                     <div class="col-span-3">
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Alamat Lengkap</label>
                         <input type="text" wire:model.live="alamat" placeholder="Jalan, RT/RW, Perumahan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
+                    </div>
+                </div>
+            </div>
+
+            {{-- SECTION 5: Keamanan Akun Login (BARU) --}}
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 flex items-center">
+                    <i class="fas fa-lock mr-1.5 text-slate-400"></i> 4. Keamanan Akun Login
+                </h3>
+                <p class="text-[10px] text-slate-400 mb-4 font-medium">Biarkan kolom kosong jika Anda tidak berencana mengubah kata sandi.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    {{-- Input Password Baru --}}
+                    <div>
+                        <label class="block text-[9px] font-bold text-slate-600 mb-1">Password Baru</label>
+                        <div class="relative">
+                            <input type="password" id="pass_edit_kar" wire:model.live="password" placeholder="••••••••" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500 shadow-sm transition-all">
+                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kar', 'eyeOpen_ek', 'eyeClosed_ek')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none">
+                                <img id="eyeOpen_ek" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                <img id="eyeClosed_ek" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                            </button>
+                        </div>
+                        @error('password') <span class="text-red-500 text-[10px] font-bold mt-0.5 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    {{-- Input Konfirmasi Password Baru --}}
+                    <div>
+                        <label class="block text-[9px] font-bold text-slate-600 mb-1">Konfirmasi Password Baru</label>
+                        <div class="relative">
+                            {{-- ID dibuat berbeda (pass_edit_kar_confirm dll) agar toggle mata JS tidak bentrok --}}
+                            <input type="password" id="pass_edit_kar_confirm" wire:model.live="password_confirmation" placeholder="••••••••" class="block w-full px-3 py-2 pr-10 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500 shadow-sm transition-all">
+                            <button type="button" onclick="togglePasswordVisibility('pass_edit_kar_confirm', 'eyeOpen_ek_conf', 'eyeClosed_ek_conf')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 focus:outline-none">
+                                <img id="eyeOpen_ek_conf" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
+                                <img id="eyeClosed_ek_conf" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
