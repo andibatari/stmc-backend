@@ -59,7 +59,7 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 border-t-4 border-t-indigo-500 flex flex-col">
                     <h3 class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wide">Status Kelayakan Kerja</h3>
                     {{-- Tinggi dibatasi 250px agar proporsional --}}
-                    <div class="relative flex-grow" style="height: 250px; min-height: 250px;">
+                    <div class="relative grow" style="height: 250px; min-height: 250px;">
                         <canvas id="kelayakanChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
