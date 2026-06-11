@@ -150,32 +150,54 @@ class AuthController extends Controller
     // HELPER PROFILE DATA (MENGGUNAKAN PUBLIC DISK DENGAN URL ABSOLUT)
     // ===============================
 
+    // ===============================
+    // HELPER PROFILE DATA 
+    // ===============================
+
     protected function findAndAuthenticateApiUser(string $input, string $password)
     {
         $loginUser = null;
+        $input = trim($input); // Bersihkan spasi kosong jika ada typo saat mengetik
 
-        if (is_numeric($input)) {
-            $field = strlen($input) <= 6 ? 'no_sap' : 'nik_karyawan';
-            $loginUser = EmployeeLogin::where($field, $input)->first();
-        } elseif (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+        // 1. CEK JIKA INPUT ADALAH EMAIL
+        if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
             $loginUser = EmployeeLogin::whereHas('karyawan', function ($q) use ($input) {
                 $q->where('email', $input);
             })->first();
-        }
 
-        if (!$loginUser) {
-            if (is_numeric($input)) {
-                $loginUser = PesertaMcuLogin::where('nik_pasien', $input)->first();
-            } elseif (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            if (!$loginUser) {
                 $loginUser = PesertaMcuLogin::whereHas('pasien', function ($q) use ($input) {
                     $q->where('email', $input);
                 })->first();
             }
+        } 
+        // 2. CEK JIKA INPUT ADALAH NIK ATAU NO. SAP
+        else {
+            // Cari Karyawan: Cek kolom no_sap/nik di tabel login, ATAU cek di tabel karyawans
+            $loginUser = EmployeeLogin::where('no_sap', $input)
+                ->orWhere('nik_karyawan', $input)
+                ->orWhereHas('karyawan', function($q) use ($input) {
+                    $q->where('nik_karyawan', $input)
+                      ->orWhere('no_sap', $input);
+                })
+                ->first();
+
+            // Jika bukan Karyawan, cari Pasien Umum: Cek di tabel login, ATAU cek di tabel peserta_mcus
+            if (!$loginUser) {
+                $loginUser = PesertaMcuLogin::where('nik_pasien', $input)
+                    ->orWhereHas('pasien', function($q) use ($input) {
+                        $q->where('nik_pasien', $input);
+                    })
+                    ->first();
+            }
         }
 
-        return ($loginUser && Hash::check($password, $loginUser->password))
-            ? $loginUser
-            : null;
+        // 3. VERIFIKASI PASSWORD
+        if ($loginUser && Hash::check($password, $loginUser->password)) {
+            return $loginUser;
+        }
+
+        return null;
     }
 
     protected function getProfileData($loginUser)
