@@ -77,9 +77,10 @@
                     @if(!empty($searchEmployeeQuery) && !empty($employeeSearchResults))
                     <ul class="absolute z-50 mt-1 w-full bg-white shadow-lg max-h-40 rounded-lg border border-slate-100 overflow-auto">
                         @foreach($employeeSearchResults as $emp)
-                        <li wire:click="addEmployeeToBroadcast({{ $emp->id }}, '{{ addslashes($emp->nama_karyawan) }}', '{{ $emp->no_sap }}')" class="cursor-pointer hover:bg-blue-50 px-3 py-2 border-b border-slate-50 text-xs">
-                            <div class="font-bold text-slate-800">{{ $emp->nama_karyawan }}</div>
-                            <div class="text-[9px] text-slate-400 mt-0.5">SAP: {{ $emp->no_sap }}</div>
+                        {{-- PERBAIKAN: Menggunakan kurung siku ['id'], bukan panah ->id. Perhatikan juga penambahan tanda kutip satu (' ') pada parameter fungsi karena ID sekarang berupa teks 'K_1' atau 'P_1' --}}
+                        <li wire:click="addEmployeeToBroadcast('{{ $emp['id'] }}', '{{ addslashes($emp['name']) }}', '{{ $emp['sap'] }}')" class="cursor-pointer hover:bg-blue-50 px-3 py-2 border-b border-slate-50 text-xs">
+                            <div class="font-bold text-slate-800">{{ $emp['name'] }}</div>
+                            <div class="text-[9px] text-slate-400 mt-0.5">SAP/NIK: {{ $emp['sap'] }}</div>
                         </li>
                         @endforeach
                     </ul>
@@ -91,7 +92,8 @@
                             @foreach($selectedIndividualEmployees as $selected)
                             <span class="inline-flex items-center bg-white border border-blue-200 text-slate-700 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
                                 {{ $selected['name'] }}
-                                <button type="button" wire:click="removeEmployeeFromBroadcast({{ $selected['id'] }})" class="ml-1.5 text-rose-500 hover:text-rose-700"><i class="fas fa-times"></i></button>
+                                {{-- PERBAIKAN: Penambahan tanda kutip satu (' ') di dalam tanda kurung --}}
+                                <button type="button" wire:click="removeEmployeeFromBroadcast('{{ $selected['id'] }}')" class="ml-1.5 text-rose-500 hover:text-rose-700"><i class="fas fa-times"></i></button>
                             </span>
                             @endforeach
                         </div>
