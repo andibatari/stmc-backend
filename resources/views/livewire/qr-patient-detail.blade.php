@@ -9,7 +9,7 @@
 
         {{-- 1. HEADER --}}
         {{-- PERBAIKAN: Flexbox lebih rapi di HP, tombol cetak mengambil full lebar (w-full) di layar kecil --}}
-        <div class="bg-linear-to-r from-red-700 to-red-600 px-5 py-4 md:px-8 md:py-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div class="bg-gradient-to-r from-red-700 to-red-600 px-5 py-4 md:px-8 md:py-6 flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm shrink-0">
                     <i class="fas fa-notes-medical text-white text-xl"></i>

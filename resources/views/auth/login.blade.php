@@ -108,7 +108,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-red-600/30 text-sm font-black text-white bg-linear-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 hover:-translate-y-0.5 transition-all duration-300">
+                    <button type="submit" class="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-red-600/30 text-sm font-black text-white bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 hover:-translate-y-0.5 transition-all duration-300">
                         Masuk<svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 </div>
