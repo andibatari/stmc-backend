@@ -46,8 +46,6 @@ class Karyawan extends Model
         'nama_kabupaten',
         'nama_kecamatan',
         'email',
-        'suami_istri',
-        'pekerjaan_suami_istri',
         'alamat',
         'no_hp',
         'foto_profil',
