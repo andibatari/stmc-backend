@@ -13,11 +13,11 @@ class SearchKaryawan extends Component
 {
     use WithPagination;
 
-    // Separate search properties for each tab
+    // Filter Pencarian
     public $searchSap = '';
     public $searchNama = '';
-    public $searchUnitKerja = '';
-    public $searchDepartemen = '';
+    public $searchUnitKerja = ''; // Sekarang menyimpan ID
+    public $searchDepartemen = ''; // Sekarang menyimpan ID
 
     public $searchNik = '';
     public $searchNamaPasien = '';
@@ -25,10 +25,23 @@ class SearchKaryawan extends Component
 
     public $activeTab = 'ptst';
 
-    // The queryString configuration is correct for keeping the search in the URL
+    // List untuk Dropdown
+    public $listDepartemen = [];
+    public $listUnitKerja = [];
+
     protected $queryString = ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'];
 
-    // This method handles resetting the page when any search property changes
+    public function mount()
+    {
+        // Tarik semua data departemen saat halaman pertama dimuat
+        $this->listDepartemen = Departemen::all();
+        
+        // Tarik unit kerja jika ada departemen yang tersimpan di URL
+        if ($this->searchDepartemen) {
+            $this->listUnitKerja = UnitKerja::where('departemens_id', $this->searchDepartemen)->get();
+        }
+    }
+
     public function updating($key)
     {
         if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'])) {
@@ -36,7 +49,19 @@ class SearchKaryawan extends Component
         }
     }
 
-    // Reset all search fields when the tab is changed
+    // Fungsi otomatis berjalan ketika dropdown Departemen dipilih
+    public function updatedSearchDepartemen($value)
+    {
+        $this->searchUnitKerja = ''; // Reset pilihan unit kerja
+        
+        if ($value) {
+            // Ambil anak unit kerja berdasarkan departemen yg dipilih
+            $this->listUnitKerja = UnitKerja::where('departemens_id', $value)->get();
+        } else {
+            $this->listUnitKerja = [];
+        }
+    }
+
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
@@ -47,6 +72,7 @@ class SearchKaryawan extends Component
         $this->searchNik = '';
         $this->searchNamaPasien = '';
         $this->searchPerusahaanAsal = '';
+        $this->listUnitKerja = [];
 
         $this->resetPage();
     }
@@ -54,20 +80,19 @@ class SearchKaryawan extends Component
     public function render()
     {
         if ($this->activeTab === 'ptst') {
-            $query = Karyawan::query()
-                ->with(['unitKerja', 'departemen']);
+            $query = Karyawan::query()->with(['unitKerja', 'departemen']);
 
-            // Apply search filters for the PTST tab
             $query->when($this->searchSap, fn($q) => $q->where('no_sap', 'like', '%' . $this->searchSap . '%'));
             $query->when($this->searchNama, fn($q) => $q->where('nama_karyawan', 'like', '%' . $this->searchNama . '%'));
-            $query->when($this->searchUnitKerja, fn($q) => $q->whereHas('unitKerja', fn($sq) => $sq->where('nama_unit_kerja', 'like', '%' . $this->searchUnitKerja . '%')));
-            $query->when($this->searchDepartemen, fn($q) => $q->whereHas('departemen', fn($sq) => $sq->where('nama_departemen', 'like', '%' . $this->searchDepartemen . '%')));
+            
+            // Filter Exact Match ID untuk Dropdown
+            $query->when($this->searchDepartemen, fn($q) => $q->where('departemens_id', $this->searchDepartemen));
+            $query->when($this->searchUnitKerja, fn($q) => $q->where('unit_kerjas_id', $this->searchUnitKerja));
+            
             $items = $query->paginate(15, pageName: 'ptstPage');
         } else {
-            $query = PesertaMcu::query()
-                ->with('karyawan');
+            $query = PesertaMcu::query()->with('karyawan');
             
-            // Apply search filters for the Non-PTST tab
             $query->when($this->searchNik, fn($q) => $q->where('nik_pasien', 'like', '%' . $this->searchNik . '%'));
             $query->when($this->searchNamaPasien, fn($q) => $q->where('nama_lengkap', 'like', '%' . $this->searchNamaPasien . '%'));
             $query->when($this->searchPerusahaanAsal, fn($q) => $q->where('perusahaan_asal', 'like', '%' . $this->searchPerusahaanAsal . '%'));

@@ -49,9 +49,9 @@
 
     {{-- SEARCH BAR --}}
     <div class="bg-slate-50 p-3 md:p-4 rounded-xl md:rounded-2xl border border-slate-100 mb-5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3"> 
+        {{-- Ubah grid-cols menjadi 4 agar dropdown tampil sejajar rapi --}}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3"> 
             @if ($activeTab === 'ptst')
-                {{-- Debounce 500ms mencegah permintaan AJAX berlebihan saat user mengetik --}}
                 <div class="relative">
                     <i class="fas fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
                     <input type="text" wire:model.live.debounce.500ms="searchSap" placeholder="Cari by SAP..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
@@ -60,15 +60,27 @@
                     <i class="fas fa-font absolute left-3 top-3 text-slate-400 text-xs"></i>
                     <input type="text" wire:model.live.debounce.500ms="searchNama" placeholder="Cari by Nama..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
                 </div>
-                {{-- TAMBAHAN: Filter Departemen --}}
+                
+                {{-- Dropdown Filter Departemen --}}
                 <div class="relative">
                     <i class="fas fa-sitemap absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" wire:model.live.debounce.500ms="searchDepartemen" placeholder="Cari by Departemen..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
+                    <select wire:model.live="searchDepartemen" class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500 cursor-pointer appearance-none">
+                        <option value="">Semua Departemen</option>
+                        @foreach($listDepartemen as $dept)
+                            <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
+                {{-- Dropdown Filter Unit Kerja (Disabled jika dept belum dipilih) --}}
                 <div class="relative">
                     <i class="fas fa-building absolute left-3 top-3 text-slate-400 text-xs"></i>
-                    <input type="text" wire:model.live.debounce.500ms="searchUnitKerja" placeholder="Cari by Unit Kerja..." class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500">
+                    <select wire:model.live="searchUnitKerja" class="w-full pl-8 pr-3 py-2 text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500 cursor-pointer appearance-none disabled:bg-slate-100 disabled:text-slate-400" @if(empty($listUnitKerja)) disabled @endif>
+                        <option value="">Semua Unit Kerja</option>
+                        @foreach($listUnitKerja as $unit)
+                            <option value="{{ $unit->id }}">{{ $unit->nama_unit_kerja }}</option>
+                        @endforeach
+                    </select>
                 </div>
             @else
                 <div class="relative md:col-span-2">
