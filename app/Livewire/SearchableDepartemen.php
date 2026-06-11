@@ -133,7 +133,7 @@ class SearchableDepartemen extends Component
         $this->searchDepartemen = '';
         $this->isUnitKerjaDropdownOpen = true; 
         $this->loadUnitKerjas(); 
-        $this->dispatch('departemenUpdated', ['id' => $id]);
+        $this->dispatch('departemenUpdated', id: $id);
     }
 
     // ==== Unit Kerja ====
@@ -150,7 +150,7 @@ class SearchableDepartemen extends Component
         $this->selectedUnitKerjaName = $name;
         $this->isUnitKerjaDropdownOpen = false;
         $this->searchUnitKerja = '';
-        $this->dispatch('unitKerjaUpdated', ['id' => $id]);
+        $this->dispatch('unitKerjaUpdated', id: $id);
     }
 
     public function addNewUnitKerja()

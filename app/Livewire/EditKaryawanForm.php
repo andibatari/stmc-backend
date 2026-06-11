@@ -136,9 +136,9 @@ class EditKaryawanForm extends Component
      * Menggunakan sintaks parameter array sesuai dengan dispatch di child.
      */
     // #[On('departemenUpdated')]
-    public function updateDepartemenId($data)
+    public function updateDepartemenId($id)
     {
-        $this->departemens_id = $data['id'];
+        $this->departemens_id = $id;
         
         // Reset unit kerja karena departemen berubah
         $this->unit_kerjas_id = null; 
@@ -148,9 +148,9 @@ class EditKaryawanForm extends Component
      * Menangkap event 'unitKerjaUpdated' dari komponen child (SearchableDepartemen)
      */
     // #[On('unitKerjaUpdated')]
-    public function updateUnitKerjaId($data)
+    public function updateUnitKerjaId($id)
     {
-        $this->unit_kerjas_id = $data['id'];
+        $this->unit_kerjas_id = $id;
     }
     
     /**

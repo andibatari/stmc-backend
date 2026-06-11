@@ -86,17 +86,17 @@ class Karyawan extends Model
 
     public function unitKerja()
     {
-        return $this->belongsTo(UnitKerja::class, 'unit_kerjas_id');
+        return $this->belongsTo(UnitKerja::class, 'unit_kerjas_id', 'id');
     }
  
     public function departemen()
     {
-        return $this->belongsTo(Departemen::class, 'departemens_id');
+        return $this->belongsTo(Departemen::class, 'departemens_id', 'id');
     }
     
     public function provinsi()
     {
-        return $this->belongsTo(Provinsi::class);
+        return $this->belongsTo(Provinsi::class, 'provinsi_id', 'id');
     }
     public function keluargas(): HasMany
     {
