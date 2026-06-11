@@ -152,14 +152,26 @@ class NotificationDashboard extends Component
             return;
         }
 
-        foreach ($targets as $userTarget) {
-            if (!empty($userTarget->fcm_token)) {
-                $statusFCM = \App\Services\FCMService::sendPushNotification(
-                    $userTarget->fcm_token, $this->broadcastTitle, $this->broadcastMessage, $this->broadcastLink
-                );
-                if ($statusFCM) $fcmSuccessCount++;
+        // ==========================================
+        // 🌟 PERBAIKAN: CEGAH NOTIFIKASI GANDA
+        // ==========================================
+        // 1. Ambil semua token dari target, buang yang kosong, lalu saring agar tidak ada token kembar (unique)
+        $uniqueTokens = $targets->pluck('fcm_token')->filter()->unique();
+
+        // 2. Tembakkan Notifikasi ke masing-masing Token yang sudah disaring
+        foreach ($uniqueTokens as $token) {
+            $statusFCM = \App\Services\FCMService::sendPushNotification(
+                $token, 
+                $this->broadcastTitle, 
+                $this->broadcastMessage, 
+                $this->broadcastLink
+            );
+            
+            if ($statusFCM) {
+                $fcmSuccessCount++;
             }
         }
+        // ==========================================
 
         \App\Models\NotificationLog::create([
             'mode' => 'broadcast',

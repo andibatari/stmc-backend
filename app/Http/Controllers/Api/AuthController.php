@@ -19,9 +19,11 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
+            // 🌟 1. Tambahkan fcm_token agar dizinkan masuk oleh Laravel
             $data = $request->validate([
                 'identifier' => 'required|string',
                 'password'   => 'required|string',
+                'fcm_token'  => 'nullable|string', 
             ]);
 
             $loginUser = $this->findAndAuthenticateApiUser(
@@ -35,6 +37,27 @@ class AuthController extends Controller
                     'message' => 'Identitas atau password salah'
                 ], 401);
             }
+
+            // ==========================================
+            // 🌟 2. SIMPAN & BERSIHKAN FCM TOKEN GANDA
+            // ==========================================
+            if (!empty($data['fcm_token'])) {
+                $fcmToken = $data['fcm_token'];
+
+                // Hapus token ini dari Karyawan & Pasien Umum lain (Mencegah Notifikasi Ganda di 1 HP)
+                \App\Models\Karyawan::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
+                \App\Models\PesertaMcu::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
+
+                // Simpan token ke akun yang berhasil login saat ini
+                if ($loginUser instanceof EmployeeLogin && $loginUser->karyawan) {
+                    $loginUser->karyawan->fcm_token = $fcmToken;
+                    $loginUser->karyawan->save();
+                } elseif ($loginUser instanceof PesertaMcuLogin && $loginUser->pasien) {
+                    $loginUser->pasien->fcm_token = $fcmToken;
+                    $loginUser->pasien->save();
+                }
+            }
+            // ==========================================
 
             // 🔑 BUAT TOKEN SANCTUM
             $token = $loginUser
@@ -65,8 +88,18 @@ class AuthController extends Controller
     {
         $user = $request->user('sanctum');
 
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
+        if ($user) {
+            // 🌟 3. Hapus FCM Token saat Logout agar HP tidak bunyi jika akun sudah keluar
+            if ($user instanceof EmployeeLogin && $user->karyawan) {
+                $user->karyawan->update(['fcm_token' => null]);
+            } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
+                $user->pasien->update(['fcm_token' => null]);
+            }
+
+            // Hapus session login
+            if ($user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
         }
 
         return response()->json([
