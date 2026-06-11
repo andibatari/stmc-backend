@@ -217,7 +217,11 @@
                         @endphp
                         <tr wire:key="row-{{ $data['target_id'] }}" class="hover:bg-slate-50">
                             <td class="px-3 py-2 text-center">
-                                <input type="checkbox" wire:model="selectedRecipients" value="{{ $data['target_id'] }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                                <input type="checkbox" 
+                                    wire:model="selectedRecipients" 
+                                    value="{{ $checkboxVal }}"  {{-- 🌟 GANTI JADI INI! --}}
+                                    wire:key="checkbox-{{ $checkboxVal }}" {{-- Tambahkan wire:key unik juga di sini --}}
+                                    class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                             </td>
                             <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
                             <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ $dept }}</td>
