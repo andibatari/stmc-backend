@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Tambah Pasien Keluarga/Umum')
+@section('title', 'Registrasi Pasien')
 
 @section('content')
 <div class="px-3 md:px-6 py-4 md:py-6 min-h-screen">
@@ -17,16 +17,17 @@
         @endif
     </div>
 
-    <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden p-4 md:p-8 max-w-7xl mx-auto">
-        <div class="mb-5 md:mb-8 border-b border-slate-100 pb-4 flex items-center">
+    <div class="bg-white rounded-xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden px-3 py-4 md:p-8 w-full max-w-7xl mx-auto"> 
+        <div class="mb-4 md:mb-8 border-b border-slate-100 pb-3 md:pb-4 flex items-center">
             <div class="w-8 h-8 md:w-10 md:h-10 bg-red-100 text-red-600 rounded-lg flex items-center justify-center mr-3 shrink-0">
                 <i class="fas {{ $karyawan ? 'fa-users' : 'fa-user-injured' }} text-sm md:text-xl"></i>
             </div>
             <div>
-                <h1 class="text-lg md:text-2xl font-black text-slate-800 leading-tight">
-                    {{ $karyawan ? 'Tambah Keluarga Karyawan' : 'Registrasi Pasien Umum' }}
+                {{-- Ukuran teks diubah dari text-lg menjadi text-base untuk HP --}}
+                <h1 class="text-base md:text-2xl font-black text-slate-800 leading-tight">
+                    {{ $karyawan ? 'Tambah Keluarga' : 'Pasien Umum' }} 
                 </h1>
-                <p class="text-[10px] md:text-xs font-medium text-slate-500 mt-0.5">
+                <p class="text-[9px] md:text-xs font-medium text-slate-500 mt-0.5">
                     {{ $karyawan ? "Input data tanggungan medis." : 'Pendaftaran non-karyawan PTST.' }}
                 </p>
             </div>
