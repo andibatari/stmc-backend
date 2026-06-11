@@ -14,7 +14,7 @@
             title: 'Berhasil!',
             text: 'Data pasien berhasil diperbarui.',
             icon: 'success',
-            confirmButtonText: 'Lanjutkan',
+            confirmButtonText: 'Tutup',
             confirmButtonColor: '#dc2626',
             customClass: { popup: 'rounded-[2rem]' }
         }).then((result) => {
