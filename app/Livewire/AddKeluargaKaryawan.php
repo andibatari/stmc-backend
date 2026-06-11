@@ -167,10 +167,14 @@ class AddKeluargaKaryawan extends Component
             }
             
             DB::commit();
-            // 6. Tampilkan Notifikasi Sukses via Browser Event (SweetAlert)
+            // Tentukan URL tujuan dengan parameter tab 'non-ptst' (Peserta Umum)
+            $redirectUrl = route('karyawan.index', ['tab' => 'non-ptst']);
+
+            // Tampilkan Notifikasi Sukses via Browser Event (SweetAlert)
             $this->dispatch('show-success-popup', [
-                'title'   => 'Berhasil!',
-                'message' => 'Data peserta berhasil ditambahkan ke database.'
+                'title'    => 'Berhasil!',
+                'message'  => 'Data peserta berhasil ditambahkan ke database.',
+                'redirect' => $redirectUrl // <-- Ini yang akan ditangkap oleh Javascript
             ]);
             
             // Bersihkan form setelah sukses (optional)
