@@ -125,6 +125,7 @@ class SearchableDepartemen extends Component
         $this->isDepartemenDropdownOpen = !$this->isDepartemenDropdownOpen;
     }
 
+    // ==== Departemen ====
     public function selectDepartemen($id, $name)
     {
         $this->selectedDepartemenId = $id;
@@ -133,7 +134,9 @@ class SearchableDepartemen extends Component
         $this->searchDepartemen = '';
         $this->isUnitKerjaDropdownOpen = true; 
         $this->loadUnitKerjas(); 
-        $this->dispatch('departemenUpdated', id: $id);
+        
+        // 🌟 PERBAIKAN: Gunakan format Array murni agar tidak miskomunikasi
+        $this->dispatch('departemenUpdated', ['id' => $id]);
     }
 
     // ==== Unit Kerja ====
@@ -150,7 +153,9 @@ class SearchableDepartemen extends Component
         $this->selectedUnitKerjaName = $name;
         $this->isUnitKerjaDropdownOpen = false;
         $this->searchUnitKerja = '';
-        $this->dispatch('unitKerjaUpdated', id: $id);
+        
+        // 🌟 PERBAIKAN: Gunakan format Array murni agar tidak miskomunikasi
+        $this->dispatch('unitKerjaUpdated', ['id' => $id]);
     }
 
     public function addNewUnitKerja()
