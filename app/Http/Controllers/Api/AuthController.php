@@ -157,42 +157,40 @@ class AuthController extends Controller
     protected function findAndAuthenticateApiUser(string $input, string $password)
     {
         $loginUser = null;
-        $input = trim($input); // Bersihkan spasi kosong jika ada typo saat mengetik
+        $input = trim($input); // Bersihkan spasi kosong
 
-        // 1. CEK JIKA INPUT ADALAH EMAIL
-        if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
-            $loginUser = EmployeeLogin::whereHas('karyawan', function ($q) use ($input) {
-                $q->where('email', $input);
+        // 1. CARI DI KARYAWAN (Tembus langsung ke tabel Profil Karyawan)
+        // Kita cari kecocokan Email, SAP, atau NIK di tabel 'karyawans'
+        $loginUser = EmployeeLogin::whereHas('karyawan', function ($q) use ($input) {
+            $q->where('email', $input)
+              ->orWhere('no_sap', $input)
+              ->orWhere('nik_karyawan', $input);
+        })->first();
+
+        // Fallback: Jika tidak ketemu via relasi, cari di tabel Login Karyawan (khusus SAP)
+        if (!$loginUser) {
+            try {
+                $loginUser = EmployeeLogin::where('no_sap', $input)->first();
+            } catch (\Throwable $th) {}
+        }
+
+        // 2. CARI DI PASIEN UMUM (Tembus langsung ke tabel Profil Pasien)
+        // Kita cari kecocokan Email atau NIK di tabel 'peserta_mcus'
+        if (!$loginUser) {
+            $loginUser = PesertaMcuLogin::whereHas('pasien', function ($q) use ($input) {
+                $q->where('email', $input)
+                  ->orWhere('nik_pasien', $input);
             })->first();
 
+            // Fallback: Cari di tabel Login Pasien (khusus NIK)
             if (!$loginUser) {
-                $loginUser = PesertaMcuLogin::whereHas('pasien', function ($q) use ($input) {
-                    $q->where('email', $input);
-                })->first();
-            }
-        } 
-        // 2. CEK JIKA INPUT ADALAH NIK ATAU NO. SAP
-        else {
-            // Cari Karyawan: Cek kolom no_sap/nik di tabel login, ATAU cek di tabel karyawans
-            $loginUser = EmployeeLogin::where('no_sap', $input)
-                ->orWhere('nik_karyawan', $input)
-                ->orWhereHas('karyawan', function($q) use ($input) {
-                    $q->where('nik_karyawan', $input)
-                      ->orWhere('no_sap', $input);
-                })
-                ->first();
-
-            // Jika bukan Karyawan, cari Pasien Umum: Cek di tabel login, ATAU cek di tabel peserta_mcus
-            if (!$loginUser) {
-                $loginUser = PesertaMcuLogin::where('nik_pasien', $input)
-                    ->orWhereHas('pasien', function($q) use ($input) {
-                        $q->where('nik_pasien', $input);
-                    })
-                    ->first();
+                try {
+                    $loginUser = PesertaMcuLogin::where('nik_pasien', $input)->first();
+                } catch (\Throwable $th) {}
             }
         }
 
-        // 3. VERIFIKASI PASSWORD
+        // 3. COCOKKAN PASSWORD
         if ($loginUser && Hash::check($password, $loginUser->password)) {
             return $loginUser;
         }
