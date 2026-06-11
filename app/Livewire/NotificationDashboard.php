@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\JadwalMcu;
 use App\Models\Karyawan;
+use App\Models\PesertaMcu;
 use App\Models\Departemen;
 use App\Jobs\ProcessMcuReminders;
 use App\Jobs\ProcessSubmissionReminders;
@@ -20,12 +21,11 @@ class NotificationDashboard extends Component
     public $broadcastMessage = '';
     public $broadcastTargetType = 'all'; 
     public $broadcastTargetDeptId = '';
-    public $broadcastLink = ''; // 🌟 TAMBAHAN: Properti untuk link lampiran
+    public $broadcastLink = ''; 
     
-    // Properti Baru untuk Pencarian Multi-Karyawan
     public $searchEmployeeQuery = '';
     public $employeeSearchResults = [];
-    public $selectedIndividualEmployees = []; // Format: [['id'=>1, 'name'=>'Budi', 'sap'=>'123']]
+    public $selectedIndividualEmployees = []; 
 
     // ==========================================
     // PROPERTI TAB 2: PENGINGAT MCU 
@@ -53,16 +53,26 @@ class NotificationDashboard extends Component
     }
 
     // ==========================================
-    // FUNGSI PENCARIAN & PILIH KARYAWAN INDIVIDU
+    // FUNGSI PENCARIAN (GABUNGAN KARYAWAN & PASIEN UMUM)
     // ==========================================
     public function updatedSearchEmployeeQuery()
     {
-        // Hanya mencari jika diketik minimal 2 huruf agar database tidak terbebani
         if (strlen($this->searchEmployeeQuery) >= 2) {
-            $this->employeeSearchResults = Karyawan::where('nama_karyawan', 'like', '%' . $this->searchEmployeeQuery . '%')
+            // Cari Karyawan
+            $karyawans = Karyawan::where('nama_karyawan', 'like', '%' . $this->searchEmployeeQuery . '%')
                 ->orWhere('no_sap', 'like', '%' . $this->searchEmployeeQuery . '%')
-                ->take(10) // Batasi 10 hasil teratas agar ringan
-                ->get();
+                ->take(5)->get()->map(function($k) {
+                    return ['id' => 'K_' . $k->id, 'name' => $k->nama_karyawan, 'sap' => $k->no_sap ?? '-'];
+                });
+
+            // Cari Pasien Umum / Keluarga
+            $pesertas = PesertaMcu::where('nama_lengkap', 'like', '%' . $this->searchEmployeeQuery . '%')
+                ->orWhere('nik_pasien', 'like', '%' . $this->searchEmployeeQuery . '%')
+                ->take(5)->get()->map(function($p) {
+                    return ['id' => 'P_' . $p->id, 'name' => $p->nama_lengkap, 'sap' => $p->no_sap ?? $p->nik_pasien ?? '-'];
+                });
+
+            $this->employeeSearchResults = $karyawans->concat($pesertas)->toArray();
         } else {
             $this->employeeSearchResults = [];
         }
@@ -70,7 +80,6 @@ class NotificationDashboard extends Component
 
     public function addEmployeeToBroadcast($id, $nama, $sap)
     {
-        // Cek agar tidak memasukkan orang yang sama dua kali
         $exists = collect($this->selectedIndividualEmployees)->contains('id', $id);
         if (!$exists) {
             $this->selectedIndividualEmployees[] = [
@@ -79,24 +88,18 @@ class NotificationDashboard extends Component
                 'sap' => $sap
             ];
         }
-        
-        // Reset kolom pencarian setelah diklik
         $this->searchEmployeeQuery = '';
         $this->employeeSearchResults = [];
     }
 
     public function removeEmployeeFromBroadcast($id)
     {
-        // Hapus karyawan dari daftar pilihan
         $this->selectedIndividualEmployees = array_values(collect($this->selectedIndividualEmployees)
-            ->reject(function ($emp) use ($id) {
-                return $emp['id'] == $id;
-            })->toArray());
+            ->reject(function ($emp) use ($id) { return $emp['id'] == $id; })->toArray());
     }
 
     public function updatedBroadcastTargetType()
     {
-        // Reset pilihan jika tipe target diubah
         $this->broadcastTargetDeptId = '';
         $this->searchEmployeeQuery = '';
         $this->employeeSearchResults = [];
@@ -104,77 +107,76 @@ class NotificationDashboard extends Component
     }
 
     // ==========================================
-    // FUNGSI KIRIM BROADCAST PENGUMUMAN
+    // FUNGSI KIRIM BROADCAST
     // ==========================================
     public function sendBroadcast()
     {
-        // 1. Validasi Input
         $this->validate([
             'broadcastTitle' => 'required|string|max:255',
             'broadcastMessage' => 'required|string',
             'broadcastTargetType' => 'required|in:all,dept,individual',
-            'broadcastLink' => 'nullable|url', // 🌟 TAMBAHAN: Validasi opsional harus berupa URL
+            'broadcastLink' => 'nullable|url', 
         ]);
 
         $targets = collect();
-        $totalTarget = 0;
 
-        // 2. Tentukan Siapa Targetnya
+        // 2. Tentukan Siapa Targetnya (Gabungan)
         if ($this->broadcastTargetType === 'all') {
-            $targets = \App\Models\Karyawan::whereNotNull('fcm_token')->get();
+            $karyawanT = Karyawan::whereNotNull('fcm_token')->get();
+            $pesertaT = PesertaMcu::whereNotNull('fcm_token')->get();
+            $targets = $karyawanT->concat($pesertaT);
+            
         } elseif ($this->broadcastTargetType === 'dept') {
             $this->validate(['broadcastTargetDeptId' => 'required']);
-            $targets = \App\Models\Karyawan::where('departemens_id', $this->broadcastTargetDeptId)
-                                           ->whereNotNull('fcm_token')->get();
+            $targets = Karyawan::where('departemens_id', $this->broadcastTargetDeptId)
+                               ->whereNotNull('fcm_token')->get();
+                               
         } elseif ($this->broadcastTargetType === 'individual') {
             $this->validate(['selectedIndividualEmployees' => 'required|array|min:1']);
-            // Ambil ID dari array pilihan
-            $ids = array_column($this->selectedIndividualEmployees, 'id');
-            $targets = \App\Models\Karyawan::whereIn('id', $ids)->get();
+            foreach ($this->selectedIndividualEmployees as $emp) {
+                $parts = explode('_', $emp['id']);
+                if ($parts[0] === 'K') {
+                    $targets->push(Karyawan::find($parts[1]));
+                } else {
+                    $targets->push(PesertaMcu::find($parts[1]));
+                }
+            }
+            $targets = $targets->filter(fn($t) => $t != null && !empty($t->fcm_token));
         }
 
         $fcmSuccessCount = 0;
         $totalTarget = $targets->count();
 
         if ($totalTarget === 0) {
-            session()->flash('error', 'Gagal dikirim: Target tidak ditemukan atau belum memiliki Token HP (Belum login di Aplikasi).');
+            session()->flash('error', 'Gagal: Target tidak ditemukan atau belum pernah login di Aplikasi (Token Kosong).');
             return;
         }
 
-        // 3. Tembakkan Notifikasi ke HP Karyawan (Satu per satu)
-        foreach ($targets as $karyawan) {
-            if (!empty($karyawan->fcm_token)) {
+        foreach ($targets as $userTarget) {
+            if (!empty($userTarget->fcm_token)) {
                 $statusFCM = \App\Services\FCMService::sendPushNotification(
-                    $karyawan->fcm_token,
-                    $this->broadcastTitle,
-                    $this->broadcastMessage,
-                    $this->broadcastLink // 🌟 TAMBAHAN: Kirim link sebagai parameter ke-4
+                    $userTarget->fcm_token, $this->broadcastTitle, $this->broadcastMessage, $this->broadcastLink
                 );
-
-                if ($statusFCM) {
-                    $fcmSuccessCount++;
-                }
+                if ($statusFCM) $fcmSuccessCount++;
             }
         }
 
-        // 4. Catat ke Tabel Riwayat
         \App\Models\NotificationLog::create([
             'mode' => 'broadcast',
-            'scheduled_date' => now(), // Broadcast tidak punya target tanggal
+            'scheduled_date' => now(),
             'total_targets' => $totalTarget,
             'email_success' => 0,
             'fcm_success' => $fcmSuccessCount,
             'admin_id' => auth()->id() ?? 1,
         ]);
 
-        // 5. Bersihkan Form dan Tampilkan Pesan Sukses
         session()->flash('message', "Broadcast Selesai! Berhasil terkirim ke $fcmSuccessCount perangkat HP.");
         $this->reset(['broadcastTitle', 'broadcastMessage', 'broadcastLink', 'selectedIndividualEmployees', 'searchEmployeeQuery']);
         $this->broadcastTargetType = 'individual';
     }
     
     // ==========================================
-    // FUNGSI TAB 2: PENGINGAT MCU (Tidak Diubah)
+    // FUNGSI TAB 2: PENGINGAT MCU 
     // ==========================================
     public function loadData()
     {
@@ -203,7 +205,6 @@ class NotificationDashboard extends Component
                 $searchTerm = '%' . $this->searchQuery . '%';
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('nama_pasien', 'like', $searchTerm)
-                      ->orWhere('nik_pasien', 'like', $searchTerm)
                       ->orWhere('no_sap', 'like', $searchTerm)
                       ->orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
                           $qKar->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
@@ -224,26 +225,42 @@ class NotificationDashboard extends Component
     public function loadKaryawanForSubmission()
     {
         $this->jadwalsToNotify = collect(); 
-        if (!$this->filterDepartemenId) return; 
         
-        $karyawanQuery = Karyawan::with('departemen')->where('departemens_id', $this->filterDepartemenId);
-        
-        $recentJadwalKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')
-            ->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1)) 
-            ->pluck('karyawan_id')
-            ->toArray();
+        $recentKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))->pluck('karyawan_id')->toArray();
+        $recentPesertaIds = JadwalMcu::whereNotNull('peserta_mcus_id')->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))->pluck('peserta_mcus_id')->toArray();
 
-        $karyawanQuery->whereNotIn('id', $recentJadwalKaryawanIds);
-
+        // 1. Tarik Data Karyawan
+        $karyawanQuery = Karyawan::with('departemen')->whereNotIn('id', $recentKaryawanIds);
+        if ($this->filterDepartemenId) $karyawanQuery->where('departemens_id', $this->filterDepartemenId);
         if ($this->searchQuery) {
             $searchTerm = '%' . $this->searchQuery . '%';
             $karyawanQuery->where(function ($q) use ($searchTerm) {
                 $q->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
             });
         }
+        $karyawans = $karyawanQuery->get()->map(function($k) {
+            $k->target_id = 'K_' . $k->id; // ID Unik Karyawan
+            return $k;
+        });
 
-        $this->jadwalsToNotify = $karyawanQuery->get();
-        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
+        // 2. Tarik Data Pasien Umum (Hanya jika "Semua Dept" dipilih)
+        $pesertas = collect();
+        if (empty($this->filterDepartemenId)) {
+            $pesertaQuery = PesertaMcu::whereNotIn('id', $recentPesertaIds);
+            if ($this->searchQuery) {
+                $searchTerm = '%' . $this->searchQuery . '%';
+                $pesertaQuery->where(function ($q) use ($searchTerm) {
+                    $q->where('nama_lengkap', 'like', $searchTerm)->orWhere('nik_pasien', 'like', $searchTerm);
+                });
+            }
+            $pesertas = $pesertaQuery->get()->map(function($p) {
+                $p->target_id = 'P_' . $p->id; // ID Unik Peserta Umum
+                return $p;
+            });
+        }
+
+        $this->jadwalsToNotify = $karyawans->concat($pesertas);
+        $this->selectedRecipients = $this->jadwalsToNotify->pluck('target_id')->toArray();
     }
 
     public function updatedFilterDate() { $this->loadData(); }
@@ -256,26 +273,23 @@ class NotificationDashboard extends Component
     {
         $recipientsCount = count($this->selectedRecipients);
         if ($recipientsCount === 0) {
-            session()->flash('error', 'Tidak ada karyawan yang dipilih.');
+            session()->flash('error', 'Tidak ada pasien yang dipilih.');
             return;
         }
 
-        // Buat log awal dengan default 0
         $log = \App\Models\NotificationLog::create([
             'scheduled_date' => $this->specificDate ?? Carbon::now()->toDateString(),
             'mode' => 'manual',
             'total_targets' => $recipientsCount,
-            'fcm_success' => 0, // Inisialisasi awal
+            'fcm_success' => 0, 
             'email_success' => 0,
-            'admin_users_id' => Auth::id(),
+            'admin_id' => Auth::id() ?? 1,
         ]);
         
         if ($this->notificationMode === 'scheduled') {
-            // GANTI MENGGUNAKAN dispatchSync
             ProcessMcuReminders::dispatchSync($this->selectedRecipients, $log);
             session()->flash('message', "{$recipientsCount} pengingat jadwal berhasil dikirim.");
         } elseif ($this->notificationMode === 'submission') {
-            // GANTI MENGGUNAKAN dispatchSync
             ProcessSubmissionReminders::dispatchSync($this->selectedRecipients, $log);
             session()->flash('message', "{$recipientsCount} pengingat pengajuan jadwal berhasil dikirim.");
         }

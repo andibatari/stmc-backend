@@ -173,24 +173,67 @@
                 <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                     <tr>
                         <th class="px-3 py-2 text-center w-10">
-                            <input type="checkbox" @if($jadwalsToNotify->isNotEmpty()) wire:click="$set('selectedRecipients', $selectedRecipients ? [] : $jadwalsToNotify->pluck('id')->toArray())" @endif @checked(count($selectedRecipients) === $jadwalsToNotify->count() && $jadwalsToNotify->count() > 0) class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                            <input type="checkbox" 
+                                @if($jadwalsToNotify->isNotEmpty()) 
+                                    wire:click="$set('selectedRecipients', $selectedRecipients ? [] : $jadwalsToNotify->pluck('{{ $notificationMode === 'scheduled' ? 'id' : 'target_id' }}')->toArray())" 
+                                @endif 
+                                @checked(count($selectedRecipients) === $jadwalsToNotify->count() && $jadwalsToNotify->count() > 0) 
+                                class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                         </th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan</th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Dept</th>
-                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">SAP</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan / Pasien</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Dept / Tipe</th>
+                        <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">SAP / NIK</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     @forelse ($jadwalsToNotify as $data)
+                        @php
+                            $isScheduled = $notificationMode === 'scheduled';
+                            
+                            // LOGIKA NAMA
+                            $nama = $isScheduled 
+                                ? ($data->karyawan->nama_karyawan ?? $data->pesertaMcu->nama_lengkap ?? $data->nama_pasien ?? 'N/A')
+                                : ($data->nama_karyawan ?? $data->nama_lengkap ?? 'N/A');
+                            
+                            // LOGIKA DEPT
+                            $dept = $isScheduled
+                                ? ($data->karyawan->departemen->nama_departemen ?? 'Umum / Keluarga')
+                                : ($data->departemen->nama_departemen ?? 'Umum / Keluarga');
+
+                            // LOGIKA SAP & NIK (Menarik kedua data)
+                            $sapVal = $isScheduled
+                                ? ($data->no_sap ?? $data->karyawan->no_sap ?? $data->pesertaMcu->no_sap ?? '-')
+                                : ($data->no_sap ?? '-');
+                                
+                            $nikVal = $isScheduled
+                                ? ($data->karyawan->nik_karyawan ?? $data->pesertaMcu->nik_pasien ?? $data->nik_pasien ?? '-')
+                                : ($data->nik_karyawan ?? $data->nik_pasien ?? '-');
+
+                            // LOGIKA CHECKBOX
+                            $checkboxVal = $isScheduled ? $data->id : $data->target_id;
+                        @endphp
                         <tr class="hover:bg-slate-50">
-                            <td class="px-3 py-2 text-center"><input type="checkbox" wire:model.defer="selectedRecipients" value="{{ $data->id }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"></td>
-                            <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ ($notificationMode === 'scheduled') ? ($data->patient->nama_lengkap ?? $data->patient->nama_karyawan ?? 'N/A') : $data->nama_karyawan }}</td>
-                            <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ ($notificationMode === 'scheduled') ? ($data->patient->departemen->nama_departemen ?? 'N/A') : ($data->departemen->nama_departemen ?? 'N/A') }}</td>
-                            <td class="px-3 py-2 text-[10px] font-mono text-slate-600">{{ ($notificationMode === 'scheduled') ? ($data->patient->nik_karyawan ?? $data->patient->no_sap ?? $data->nik_pasien) : ($data->nik_karyawan ?? $data->no_sap) }}</td>
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" wire:model.defer="selectedRecipients" value="{{ $checkboxVal }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                            </td>
+                            <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
+                            <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ $dept }}</td>
+                            <td class="px-3 py-2 text-[10px] font-mono">
+                                {{-- Tampilkan SAP utama, jika SAP kosong/strip, maka jadikan NIK sebagai teks utama (tebal) --}}
+                                <div class="font-bold text-slate-700">
+                                    {{ $sapVal !== '-' ? $sapVal : $nikVal }}
+                                </div>
+                                {{-- Sub-teks untuk informasi tambahan di bawahnya --}}
+                                <div class="text-[9px] text-slate-400 mt-0.5">
+                                    {{ $sapVal !== '-' ? 'NIK: ' . $nikVal : 'SAP: -' }}
+                                </div>
+                            </td>
                         </tr>
-                    @empty
-                        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs font-medium">Tidak ada data.</td></tr>
                     @endforelse
+                    
+                    @if ($jadwalsToNotify->isEmpty())
+                        <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400 text-xs font-medium">Tidak ada data.</td></tr>
+                    @endif
                 </tbody>
             </table>
         </div>
