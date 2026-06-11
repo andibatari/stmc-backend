@@ -322,6 +322,15 @@ class NotificationDashboard extends Component
         $this->loadData();
     }
 
+    public function toggleSelectAll()
+    {
+        if (count($this->selectedRecipients) === count($this->jadwalsToNotify)) {
+            $this->selectedRecipients = [];
+        } else {
+            $this->selectedRecipients = array_column($this->jadwalsToNotify, 'target_id');
+        }
+    }
+
     public function render()
     {
         return view('livewire.notification-dashboard')->layout('layouts.app');

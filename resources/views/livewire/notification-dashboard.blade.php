@@ -159,7 +159,7 @@
                 
                 <div class="col-span-2 md:col-span-1 md:text-right pt-1">
                     <button wire:click="sendNotifications" wire:loading.attr="disabled" class="w-full px-4 py-2 bg-blue-600 rounded-lg font-bold text-xs text-white hover:bg-blue-700 shadow-md disabled:opacity-50">
-                        Kirim ({{ count($jadwalsToNotify) }})
+                        Kirim ({{ count($selectedRecipients) }})
                     </button>
                 </div>
             </div>
@@ -184,9 +184,9 @@
                     <tr>
                         <th class="px-3 py-2 text-center w-10">
                             <input type="checkbox" 
-                                @if(!empty($allIds)) 
-                                    wire:click="$set('selectedRecipients', $selectedRecipients ? [] : {{ $allIdsJson }})" 
-                                @endif 
+                                @if(!empty($jadwalsToNotify)) 
+                                    wire:click="toggleSelectAll" 
+                                @endif
                                 @checked(count($selectedRecipients) === count($jadwalsToNotify) && count($jadwalsToNotify) > 0) 
                                 class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                         </th>
@@ -217,7 +217,7 @@
                         @endphp
                         <tr class="hover:bg-slate-50">
                             <td class="px-3 py-2 text-center">
-                                <input type="checkbox" wire:model.defer="selectedRecipients" value="{{ $checkboxVal }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                                <input type="checkbox" wire:model="selectedRecipients" value="{{ $checkboxVal }}" class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                             </td>
                             <td class="px-3 py-2 text-xs font-bold text-slate-800">{{ $nama }}</td>
                             <td class="px-3 py-2 text-[10px] font-bold text-slate-500">{{ $dept }}</td>
