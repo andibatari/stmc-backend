@@ -28,7 +28,7 @@
     <div class="w-full max-w-4xl bg-white/95 backdrop-blur-xl rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[550px]">
         
         {{-- KIRI: Banner / Ilustrasi --}}
-        <div class="hidden lg:flex lg:w-5/12 bg-linear-to-br from-red-800 to-red-950 p-10 flex-col justify-between relative overflow-hidden text-white">
+        <div class="hidden lg:flex lg:w-5/12 bg-gradient-to-br from-red-800 to-red-950 p-10 flex-col justify-between relative overflow-hidden text-white">
             <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
             <div class="relative z-10">
                 <div class="flex items-center gap-3 mb-8 bg-white/10 p-3 rounded-2xl w-max backdrop-blur-sm border border-white/10">
