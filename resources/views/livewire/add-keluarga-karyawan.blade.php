@@ -19,6 +19,8 @@
             <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">NIK (KTP) <span class="text-red-500">*</span></label>
                 <input type="text" wire:model="nik_pasien" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500" required>
+                {{-- TAMBAHKAN INI --}}
+                @error('nik_pasien') <span class="text-red-500 text-[10px] font-bold mt-1 block">{{ $message }}</span> @enderror
             </div>
         </div>
     </div>

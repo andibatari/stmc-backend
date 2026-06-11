@@ -185,10 +185,11 @@ class AddKeluargaKaryawan extends Component
 
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log pesan error asli agar Anda bisa melihat kolom mana yang "Unknown Column"
             Log::error('DATABASE ERROR: ' . $e->getMessage());
             
+            // UBAH NAMA EVENT INI:
             $this->dispatch('show-error-popup', [
+                'title' => 'Gagal Menyimpan!',
                 'message' => 'Detail Error: ' . $e->getMessage()
             ]);
         }
