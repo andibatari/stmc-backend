@@ -35,7 +35,23 @@ class JadwalMcuController extends Controller
 
         // 2. Apply search filter untuk SAP
         if (!empty($search_sap)) {
-            $query->where('no_sap', 'like', '%' . $search_sap . '%');
+            $query->where(function ($q) use ($search_sap) {
+                // 1. Cari berdasarkan SAP (di tabel jadwal_mcus)
+                $q->where('no_sap', 'like', '%' . $search_sap . '%')
+                  
+                  // 2. ATAU cari di kolom nama_pasien (jika diisi manual)
+                  ->orWhere('nama_pasien', 'like', '%' . $search_sap . '%')
+                  
+                  // 3. ATAU cari di tabel relasi Karyawan (kolom nama_karyawan)
+                  ->orWhereHas('karyawan', function ($subQuery) use ($search_sap) {
+                      $subQuery->where('nama_karyawan', 'like', '%' . $search_sap . '%');
+                  })
+                  
+                  // 4. ATAU cari di tabel relasi Peserta Umum/Keluarga (kolom nama_lengkap)
+                  ->orWhereHas('pesertaMcu', function ($subQuery) use ($search_sap) {
+                      $subQuery->where('nama_lengkap', 'like', '%' . $search_sap . '%');
+                  });
+            });
         }
         
         // Sort all results
