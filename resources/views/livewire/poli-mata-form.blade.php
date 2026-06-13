@@ -82,9 +82,18 @@
             </div>
         </div>
 
-        {{-- TOMBOL --}}
-        <div class="flex justify-end pt-4 border-t border-slate-200">
-            <button type="submit" class="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all">
+        {{-- TOMBOL AKSI --}}
+        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-slate-200">
+            
+            {{-- Tombol Lihat PDF (Hanya muncul jika PDF sudah berhasil di-generate) --}}
+            @if($mataResult && $mataResult->file_path)
+                <a href="{{ Storage::disk('public')->url($mataResult->file_path) }}" target="_blank"
+                    class="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-emerald-500 text-emerald-600 font-bold rounded-xl shadow-sm hover:bg-emerald-50 transition-all duration-200">
+                    <i class="fas fa-file-pdf mr-2"></i> Lihat Laporan PDF
+                </a>
+            @endif
+            
+            <button type="submit" class="inline-flex items-center justify-center px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
                 <span wire:loading.remove wire:target="simpanHasil"><i class="fas fa-save mr-2"></i> Simpan Pemeriksaan Mata</span>
                 <span wire:loading wire:target="simpanHasil"><i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan Data...</span>
             </button>
