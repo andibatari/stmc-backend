@@ -4,56 +4,42 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\JadwalPoli;
-use App\Models\Karyawan;
-use App\Models\PesertaMcu;
 use App\Models\Dokter;
 use App\Models\MataResult;
-use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PoliMataForm extends Component
 {
+    // Hanya gunakan ID (integer) agar Livewire tidak error saat proses penyimpanan
     public $jadwalPoliId; 
-    public $poliData; 
     public $patient;
     public $mataResult;
     public $listDokter;
     public $dokterId;
     
-    public $dataMata;
+    public $dataMata = [];
     public $kesimpulan;
     public $keterangan;
 
+    // Aturan validasi HANYA untuk 4 field sesuai gambar
     protected $rules = [
-        'dokterId' => 'required|exists:dokters,id',
-        'dataMata.visus_kanan' => 'required|string|max:100',
-        'dataMata.visus_kiri' => 'required|string|max:100',
-        'dataMata.add' => 'nullable|string|max:50',
-        'dataMata.pd' => 'nullable|string|max:50',
-        
+        'dokterId' => 'required',
+        'dataMata.visus_kanan' => 'required|string',
+        'dataMata.visus_kiri' => 'required|string',
+        'dataMata.add' => 'nullable|string',
+        'dataMata.pd' => 'nullable|string',
         'kesimpulan' => 'nullable|string',
         'keterangan' => 'nullable|string',
     ];
 
     public function mount() 
     {
-        try { $this->listDokter = Dokter::all(); } catch (\Exception $e) { $this->listDokter = collect([]); }
+        $this->listDokter = Dokter::all();
 
-        $jadwalMcu = $this->poliData->jadwalMcu ?? null;
-        $karyawanId = $jadwalMcu->karyawan_id ?? null;
-        $pesertaMcuId = $jadwalMcu->peserta_mcus_id ?? null;
-
-        if ($karyawanId) {
-            $this->patient = Karyawan::with('unitKerja')->find($karyawanId);
-        } elseif ($pesertaMcuId) {
-            $this->patient = PesertaMcu::find($pesertaMcuId);
-        }
-
-        if (!($this->poliData instanceof JadwalPoli) || !isset($this->poliData->id)) {
-            $this->mataResult = new MataResult();
-        } else {
-            $this->mataResult = MataResult::firstOrNew(['jadwal_poli_id' => $this->poliData->id]);
-        }
+        // Ambil data Mata berdasarkan jadwalPoliId secara langsung (Sangat aman dari error)
+        $this->mataResult = MataResult::firstOrNew(['jadwal_poli_id' => $this->jadwalPoliId]);
 
         if ($this->mataResult->exists) {
             $this->dataMata = $this->mataResult->data_mata;
@@ -61,6 +47,7 @@ class PoliMataForm extends Component
             $this->keterangan = $this->mataResult->keterangan;
             $this->dokterId = $this->mataResult->dokter_id;
         } else {
+            // Nilai Default sesuai gambar referensimu
             $this->dataMata = [
                 'visus_kanan' => 'Plano 6/6',
                 'visus_kiri' => 'Plano 6/6',
@@ -75,62 +62,60 @@ class PoliMataForm extends Component
     {
         $this->validate();
 
-        $dataToSave = [
-            'data_mata' => $this->dataMata,
-            'kesimpulan' => $this->kesimpulan,
-            'keterangan' => $this->keterangan,
-            'dokter_id' => $this->dokterId,
-        ];
-
         try {
+            $dataToSave = [
+                'data_mata' => $this->dataMata,
+                'kesimpulan' => $this->kesimpulan,
+                'keterangan' => $this->keterangan,
+                'dokter_id' => $this->dokterId,
+            ];
+
+            // 1. Simpan ke Database
             $this->mataResult = MataResult::updateOrCreate(
-                ['jadwal_poli_id' => $this->poliData->id],
+                ['jadwal_poli_id' => $this->jadwalPoliId],
                 $dataToSave
             );
 
-            // ==========================================
-            // LOGIKA PEMBANGKITAN PDF (GENERATE PDF)
-            // ==========================================
+            // 2. Generate PDF Khusus Mata
             $dokter = Dokter::find($this->dokterId);
-            $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
-            $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
-            
-            $fileName = 'Hasil_Pemeriksaan_Poli_Mata_' . $safeIdentifier . '_Jadwal_' . $this->poliData->id . '_' . time() . '.pdf';
-            $folderPath = 'pdf_reports';
-            $storagePath = $folderPath . '/' . $fileName; 
+            $patientName = is_array($this->patient) 
+                            ? ($this->patient['nama_lengkap'] ?? $this->patient['nama_karyawan'] ?? 'Pasien')
+                            : ($this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien');
+                            
+            $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientName);
+            $fileName = 'Hasil_Pemeriksaan_Poli_Mata_' . $safeIdentifier . '_Jadwal_' . $this->jadwalPoliId . '_' . time() . '.pdf';
+            $storagePath = 'pdf_reports/' . $fileName; 
 
-            // Siapkan data yang akan dikirim ke view PDF
             $reportData = [
                 'patient' => $this->patient,
                 'mataResult' => $this->mataResult,
                 'dokter' => $dokter,
-                'instansiPasien' => $this->instansiPasien,
+                'instansiPasien' => is_array($this->patient) ? ($this->patient['perusahaan_asal'] ?? 'PT SEMEN TONASA') : ($this->patient->perusahaan_asal ?? 'PT SEMEN TONASA'),
             ];
 
-            // Panggil view PDF yang baru saja kita buat
             $pdf = Pdf::loadView('pdfs.poli-mata-report', $reportData);
+            $uploadSuccess = Storage::disk('public')->put($storagePath, $pdf->output());
 
-            // Simpan ke storage public
-            $uploadSuccess = \Illuminate\Support\Facades\Storage::disk('public')->put($storagePath, $pdf->output());
             if (!$uploadSuccess) {
-                throw new \Exception("Sistem Gagal Mengunggah PDF. Pastikan disk terkonfigurasi dengan benar.");
+                throw new \Exception("Gagal menyimpan file PDF ke server.");
             }
 
-            // Simpan lokasi file ke database
+            // 3. Simpan Path File dan Ubah Status
             $this->mataResult->file_path = $storagePath; 
             $this->mataResult->save();
 
-            $this->poliData->file_path = $storagePath;
-            // ==========================================
+            $poliModel = JadwalPoli::find($this->jadwalPoliId);
+            if ($poliModel) {
+                $poliModel->file_path = $storagePath;
+                $poliModel->status = 'Finished';
+                $poliModel->save();
+            }
 
-            $this->poliData->status = 'Finished';
-            $this->poliData->save();
-
-            session()->flash('success', 'Hasil pemeriksaan Poli Mata dan laporan PDF berhasil disimpan!');
+            session()->flash('success', 'Hasil Poli Mata & PDF berhasil dibuat dan disimpan!');
 
         } catch (\Exception $e) {
             Log::error('Penyimpanan Poli Mata GAGAL: ' . $e->getMessage());
-            session()->flash('error', 'Gagal menyimpan data: ' . $e->getMessage());
+            session()->flash('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 

@@ -119,7 +119,7 @@
         @endphp
 
         <div class="page-break-avoid">
-            <div class="sub-title">A. Area Kepala, Mata & Leher</div>
+            <div class="sub-title">A. Area Kepala & Leher</div>
             <table class="grid-table">
                 <tr>
                     <td class="label-col">Anemi</td><td class="value-col">: {{ $kepala['anemi'] ?? '-' }}</td>
