@@ -51,13 +51,7 @@ class PoliFisikForm extends Component
         'dataFisik.kepala.membran_timpani' => 'required|string',
         'dataFisik.leher.jvp' => 'required|string', 'dataFisik.leher.tiroid' => 'required|string',
         'dataFisik.leher.kelenjar_getah_bening' => 'required|string',
-
-        'dataFisik.mata.visus_kanan' => 'required|string|max:100',
-        'dataFisik.mata.visus_kiri' => 'required|string|max:100',
-        'dataFisik.mata.konjungtiva' => 'nullable|string|max:100',
-        'dataFisik.mata.sklera' => 'nullable|string|max:100',
-        'dataFisik.mata.kesimpulan_mata' => 'nullable|string|max:255', 
-        
+          
         'dataFisik.dada.bunyi_jantung_1' => 'required|string', 'dataFisik.dada.bunyi_jantung_2' => 'required|string',
         'dataFisik.paru.bunyi_nafas' => 'required|string', 'dataFisik.paru.bunyi_nafas_tambahan' => 'required|string',
 
@@ -187,11 +181,7 @@ class PoliFisikForm extends Component
             ],
             'leher' => [
                 'jvp' => $this->defaultOption, 'tiroid' => $this->defaultOption, 'kelenjar_getah_bening' => $this->defaultOption,
-            ],
-            'mata' => [
-                'visus_kanan' => '6/6', 'visus_kiri' => '6/6', 'konjungtiva' => 'Normal', 
-                'sklera' => 'Normal', 'kesimpulan_mata' => '', 
-            ],
+            ],        
             'dada' => ['bunyi_jantung_1' => 'Murni', 'bunyi_jantung_2' => 'Reguler'],
             'paru' => ['bunyi_nafas' => 'Vesikular', 'bunyi_nafas_tambahan' => 'Tidak ada'],
             'abdomen' => [

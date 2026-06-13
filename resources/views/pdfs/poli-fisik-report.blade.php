@@ -112,7 +112,6 @@
         @php 
             $kepala = $fisikResult->data_fisik['kepala'] ?? []; 
             $leher = $fisikResult->data_fisik['leher'] ?? []; 
-            $mata = $fisikResult->data_fisik['mata'] ?? []; 
             $dada = $fisikResult->data_fisik['dada'] ?? []; 
             $paru = $fisikResult->data_fisik['paru'] ?? []; 
             $abdomen = $fisikResult->data_fisik['abdomen'] ?? []; 
@@ -144,14 +143,6 @@
                 </tr>
                 <tr>
                     <td class="label-col">Kelenjar Getah Bening</td><td class="value-col" colspan="3">: {{ $leher['kelenjar_getah_bening'] ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">Visus Kanan / Kiri</td><td class="value-col">: {{ $mata['visus_kanan'] ?? '-' }} / {{ $mata['visus_kiri'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Konjungtiva</td><td class="value-col-last">: {{ $mata['konjungtiva'] ?? '-' }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">Kesimpulan Mata</td><td class="value-col">: {{ $mata['kesimpulan_mata'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Sklera</td><td class="value-col-last">: {{ $mata['sklera'] ?? '-' }}</td>
                 </tr>
             </table>
         </div>

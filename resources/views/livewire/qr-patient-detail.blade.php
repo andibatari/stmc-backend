@@ -129,7 +129,7 @@
                         @foreach ($polis as $poli)
                             @php
                                 $shortName = match(strtoupper($poli->nama_poli)) {
-                                    'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'Lab', 'FISIK' => 'Fisik', 'GIGI' => 'Gigi', 'EKG' => 'EKG', 'AUDIOMETRI' => 'Audio', 'SPIROMETRI' => 'Spiro', 'KEBUGARAN' => 'Bugar', 'THORAX PHOTO' => 'Thorax', 'TREADMILL' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
+                                    'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'LAB', 'FISIK' => 'FISIK', 'GIGI' => 'GIGI', 'EKG' => 'EKG', 'AUDIOMETRI' => 'AUDIOMETRI', 'SPIROMETRI' => 'SPIROMETRI', 'KEBUGARAN' => 'KEBUGARAN', 'THORAX PHOTO' => 'THORAX', 'TREADMILL' => 'TREADMILL', 'USG' => 'USG', default => $poli->nama_poli,
                                 };
                             @endphp
                             <li role="presentation">
@@ -168,7 +168,7 @@
                                         @php
                                             $poliData = $jadwalPoliData[$poli->id] ?? (object)['status' => 'Pending', 'id' => null];
                                             $shortName = match(strtoupper($poli->nama_poli)) {
-                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'LAB', 'FISIK' => 'FISIK', 'GIGI' => 'GIGI', 'EKG' => 'EKG', 'AUDIOMETRI' => 'AUDIO', 'SPIROMETRI' => 'SPIRO', 'THORAX PHOTO' => 'THORAX', 'KEBUGARAN' => 'Tread', 'USG' => 'USG', default => $poli->nama_poli,
+                                                'RESUME DOKTER' => 'Resume', 'LABORATORIUM' => 'LAB', 'FISIK' => 'FISIK', 'GIGI' => 'GIGI', 'EKG' => 'EKG', 'AUDIOMETRI' => 'AUDIOMETRI', 'SPIROMETRI' => 'SPIROMETRI', 'THORAX PHOTO' => 'THORAX', 'KEBUGARAN' => 'KEBUGARAN', 'TREADMILL' => 'TREADMILL', 'USG' => 'USG', default => $poli->nama_poli,
                                             };
                                         @endphp
                                         <tr class="hover:bg-slate-50/80 transition-colors">
@@ -240,18 +240,18 @@
                                 {{-- PERBAIKAN: Semua placeholder diperjelas menjadi instruksi yang komprehensif --}}
                                 @php
                                 $resumeFields = [
-                                    'bmi' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem akan menghitung otomatis...'],
-                                    'laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi, Gula Darah normal...'], 
-                                    'ecg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm, Normal Axis...'], 
-                                    'gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies di gigi 36, Kalkulus ++...'], 
-                                    'mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6, VOS 6/9, Buta Warna Negatif...'], 
-                                    'spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction, FVC 80%...'], 
-                                    'audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural Ringan Telinga Kiri...'], 
+                                    'BMI' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem akan menghitung otomatis...'],
+                                    'Laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi, Gula Darah normal...'], 
+                                    'EKG' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm, Normal Axis...'], 
+                                    'Gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies di gigi 36, Kalkulus ++...'], 
+                                    'Mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6, VOS 6/9, Buta Warna Negatif...'], 
+                                    'Spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction, FVC 80%...'], 
+                                    'Audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural Ringan Telinga Kiri...'], 
                                     'kesegaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup, VO2Max 35...'], 
-                                    'temuan_lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90, Ada bekas luka operasi...'], 
-                                    'thorax_photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor & Pulmo dalam batas normal...'], 
-                                    'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Response Negative...'], 
-                                    'usg' => ['label' => '12. USG', 'placeholder' => 'Misal: Fatty Liver Grade 1, Ginjal Normal...'],
+                                    'Temuan Lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90, Ada bekas luka operasi...'], 
+                                    'Thorax Photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor & Pulmo dalam batas normal...'], 
+                                    'Treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Response Negative...'], 
+                                    'USG' => ['label' => '12. USG', 'placeholder' => 'Misal: Fatty Liver Grade 1, Ginjal Normal...'],
                                 ];
                                 @endphp
 

@@ -156,35 +156,6 @@
             </div>
         </div>
 
-        {{-- 3. MATA --}}
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="text-base font-bold text-slate-800">3. Pemeriksaan Mata</h3>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Visus Kanan</label>
-                    <input type="text" wire:model.defer="dataFisik.mata.visus_kanan" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Visus Kiri</label>
-                    <input type="text" wire:model.defer="dataFisik.mata.visus_kiri" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Konjungtiva</label>
-                    <input type="text" wire:model.defer="dataFisik.mata.konjungtiva" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Sklera</label>
-                    <input type="text" wire:model.defer="dataFisik.mata.sklera" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-red-500 uppercase tracking-wider mb-2"><i class="fas fa-eye mr-1"></i> Kesimpulan Mata</label>
-                    <textarea wire:model.defer="dataFisik.mata.kesimpulan_mata" rows="2" class="block w-full rounded-xl border-red-200 bg-red-50 text-sm font-medium focus:bg-white focus:border-red-500 focus:ring-red-500 placeholder-red-200" placeholder="Normal / Terdapat rabun..."></textarea>
-                </div>
-            </div>
-        </div>
-
         {{-- 4. DADA, PARU, ABDOMEN --}}
         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
