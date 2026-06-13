@@ -22,7 +22,7 @@ class KebugaranForm extends Component
     
     // Properti input
     public $durasi_menit;
-    public $beban_latihan; // Sekarang menampung nilai Watt (Angka)
+    public $beban_latihan; 
     public $denyut_nadi;
     
     // Properti output (hasil)
@@ -36,8 +36,8 @@ class KebugaranForm extends Component
 
     protected $rules = [
         'durasi_menit' => 'required|numeric|min:1',
-        'beban_latihan' => 'required|numeric|min:1', // Validasi angka (Watt)
-        'denyut_nadi' => 'required|numeric|min:1',
+        'beban_latihan' => 'required|numeric|min:1', // Watt
+        'denyut_nadi' => 'required|numeric|min:1', // HR
     ];
 
     public function mount($patient, $jadwalPoliId, $poliData)
@@ -132,7 +132,7 @@ class KebugaranForm extends Component
         }
 
         // ==========================================
-        // SIMPAN DATA
+        // SIMPAN DATA & GENERATE PDF
         // ==========================================
         $data = [
             'jadwal_poli_id' => $this->jadwalPoliId, 
@@ -147,7 +147,6 @@ class KebugaranForm extends Component
         $kebugaran = KebugaranResult::updateOrCreate(['jadwal_poli_id' => $this->jadwalPoliId], $data);
         $this->kebugaranDataId = $kebugaran->id;
 
-        // GENERATE PDF
         $patientIdentifier = $this->patient->nama_lengkap ?? 'Pasien';
         $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
         $fileName = 'Hasil_Kebugaran_' . $safeIdentifier . '_' . time() . '.pdf';
@@ -173,7 +172,7 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan VO2 Max berhasil disimpan!');
         } catch (\Exception $e) {
             Log::error('PDF Kebugaran Gagal: ' . $e->getMessage());
-            session()->flash('error', 'Gagal memproses file dokumen.');
+            session()->flash('error', 'Gagal memproses file dokumen laporan.');
         }
     }
 
