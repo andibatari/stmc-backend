@@ -100,11 +100,11 @@
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Tinggi Badan (cm)</label>
-                        <input type="number" wire:model.live="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <input type="number" steps="any" wire:model.live="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Berat Badan (kg)</label>
-                        <input type="number" wire:model.live="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <input type="number" steps="any" wire:model.live="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 shadow-sm">
                     </div>
                     <div class="col-span-2 md:col-span-1">
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">Gol. Darah</label>
