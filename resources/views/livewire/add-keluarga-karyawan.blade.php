@@ -79,11 +79,11 @@
             </div>
             <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Tinggi Badan (cm)</label>
-                <input type="number" steps="any" wire:model="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="number" step="any" wire:model="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
             <div>
                 <label class="block text-[9px] md:text-xs font-bold text-slate-600 mb-1">Berat Badan (kg)</label>
-                <input type="number" steps="any" wire:model="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
+                <input type="number" step="any" wire:model="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white">
             </div>
         </div>
     </div>

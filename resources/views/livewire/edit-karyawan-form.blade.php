@@ -70,11 +70,11 @@
                 <div class="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-4">
                     <div>
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Tinggi (cm)</label>
-                        <input type="number" steps="any" wire:model.live="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
+                        <input type="number" step="any" wire:model.live="tinggi_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Berat (kg)</label>
-                        <input type="number" steps="any" wire:model.live="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
+                        <input type="number" step="any" wire:model.live="berat_badan" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-blue-500">
                     </div>
                     <div>
                         <label class="block text-[9px] font-bold text-slate-600 mb-1">Gol. Darah</label>
