@@ -329,9 +329,9 @@
         {{-- TOMBOL AKSI --}}
         <div class="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-slate-200">
             
-            {{-- PERBAIKAN: Menggunakan disk public lokal agar bisa dibuka dengan aman --}}
+            {{-- Tombol Lihat PDF (Menggunakan helper asset agar URL menyertakan folder /storage/) --}}
             @if($fisikResult && $fisikResult->file_path)
-                <a href="{{ Storage::disk('public')->url($fisikResult->file_path) }}" target="_blank"
+                <a href="{{ asset('storage/' . $fisikResult->file_path) }}" target="_blank"
                     class="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-emerald-500 text-emerald-600 font-bold rounded-xl shadow-sm hover:bg-emerald-50 transition-all duration-200">
                     <i class="fas fa-file-pdf mr-2"></i> Lihat Laporan PDF
                 </a>
