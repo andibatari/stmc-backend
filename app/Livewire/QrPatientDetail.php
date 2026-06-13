@@ -54,19 +54,18 @@ class QrPatientDetail extends Component
     protected $rules = [
         'pdfFiles.*' => 'nullable|file|mimes:pdf|max:10240',
 
-        'resumeData.bmi' => 'nullable|string|max:255',
-        'resumeData.laboratorium' => 'nullable|string|max:255',
-        'resumeData.ecg' => 'nullable|string|max:255',
-        'resumeData.gigi' => 'nullable|string|max:255',
-        'resumeData.mata' => 'nullable|string|max:255',
-        'resumeData.spirometri' => 'nullable|string|max:255',
-        'resumeData.audiometri' => 'nullable|string|max:255',
-        'resumeData.kesegaran' => 'nullable|string|max:255',
-        'resumeData.temuan_lain' => 'nullable|string|max:255',
-
-        'resumeData.thorax_photo' => 'nullable|string|max:255',
-        'resumeData.treadmill' => 'nullable|string|max:255',
-        'resumeData.usg' => 'nullable|string|max:255',
+        'resumeData.BMI' => 'nullable|string|max:255',
+        'resumeData.Laboratorium' => 'nullable|string|max:255',
+        'resumeData.ECG/Jantung' => 'nullable|string|max:255',
+        'resumeData.Gigi & Mulut' => 'nullable|string|max:255',
+        'resumeData.Visus/Mata' => 'nullable|string|max:255',
+        'resumeData.Spirometri' => 'nullable|string|max:255',
+        'resumeData.Audiometri' => 'nullable|string|max:255',
+        'resumeData.Kebugaran' => 'nullable|string|max:255',
+        'resumeData.Temuan Lain' => 'nullable|string|max:255',
+        'resumeData.Thorax Photo' => 'nullable|string|max:255',
+        'resumeData.Treadmill' => 'nullable|string|max:255',
+        'resumeData.USG' => 'nullable|string|max:255',
 
         'resumeSaran' => 'nullable|string|max:5000',
         'resumeKategori' => 'nullable|string|max:255',
@@ -85,7 +84,8 @@ class QrPatientDetail extends Component
         $existingData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : [];
         $this->resumeData = array_merge($this->getDefaultResumeData(), $existingData);
 
-        if (empty($this->resumeData['bmi']) && $patientData) {
+        // PERBAIKAN: Menggunakan key 'BMI' besar
+        if (empty($this->resumeData['BMI']) && $patientData) {
             $weight = $patientData->berat_badan;
             $height = $patientData->tinggi_badan;
 
@@ -93,7 +93,7 @@ class QrPatientDetail extends Component
                 $heightInMeter = $height / 100;
                 $bmiValue = $weight / ($heightInMeter * $heightInMeter);
 
-                $this->resumeData['bmi'] = number_format($bmiValue, 1);
+                $this->resumeData['BMI'] = number_format($bmiValue, 1);
             }
         }
 
@@ -103,19 +103,20 @@ class QrPatientDetail extends Component
 
     protected function getDefaultResumeData()
     {
+        // PERBAIKAN: Key diubah agar cantik saat dibaca Flutter
         return [
-            'bmi' => null,
-            'laboratorium' => null,
-            'ecg' => null,
-            'gigi' => null,
-            'mata' => null,
-            'spirometri' => null,
-            'audiometri' => null,
-            'kesegaran' => null,
-            'temuan_lain' => null,
-            'thorax_photo' => null,
-            'treadmill' => null,
-            'usg' => null,
+            'BMI' => null,
+            'Laboratorium' => null,
+            'ECG/Jantung' => null,
+            'Gigi & Mulut' => null,
+            'Visus/Mata' => null,
+            'Spirometri' => null,
+            'Audiometri' => null,
+            'Kebugaran' => null,
+            'Temuan Lain' => null,
+            'Thorax Photo' => null,
+            'Treadmill' => null,
+            'USG' => null,
         ];
     }
 

@@ -230,42 +230,41 @@
                             <h3 class="text-sm md:text-base font-bold text-red-800">Form Resume Medis</h3>
                         </div>
 
-                        {{-- PERBAIKAN: Padding dikecilkan di mobile agar tidak makan tempat --}}
                         <form wire:submit.prevent="saveResume" class="p-4 md:p-7 space-y-5 md:space-y-6">
                             
                             {{-- HASIL PEMERIKSAAN (GRID) --}}
                             <div>
                                 <h4 class="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 md:mb-4">A. Hasil Pemeriksaan Klinis</h4>
                                 
-                                {{-- PERBAIKAN: Semua placeholder diperjelas menjadi instruksi yang komprehensif --}}
+                                {{-- PERBAIKAN: Menyesuaikan KEY dengan Flutter --}}
                                 @php
                                 $resumeFields = [
-                                    'BMI' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem akan menghitung otomatis...'],
-                                    'Laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi, Gula Darah normal...'], 
-                                    'EKG' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm, Normal Axis...'], 
-                                    'Gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies di gigi 36, Kalkulus ++...'], 
-                                    'Mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6, VOS 6/9, Buta Warna Negatif...'], 
-                                    'Spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction, FVC 80%...'], 
-                                    'Audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural Ringan Telinga Kiri...'], 
-                                    'kesegaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup, VO2Max 35...'], 
-                                    'Temuan Lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90, Ada bekas luka operasi...'], 
-                                    'Thorax Photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor & Pulmo dalam batas normal...'], 
-                                    'Treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Response Negative...'], 
-                                    'USG' => ['label' => '12. USG', 'placeholder' => 'Misal: Fatty Liver Grade 1, Ginjal Normal...'],
+                                    'BMI' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem menghitung...'],
+                                    'Laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi...'], 
+                                    'ECG/Jantung' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm...'], 
+                                    'Gigi & Mulut' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies gigi...'], 
+                                    'Visus/Mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6...'], 
+                                    'Spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction...'], 
+                                    'Audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural...'], 
+                                    'Kebugaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup...'], 
+                                    'Temuan Lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90...'], 
+                                    'Thorax Photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor Normal...'], 
+                                    'Treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Negatif...'], 
+                                    'USG' => ['label' => '12. USG', 'placeholder' => 'Misal: Ginjal Normal...'],
                                 ];
                                 @endphp
 
-                                {{-- PERBAIKAN: Gap diperkecil di mobile, text-sm digunakan untuk input agar iOS tidak auto-zoom --}}
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                                     @foreach ($resumeFields as $key => $field)
                                         <div>
-                                            <label for="resume_{{ $key }}" class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">{{ $field['label'] }}</label>
-                                            <input type="text" id="resume_{{ $key }}" wire:model.defer="resumeData.{{ $key }}"
-                                                @if($key === 'bmi') readonly @endif
+                                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">{{ $field['label'] }}</label>
+                                            
+                                            {{-- PERBAIKAN: Gunakan wire:model.defer dengan format array akses untuk string ber-spasi --}}
+                                            <input type="text" wire:model.defer="resumeData.{{ $key }}"
+                                                @if($key === 'BMI') readonly @endif
                                                 class="block w-full rounded-xl border-slate-200 shadow-sm text-sm focus:border-red-500 focus:ring-red-500 placeholder-slate-300 transition-colors
-                                                @if($key === 'bmi') bg-slate-50 font-black text-slate-500 cursor-not-allowed border-slate-100 @endif" 
+                                                @if($key === 'BMI') bg-slate-50 font-black text-slate-500 cursor-not-allowed border-slate-100 @endif" 
                                                 placeholder="{{ $field['placeholder'] }}">
-                                            @error("resumeData.{$key}") <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                                         </div>
                                     @endforeach
                                 </div>
@@ -276,21 +275,19 @@
                             {{-- SARAN DOKTER --}}
                             <div>
                                 <h4 class="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-widest mb-2 md:mb-3">B. Rekomendasi Medis</h4>
-                                <label for="resume_saran" class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Saran & Tindak Lanjut</label>
-                                <textarea id="resume_saran" wire:model.defer="resumeSaran" rows="4" 
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Saran & Tindak Lanjut</label>
+                                <textarea wire:model.defer="resumeSaran" rows="4" 
                                     class="block w-full rounded-xl border-slate-200 shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500 placeholder-slate-300 resize-none"
-                                    placeholder="1. Kurangi makanan berlemak dan bersantan&#10;2. Rutin berolahraga minimal 3x seminggu&#10;3. Kontrol ulang tensi 2 minggu lagi..."></textarea>
-                                @error('resumeSaran') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
+                                    placeholder="Tuliskan saran dokter disini..."></textarea>
                             </div>
 
                             {{-- KESIMPULAN & TOMBOL --}}
-                            {{-- PERBAIKAN: Flex column di mobile agar tombol mengambil full-width dan rapi --}}
                             <div class="bg-amber-50 border border-amber-100 p-4 md:p-5 rounded-2xl flex flex-col md:flex-row md:items-end justify-between gap-4 mt-2"> 
                                 <div class="w-full md:w-1/2">
-                                    <label for="resume_kategori" class="block text-xs md:text-sm font-black text-amber-800 mb-1.5 uppercase tracking-wide">
+                                    <label class="block text-xs md:text-sm font-black text-amber-800 mb-1.5 uppercase tracking-wide">
                                         Kesimpulan Akhir (Kelayakan)
                                     </label>
-                                    <select id="resume_kategori" wire:model.defer="resumeKategori"
+                                    <select wire:model.defer="resumeKategori"
                                         class="block w-full rounded-xl border-amber-200 shadow-sm text-sm font-bold text-slate-700 focus:border-amber-500 focus:ring-amber-500 bg-white cursor-pointer py-2 md:py-2.5">
                                         <option value="" disabled selected>-- Tentukan Status Fit --</option>
                                         <option value="Fit To Work (K1)">🟢 Fit To Work (K1)</option>
@@ -299,11 +296,9 @@
                                         <option value="Temporary Unfit (K4)">🔴 Temporary Unfit (K4)</option>
                                         <option value="Unfit (K5)">⚫ Unfit (K5)</option>
                                     </select>
-                                    @error('resumeKategori') <span class="text-red-500 text-[10px] mt-1 block font-bold">{{ $message }}</span> @enderror
                                 </div>
 
                                 <div class="w-full md:w-auto">
-                                    {{-- PERBAIKAN: w-full pada tombol agar mudah diklik di HP --}}
                                     <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center px-6 py-2.5 md:py-3 bg-slate-800 rounded-xl font-bold text-sm text-white hover:bg-slate-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200" wire:loading.attr="disabled" wire:target="saveResume">
                                         <span wire:loading.remove wire:target="saveResume"><i class="fas fa-save mr-2"></i> Simpan Data</span>
                                         <span wire:loading wire:target="saveResume"><i class="fas fa-circle-notch fa-spin mr-2"></i> Loading...</span>
@@ -314,7 +309,7 @@
                     </div>
                 @endif
 
-                {{-- TABS POLI LAINNYA (UPLOAD FILE) --}}
+                {{-- TABS POLI LAINNYA (UPLOAD FILE / FORM INTERAKTIF) --}}
                 @foreach ($polis as $poli)
                     @if ($activeTab === 'poli-' . $poli->id)
                         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
@@ -326,12 +321,19 @@
                             </div>
 
                             <div class="p-4 md:p-7">
+                                {{-- PERBAIKAN: MEMASUKKAN POLI MATA --}}
                                 @if (strtoupper($poli->nama_poli) === 'GIGI')
                                     @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $jadwalPoliData[$poli->id] ])
-                                @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN/TREADMILL')
+                                
+                                @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
                                     @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                
                                 @elseif (strtoupper($poli->nama_poli) === 'FISIK')
                                     @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                
+                                @elseif (strtoupper($poli->nama_poli) === 'MATA')
+                                    @livewire('poli-mata-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                
                                 @elseif (in_array(strtoupper($poli->nama_poli), $uploadablePoliNames))
                                     <div class="max-w-2xl bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-5 md:p-6 text-center mx-auto">
                                         <div class="mb-4">
@@ -342,7 +344,6 @@
                                             <p class="text-[10px] md:text-xs text-slate-400 mt-1">Maksimal ukuran file 10MB.</p>
                                         </div>
 
-                                        {{-- PERBAIKAN: Flex col di HP agar tombol upload tidak saling himpit --}}
                                         <div class="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-3">
                                             <label for="file-{{ $poli->id }}" class="w-full sm:w-auto cursor-pointer bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2 md:py-2.5 px-5 text-xs md:text-sm rounded-xl shadow-sm transition-all duration-200">
                                                 <i class="fas fa-folder-open mr-2 text-blue-500"></i> Telusuri File
@@ -355,7 +356,6 @@
                                             </button>
                                         </div>
 
-                                        {{-- Indikator File Terpilih --}}
                                         <div class="mt-4 pt-4 border-t border-slate-200/60">
                                             <span class="text-[10px] md:text-sm font-medium text-slate-600" wire:loading.remove wire:target="pdfFiles.{{ $poli->id }}">
                                                 @if(isset($pdfFiles[$poli->id]))
@@ -370,11 +370,9 @@
                                         </div>
                                     </div>
 
-                                    {{-- Tombol Lihat/Unduh PDF yang sudah diupload --}}
                                     @if (isset($jadwalPoliData[$poli->id]) && $jadwalPoliData[$poli->id]->file_path)
                                         @php
                                             $path = $jadwalPoliData[$poli->id]->file_path;
-                                            // Jika path sudah berupa URL HTTP utuh, langsung gunakan. Jika tidak, arahkan ke lokal storage
                                             $fileUrl = str_contains($path, 'http') ? $path : asset('storage/' . $path);
                                         @endphp
 
