@@ -16,21 +16,14 @@ class JadwalMcuController extends Controller
      */
     public function index(Request $request)
     {
-        // 1. Ambil input filter
+        $tanggal_filter = $request->input('tanggal_filter');
         $status = $request->input('status');
+        // 1. Tambahkan variabel untuk menangkap input search_sap
         $search_sap = $request->input('search_sap');
-        
-        // LOGIKA OTOMATIS: Jika tidak ada filter tanggal DAN tidak sedang mencari nama/SAP, default ke HARI INI
-        // Tapi jika sedang mencari nama/SAP, kita kosongkan tanggal agar bisa mencari di seluruh riwayat
-        if ($request->filled('search_sap')) {
-            $tanggal_filter = $request->input('tanggal_filter'); // biarkan opsional
-        } else {
-            $tanggal_filter = $request->input('tanggal_filter', \Carbon\Carbon::today()->toDateString());
-        }
 
         $query = JadwalMcu::with('dokter', 'paketMcu', 'karyawan'); // Pastikan relasi karyawan dimuat
 
-        // Apply date filter (Hanya jalan jika variabel ada isinya)
+        // Apply date filter
         if (!empty($tanggal_filter)) {
             $query->whereDate('tanggal_mcu', $tanggal_filter);
         }
@@ -61,8 +54,8 @@ class JadwalMcuController extends Controller
             });
         }
         
-        // Urutkan berdasarkan nomor antrean (karena fokusnya operasional harian)
-        $jadwals = $query->orderBy('no_antrean', 'asc')->paginate(15); 
+        // Sort all results
+        $jadwals = $query->orderBy('created_at', 'desc')->paginate(10); 
 
         // 3. QUERY UNTUK CARD ANTREAN POLI (HARI INI)
         $polis = \App\Models\Poli::with(['jadwalPoli' => function ($query) {
