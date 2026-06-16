@@ -8,7 +8,26 @@
     /* Utilitas CSS kustom untuk menghilangkan scrollbar default browser yang memakan ruang visual */
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Overlay loading */
+    #loading-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
 </style>
+
+{{-- Spinner Loading Full Screen --}}
+<div id="loading-overlay">
+    <i class="fas fa-circle-notch fa-spin text-red-600 text-4xl mb-4"></i>
+    <p class="text-sm font-bold text-slate-700 tracking-wider">Memproses Data...</p>
+</div>
 
 {{-- Container utama mendeklarasikan Alpine.js component. State isOpen mengontrol visibilitas dropdown menu aksi baris tabel --}}
 <div x-data="{
@@ -86,11 +105,11 @@
             </div>
 
             {{-- Form Pencarian dan Pemfilteran Data. Menggunakan metode GET agar parameter filter tersimpan di URL --}}
-            <form method="GET" action="{{ route('jadwal.index') }}" class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-5 shadow-inner">
+            <form id="filter-form" method="GET" action="{{ route('jadwal.index') }}" class="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-5 shadow-inner">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 items-end">
                     <div class="col-span-2 md:col-span-1">
                         <label for="search_sap" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Cari SAP / Nama</label>
-                        <input type="text" name="search_sap" id="search_sap" value="{{ $search_sap ?? '' }}" placeholder="Ketik kata kunci..."
+                        <input type="text" name="search_sap" id="search_sap" value="{{ $search_sap }}" placeholder="Cari di semua tanggal..."
                             class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 focus:ring-red-500">
                     </div>
                     <div>
@@ -103,16 +122,20 @@
                         <label for="status_jadwal" class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Status</label>
                         <select id="status_jadwal" name="status" class="block w-full px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 bg-white focus:border-red-500 focus:ring-red-500 cursor-pointer">
                             <option value="">Semua Status</option>
-                            <option value="Pending" @if($status == 'Pending') selected @endif>Menunggu</option>
-                            <option value="Scheduled" @if($status == 'Scheduled') selected @endif>Terjadwal</option>
-                            <option value="Present" @if($status == 'Present') selected @endif>Hadir</option>
-                            <option value="Finished" @if($status == 'Finished') selected @endif>Selesai</option>
-                            <option value="Canceled" @if($status == 'Canceled') selected @endif>Batal</option>
+                            <option value="Scheduled" {{ $status == 'Scheduled' ? 'selected' : '' }}>Scheduled</option>
+                            <option value="Present" {{ $status == 'Present' ? 'selected' : '' }}>Present</option>
+                            <option value="Finished" {{ $status == 'Finished' ? 'selected' : '' }}>Finished</option>
+                            <option value="Canceled" {{ $status == 'Canceled' ? 'selected' : '' }}>Canceled</option>
                         </select>
                     </div>
                     <div class="col-span-2 md:col-span-1 flex gap-2 pt-2 md:pt-0">
-                        <button type="submit" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm">Cari</button>
-                        <a href="{{ route('jadwal.index') }}" class="px-4 py-2 text-xs font-bold text-slate-600 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center">Reset</a>
+                        <button type="submit" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors shadow-sm">
+                            <i class="fas fa-filter mr-1"></i> Filter
+                        </button>
+                        {{-- Tombol Reset akan mengembalikan ke halaman index tanpa parameter (otomatis kembali ke 'Hari Ini') --}}
+                        <a href="{{ route('jadwal.index') }}" class="px-4 py-2 text-xs font-bold text-slate-600 border border-slate-200 bg-white rounded-lg hover:bg-slate-50 transition-colors flex items-center justify-center">
+                            Reset
+                        </a>
                     </div>
                 </div>
             </form>
@@ -326,4 +349,10 @@
         </div>
     </div>
 </div>
+{{-- SCRIPT JAVASCRIPT UNTUK LOADING OVERLAY --}}
+<script>
+    function showLoading() {
+        document.getElementById('loading-overlay').style.display = 'flex';
+    }
+</script>
 @endsection
