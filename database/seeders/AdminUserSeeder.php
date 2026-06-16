@@ -25,19 +25,18 @@ class AdminUserSeeder extends Seeder
         // 3. Hidupkan kembali Foreign Key Checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;'); 
 
-        // 4. Buat akun superadmin pertama (Andi Batari Saudah S)
+        // 4. Buat satu pengguna admin default
         AdminUser::create([
             'no_sap' => '012025',
             'nama_lengkap' => 'Andi Batari Saudah S',
-            'nik' => '7373030404112323',
+            'nik' =>'7373030404112323',
             'email' => 'batariedu04@gmail.com',
             'password' => Hash::make('041123'),
-            'role' => 'superadmin', 
-            'foto_profil' => null, 
-            'dokter_id' => null, 
+            'role' => 'superadmin', // Atur peran untuk akun utama
+            'foto_profil' => null, // Biarkan null atau berikan URL gambar default
+            'dokter_id' => null, // Karena ini admin, bukan dokter
         ]);
 
-        // 5. Buat akun superadmin kedua (MCU STMC)
         AdminUser::create([
             'no_sap' => '88990011',
             'nama_lengkap' => 'Medical Check Up STMC',
