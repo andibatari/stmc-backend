@@ -35,6 +35,16 @@ class AdminUserSeeder extends Seeder
             'role' => 'superadmin', // Atur peran untuk akun utama
             'foto_profil' => null, // Biarkan null atau berikan URL gambar default
             'dokter_id' => null, // Karena ini admin, bukan dokter
+        ],
+        [
+            'no_sap' => '88990011',
+            'nama_lengkap' => 'Medical Check Up STMC',
+            'nik' =>'7371122334455667',
+            'email' => 'mcustmc2025@gmail.com',
+            'password' => Hash::make('AdminMcu2026'),
+            'role' => 'superadmin', // Atur peran untuk akun utama
+            'foto_profil' => null, // Biarkan null atau berikan URL gambar default
+            'dokter_id' => null, // Karena ini admin, bukan dokter
         ]);
     }
 }
