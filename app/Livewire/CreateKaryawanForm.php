@@ -60,7 +60,7 @@ class CreateKaryawanForm extends Component
     // Aturan validasi
     protected $rules = [
         'no_sap' => 'required|string|unique:karyawans,no_sap',
-        'nik_karyawan' => 'required|string|unique:karyawans,nik_karyawan',
+        'nik_karyawan' => 'nullable|string|unique:karyawans,nik_karyawan',
         'nama_karyawan' => 'nullable|string|max:255',
         'jenis_kelamin' => 'nullable|string',
         'unit_kerjas_id' => 'nullable|integer|exists:unit_kerjas,id',

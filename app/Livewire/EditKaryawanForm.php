@@ -170,7 +170,7 @@ class EditKaryawanForm extends Component
     {
         return [
             'no_sap' => ['required', 'string', Rule::unique('karyawans', 'no_sap')->ignore($this->karyawan->id)],
-            'nik_karyawan' => ['required', 'string', Rule::unique('karyawans', 'nik_karyawan')->ignore($this->karyawan->id)],
+            'nik_karyawan' => ['nullable', 'string', Rule::unique('karyawans', 'nik_karyawan')->ignore($this->karyawan->id)],
             'nama_karyawan' => 'nullable|string|max:255',
             'pekerjaan' => 'nullable|string',
             'tempat_lahir' => 'nullable|string',
