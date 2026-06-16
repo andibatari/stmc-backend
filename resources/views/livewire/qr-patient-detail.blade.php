@@ -239,18 +239,18 @@
                                 {{-- PERBAIKAN: Menyesuaikan KEY dengan Flutter --}}
                                 @php
                                 $resumeFields = [
-                                    'BMI' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem menghitung...'],
-                                    'Laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi...'], 
-                                    'ECG/Jantung' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm...'], 
-                                    'Gigi & Mulut' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies gigi...'], 
-                                    'Visus/Mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6...'], 
-                                    'Spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction...'], 
-                                    'Audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural...'], 
-                                    'Kebugaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup...'], 
-                                    'Temuan Lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90...'], 
-                                    'Thorax Photo' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor Normal...'], 
-                                    'Treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Negatif...'], 
-                                    'USG' => ['label' => '12. USG', 'placeholder' => 'Misal: Ginjal Normal...'],
+                                    'bmi' => ['label' => '1. BMI (Otomatis)', 'placeholder' => 'Sistem menghitung...'],
+                                    'laboratorium' => ['label' => '2. Laboratorium', 'placeholder' => 'Misal: Asam Urat tinggi...'], 
+                                    'ekg' => ['label' => '3. ECG/Jantung', 'placeholder' => 'Misal: Sinus Rhythm...'], 
+                                    'gigi' => ['label' => '4. Gigi & Mulut', 'placeholder' => 'Misal: Karies gigi...'], 
+                                    'mata' => ['label' => '5. Visus/Mata', 'placeholder' => 'Misal: VOD 6/6...'], 
+                                    'spirometri' => ['label' => '6. Spirometri', 'placeholder' => 'Misal: Mild Restriction...'], 
+                                    'audiometri' => ['label' => '7. Audiometri', 'placeholder' => 'Misal: Tuli Sensorineural...'], 
+                                    'kebugaran' => ['label' => '8. Kebugaran', 'placeholder' => 'Misal: Kategori Cukup...'], 
+                                    'temuan_lain' => ['label' => '9. Temuan Lain/Fisik', 'placeholder' => 'Misal: Tensi 140/90...'], 
+                                    'thorax' => ['label' => '10. Thorax Photo', 'placeholder' => 'Misal: Cor Normal...'], 
+                                    'treadmill' => ['label' => '11. Treadmill', 'placeholder' => 'Misal: Ischemic Negatif...'], 
+                                    'usg' => ['label' => '12. USG', 'placeholder' => 'Misal: Ginjal Normal...'],
                                 ];
                                 @endphp
 
@@ -259,11 +259,11 @@
                                         <div>
                                             <label class="block text-[10px] md:text-xs font-bold text-slate-600 mb-1">{{ $field['label'] }}</label>
                                             
-                                            {{-- PERBAIKAN: Gunakan wire:model.defer dengan format array akses untuk string ber-spasi --}}
+                                            {{-- Data key akan menggunakan snake_case, tapi label tetap bagus dan mudah dibaca! --}}
                                             <input type="text" wire:model.defer="resumeData.{{ $key }}"
-                                                @if($key === 'BMI') readonly @endif
+                                                @if($key === 'bmi') readonly @endif
                                                 class="block w-full rounded-xl border-slate-200 shadow-sm text-sm focus:border-red-500 focus:ring-red-500 placeholder-slate-300 transition-colors
-                                                @if($key === 'BMI') bg-slate-50 font-black text-slate-500 cursor-not-allowed border-slate-100 @endif" 
+                                                @if($key === 'bmi') bg-slate-50 font-black text-slate-500 cursor-not-allowed border-slate-100 @endif" 
                                                 placeholder="{{ $field['placeholder'] }}">
                                         </div>
                                     @endforeach

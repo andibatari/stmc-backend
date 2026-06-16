@@ -51,21 +51,22 @@ class QrPatientDetail extends Component
         }
     }
 
+    // PERBAIKAN: Semua kunci diubah menjadi format standar yang aman (snake_case)
     protected $rules = [
         'pdfFiles.*' => 'nullable|file|mimes:pdf|max:10240',
 
-        'resumeData.BMI' => 'nullable|string|max:255',
-        'resumeData.Laboratorium' => 'nullable|string|max:255',
-        'resumeData.ECG/Jantung' => 'nullable|string|max:255',
-        'resumeData.Gigi & Mulut' => 'nullable|string|max:255',
-        'resumeData.Visus/Mata' => 'nullable|string|max:255',
-        'resumeData.Spirometri' => 'nullable|string|max:255',
-        'resumeData.Audiometri' => 'nullable|string|max:255',
-        'resumeData.Kebugaran' => 'nullable|string|max:255',
-        'resumeData.Temuan Lain' => 'nullable|string|max:255',
-        'resumeData.Thorax Photo' => 'nullable|string|max:255',
-        'resumeData.Treadmill' => 'nullable|string|max:255',
-        'resumeData.USG' => 'nullable|string|max:255',
+        'resumeData.bmi' => 'nullable|string|max:255',
+        'resumeData.laboratorium' => 'nullable|string|max:255',
+        'resumeData.ekg' => 'nullable|string|max:255',
+        'resumeData.gigi' => 'nullable|string|max:255',
+        'resumeData.mata' => 'nullable|string|max:255',
+        'resumeData.spirometri' => 'nullable|string|max:255',
+        'resumeData.audiometri' => 'nullable|string|max:255',
+        'resumeData.kebugaran' => 'nullable|string|max:255',
+        'resumeData.temuan_lain' => 'nullable|string|max:255',
+        'resumeData.thorax' => 'nullable|string|max:255',
+        'resumeData.treadmill' => 'nullable|string|max:255',
+        'resumeData.usg' => 'nullable|string|max:255',
 
         'resumeSaran' => 'nullable|string|max:5000',
         'resumeKategori' => 'nullable|string|max:255',
@@ -84,8 +85,8 @@ class QrPatientDetail extends Component
         $existingData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : [];
         $this->resumeData = array_merge($this->getDefaultResumeData(), $existingData);
 
-        // PERBAIKAN: Menggunakan key 'BMI' besar
-        if (empty($this->resumeData['BMI']) && $patientData) {
+        // PERBAIKAN: Menggunakan key 'bmi' kecil agar sesuai aturan array di atas
+        if (empty($this->resumeData['bmi']) && $patientData) {
             $weight = $patientData->berat_badan;
             $height = $patientData->tinggi_badan;
 
@@ -93,7 +94,7 @@ class QrPatientDetail extends Component
                 $heightInMeter = $height / 100;
                 $bmiValue = $weight / ($heightInMeter * $heightInMeter);
 
-                $this->resumeData['BMI'] = number_format($bmiValue, 1);
+                $this->resumeData['bmi'] = number_format($bmiValue, 1);
             }
         }
 
@@ -103,20 +104,20 @@ class QrPatientDetail extends Component
 
     protected function getDefaultResumeData()
     {
-        // PERBAIKAN: Key diubah agar cantik saat dibaca Flutter
+        // PERBAIKAN: Key diubah formatnya agar terbaca aman oleh Livewire dan Flutter
         return [
-            'BMI' => null,
-            'Laboratorium' => null,
-            'ECG/Jantung' => null,
-            'Gigi & Mulut' => null,
-            'Visus/Mata' => null,
-            'Spirometri' => null,
-            'Audiometri' => null,
-            'Kebugaran' => null,
-            'Temuan Lain' => null,
-            'Thorax Photo' => null,
-            'Treadmill' => null,
-            'USG' => null,
+            'bmi' => null,
+            'laboratorium' => null,
+            'ekg' => null,
+            'gigi' => null,
+            'mata' => null,
+            'spirometri' => null,
+            'audiometri' => null,
+            'kebugaran' => null,
+            'temuan_lain' => null,
+            'thorax' => null,
+            'treadmill' => null,
+            'usg' => null,
         ];
     }
 
@@ -204,7 +205,6 @@ class QrPatientDetail extends Component
 
                 $folderPath = 'mcu_results';
 
-                // REVISI: Simpan ke disk 'public'
                 $path = $file->storeAs($folderPath, $fileName, 'public');
 
                 $jadwalPoli->file_path = $path;
@@ -246,11 +246,8 @@ class QrPatientDetail extends Component
 
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
 
-            // 1. Tembakan Pusher (Tetap jalan untuk update layar real-time)
             event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
 
-            // 2. AMBIL TOKEN HP PASIEN DARI DATABASE
-            // Asumsi: Token FCM HP pasien disimpan di tabel 'users' pada kolom 'fcm_token'
             $fcmToken = null;
             if ($this->jadwal->karyawan && $this->jadwal->karyawan->user) {
                 $fcmToken = $this->jadwal->karyawan->user->fcm_token;
@@ -258,7 +255,6 @@ class QrPatientDetail extends Component
                 $fcmToken = $this->jadwal->pesertaMcu->user->fcm_token;
             }
 
-            // 3. JIKA TOKEN HP PASIEN DITEMUKAN, KIRIM NOTIFIKASI!
             if ($fcmToken) {
                 $this->sendFcmNotification($fcmToken, $namaPoli);
             } else {
