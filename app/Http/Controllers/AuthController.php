@@ -46,7 +46,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             // Arahkan ke dashboard
-            return redirect()->intended('/admin/dashboard');
+            return redirect('/admin/dashboard')->with('message', 'Login berhasil! Selamat datang, ' . $user->nama_lengkap . '.');
         } 
 
         // 4. Jika otentikasi gagal, kembalikan ke halaman login
