@@ -57,10 +57,36 @@
                 
                 {{-- Grafik Kiri: Kelayakan Kerja (Donut dipindahkan ke sini agar kecil & ramping) --}}
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 border-t-4 border-t-indigo-500 flex flex-col">
-                    <h3 class="text-sm font-bold text-gray-700 mb-4 text-center uppercase tracking-wide">Status Kelayakan Kerja</h3>
+                    
+                    {{-- Header Grafik & Filter Tahun --}}
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
+                        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wide">Kelayakan Kerja</h3>
+                        
+                        {{-- Form Filter Tahun Otomatis Submit --}}
+                        <form method="GET" action="{{ route('admin.dashboard') }}" class="m-0 p-0">
+                            <select name="tahun_kelayakan" onchange="this.form.submit()" class="text-xs py-1 px-2 pr-6 font-bold text-indigo-700 bg-indigo-50 border-indigo-200 rounded-lg cursor-pointer focus:ring-indigo-500 focus:border-indigo-500">
+                                @if(empty($years))
+                                    <option value="{{ date('Y') }}">{{ date('Y') }}</option>
+                                @else
+                                    @foreach($years as $year)
+                                        <option value="{{ $year }}" {{ $tahunFilter == $year ? 'selected' : '' }}>Tahun {{ $year }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </form>
+                    </div>
+
                     {{-- Tinggi dibatasi 250px agar proporsional --}}
-                    <div class="relative grow" style="height: 250px; min-height: 250px;">
-                        <canvas id="kelayakanChart" class="w-full h-full"></canvas>
+                    <div class="relative grow flex items-center justify-center" style="height: 250px; min-height: 250px;">
+                        {{-- Cek jika data kelayakan semuanya 0 (kosong) --}}
+                        @if(array_sum($dataKelayakan) == 0)
+                            <div class="text-center text-gray-400">
+                                <i class="fas fa-chart-pie text-4xl mb-2 opacity-50"></i>
+                                <p class="text-xs font-medium">Belum ada data resume kelayakan<br>di tahun {{ $tahunFilter }}</p>
+                            </div>
+                        @else
+                            <canvas id="kelayakanChart" class="w-full h-full"></canvas>
+                        @endif
                     </div>
                 </div>
 

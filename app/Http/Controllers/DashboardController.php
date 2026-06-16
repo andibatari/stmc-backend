@@ -19,7 +19,7 @@ class DashboardController extends Controller
     /**
      * Menampilkan dashboard utama dengan semua data statistik.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Statistik Kartu (diasumsikan sudah ada, kita tambahkan Pasien Hari Ini)
         $totalKaryawan = Karyawan::count();
@@ -50,12 +50,13 @@ class DashboardController extends Controller
         // ========================================================
         // 🌟 FITUR BARU 2: DATA GRAFIK KELAYAKAN KERJA (TAHUN BERJALAN)
         // ========================================================
-        $tahunIni = Carbon::now()->year;
+        // Tangkap tahun dari request, jika kosong gunakan tahun ini
+        $tahunFilter = $request->input('tahun_kelayakan', Carbon::now()->year);
         
         // Ambil data kelayakan dari tabel JadwalMcu
         // (GANTI 'resume_kategori' dengan nama kolom yang benar di database kamu)
         $kelayakan = JadwalMcu::select('resume_kategori', DB::raw('count(*) as total'))
-            ->whereYear('tanggal_mcu', $tahunIni)
+            ->whereYear('tanggal_mcu', $tahunFilter)
             ->whereNotNull('resume_kategori')
             ->groupBy('resume_kategori')
             ->pluck('total', 'resume_kategori')
@@ -100,7 +101,10 @@ class DashboardController extends Controller
             'totalJadwalMcu' => $totalJadwalMcu,
             'pasienMenungguResume' => $pasienMenungguResume,
             'resumeSelesaiHariIni' => $resumeSelesaiHariIni,
+            
+            // Kirim data filter tahun ke View
             'dataKelayakan' => $dataKelayakan,
+            'tahunFilter' => $tahunFilter,
 
             // Data Grafik
             'mcuCountsByYear' => $analytics['mcuCountsByYear'],
