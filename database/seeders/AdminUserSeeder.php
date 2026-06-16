@@ -25,8 +25,9 @@ class AdminUserSeeder extends Seeder
         // 3. Hidupkan kembali Foreign Key Checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;'); 
 
-        // 4. Buat satu pengguna admin default
+        // 4. Buat  pengguna admin default
         AdminUser::create([
+        [
             'no_sap' => '012025',
             'nama_lengkap' => 'Andi Batari Saudah S',
             'nik' =>'7373030404112323',
@@ -45,6 +46,7 @@ class AdminUserSeeder extends Seeder
             'role' => 'superadmin', // Atur peran untuk akun utama
             'foto_profil' => null, // Biarkan null atau berikan URL gambar default
             'dokter_id' => null, // Karena ini admin, bukan dokter
+        ]
         ]);
     }
 }
