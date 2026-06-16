@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     {{-- 3. FullCalendar (untuk tampilan jadwal dokter) --}}
-    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 
     {{-- 3. Tailwind CSS CDN & Config --}}
@@ -47,7 +46,7 @@
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <script>
         Pusher.logToConsole = true;
-        var pusher = new Pusher('MASUKKAN_APP_KEY_KAMU_DISINI', { cluster: 'ap1' });
+        var pusher = new Pusher('c04c6e0bc13266555594', { cluster: 'ap1' });
         var channel = pusher.subscribe('mcu-channel');
         
         channel.bind('StatusPoliUpdatedEvent', function(data) {
