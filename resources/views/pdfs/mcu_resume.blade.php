@@ -100,9 +100,9 @@
     
     if ($resumeData) {
         $resumeMap = [
-            'bmi' => 'BMI', 'laboratorium' => 'Hasil Laboratorium', 'ecg' => 'Hasil Pemeriksaan EKG / Rekam Jantung',
+            'bmi' => 'BMI', 'laboratorium' => 'Hasil Laboratorium', 'ekg' => 'Hasil Pemeriksaan EKG / Rekam Jantung',
             'gigi' => 'Hasil Pemeriksaan Gigi', 'mata' => 'Hasil Pemeriksaan Mata', 'spirometri' => 'Hasil Pemeriksaan Spirometri',
-            'audiometri' => 'Hasil Pemeriksaan Audiometri', 'kesegaran' => 'Hasil Pemeriksaan Kesegaran Jasmani', 'thorax_photo' => 'Hasil Pemeriksaan Thorax Photo',
+            'audiometri' => 'Hasil Pemeriksaan Audiometri', 'kebugaran' => 'Hasil Pemeriksaan Kesegaran Jasmani', 'thorax' => 'Hasil Pemeriksaan Thorax Photo',
             'treadmill' => 'Hasil Treadmill', 'usg' => 'Hasil USG','temuan_lain' => 'Temuan lain',
         ];
 
