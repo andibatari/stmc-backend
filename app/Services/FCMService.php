@@ -28,7 +28,6 @@ class FCMService
                     'body' => $body,
                 ],
                 'data' => [
-                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     // 🌟 PERBAIKAN: Ubah menjadi action_link agar terbaca oleh navigasi Flutter
                     'action_link' => $link ?? '', 
                 ],
