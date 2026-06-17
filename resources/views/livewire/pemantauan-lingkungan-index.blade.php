@@ -325,6 +325,10 @@
         </div>
     </div>
     @endif
+
+    @if ($paginator->hasPages()) 
+        <div class="mt-3">{{ $paginator->links() }}</div> 
+    @endif
     
     {{-- Menyembunyikan scrollbar bawaan browser agar tabel terlihat lebih bersih --}}
     <style>
@@ -332,4 +336,5 @@
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
+    
 </div>
