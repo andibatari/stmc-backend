@@ -132,10 +132,17 @@ class QrPatientDetail extends Component
                 'resume_kategori' => $this->resumeKategori,
             ]);
 
+            // TAMBAHAN: Mengirimkan flash message sukses ke tampilan Blade
+            session()->flash('success', 'Data resume medis berhasil disimpan!');
+
             $this->dispatch('status-updated', ['message' => 'Resume berhasil disimpan!']);
             $this->jadwal->refresh();
         } catch (\Throwable $e) {
             \Log::error("Gagal menyimpan resume: " . $e->getMessage());
+            
+            // TAMBAHAN: Mengirimkan flash message error jika gagal
+            session()->flash('error', 'Gagal menyimpan resume. Silakan coba lagi.');
+            
             $this->dispatch('error', ['message' => 'Gagal menyimpan resume. Silakan coba lagi.']);
         }
     }

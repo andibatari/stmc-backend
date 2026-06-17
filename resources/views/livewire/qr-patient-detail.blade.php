@@ -230,6 +230,23 @@
                             <h3 class="text-sm md:text-base font-bold text-red-800">Form Resume Medis</h3>
                         </div>
 
+                        {{-- TAMBAHAN: KOTAK NOTIFIKASI BANNER --}}
+                        <div class="px-4 pt-4 md:px-7 md:pt-7">
+                            @if (session()->has('success'))
+                                <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-4 rounded-xl flex items-center shadow-sm">
+                                    <i class="fas fa-check-circle text-xl mr-3"></i>
+                                    <span class="font-medium text-sm">{{ session('success') }}</span>
+                                </div>
+                            @endif
+
+                            @if (session()->has('error'))
+                                <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl flex items-center shadow-sm">
+                                    <i class="fas fa-exclamation-triangle text-xl mr-3"></i>
+                                    <span class="font-medium text-sm">{{ session('error') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                        
                         <form wire:submit.prevent="saveResume" class="p-4 md:p-7 space-y-5 md:space-y-6">
                             
                             {{-- HASIL PEMERIKSAAN (GRID) --}}
