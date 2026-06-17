@@ -9,7 +9,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        // Matikan baris di bawah ini agar tidak error karena file console.php tidak ada
+        // commands: __DIR__.'/../routes/console.php', 
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -18,11 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })
-    // 2. TAMBAHKAN BLOK JADWAL INI SEBELUM ->create();
     ->withSchedule(function (Schedule $schedule) {
         
-        // Atur jadwal pengingat MCU dua kali sehari (Jam 8 Pagi & 8 Malam WITA)
+        // Atur jadwal pengingat MCU: H-H (Jam 6 Pagi) & H-1 (Jam 7 Malam / 19:00 WITA)
         $schedule->command('mcu:send-reminders')
-                 ->twiceDaily(8, 20)
+                 ->twiceDaily(6, 19)
                  ->timezone('Asia/Makassar');
+                 
     })->create();

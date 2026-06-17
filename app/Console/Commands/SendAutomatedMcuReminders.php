@@ -6,64 +6,92 @@ use Illuminate\Console\Command;
 use App\Models\JadwalMcu;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use App\Services\FCMService;
+use App\Models\NotificationLog;
 
 class SendAutomatedMcuReminders extends Command
 {
     protected $signature = 'mcu:send-reminders';
-    protected $description = 'Otomatis mengirim notifikasi pengingat Jadwal MCU besok hari';
+    
+    protected $description = 'Otomatis mengirim notifikasi pengingat Jadwal MCU (H-1 Jam 19:00 & H-H Jam 06:00)';
 
     public function handle()
     {
-        $besok = Carbon::tomorrow()->toDateString();
-        $jadwalBesok = JadwalMcu::whereDate('tanggal_mcu', $besok)
-                                ->where('status', 'Scheduled')
-                                ->with('karyawan') // Pastikan relasi 'patient' (atau karyawan) sudah benar
+        // 1. Cek Jam Server Saat Ini
+        $jamSekarang = Carbon::now()->hour;
+
+        // 2. Tentukan Tanggal Target & Teks Notifikasi Berdasarkan Jam
+        if ($jamSekarang == 19) {
+            // JIKA JAM 7 MALAM -> Kirim Pengingat H-1 (Untuk Jadwal Besok)
+            $targetTanggal = Carbon::tomorrow()->toDateString();
+            $waktuTeks = "BESOK";
+            $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
+        } elseif ($jamSekarang == 6) {
+            // JIKA JAM 6 PAGI -> Kirim Pengingat H-H (Untuk Jadwal Hari Ini)
+            $targetTanggal = Carbon::today()->toDateString();
+            $waktuTeks = "PAGI INI";
+            $title = "⏰ Hari Ini Jadwal MCU Anda!";
+        } else {
+            // Mencegah command berjalan di jam yang salah
+            $this->warn("Command berjalan di luar jadwal. Harus jam 06:00 atau 19:00.");
+            return;
+        }
+
+        // 3. Tarik Data Jadwal Sesuai Target Tanggal
+        $jadwalTarget = JadwalMcu::whereDate('tanggal_mcu', $targetTanggal)
+                                ->where('status', 'Scheduled') // Hanya yang belum hadir
+                                ->with(['karyawan', 'pesertaMcu']) 
                                 ->get();
 
-        if ($jadwalBesok->isEmpty()) {
-            $this->info("Tidak ada jadwal MCU untuk besok ({$besok}).");
+        if ($jadwalTarget->isEmpty()) {
+            $this->info("Tidak ada jadwal MCU untuk {$waktuTeks} ({$targetTanggal}).");
             return;
         }
 
         $successCount = 0;
-        foreach ($jadwalBesok as $jadwal) {
-            // Ambil data karyawan/pasien dari relasi
-            $karyawan = $jadwal->karyawan; // Sesuaikan dengan nama relasi di model JadwalMcu
+        foreach ($jadwalTarget as $jadwal) {
+            
+            $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
 
-            if ($karyawan && !empty($karyawan->fcm_token)) {
-                // --- TAMBAHKAN BARIS INI UNTUK DEBUG ---
-                Log::info("DEBUG DATA KARYAWAN: " . json_encode($karyawan->toArray()));
-                // ----------------------------------------
-                $title = "Pengingat Jadwal MCU";
-                $body = "Halo " . ($karyawan->nama_karyawan ?? 'Karyawan') . ", jangan lupa jadwal Medical Check Up kamu besok ya! Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
+            if ($targetUser && !empty($targetUser->fcm_token)) {
+                
+                $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
+                
+                // 4. Susun Pesan Aturan (Teks Unik Sesuai Waktu)
+                $body = "Halo {$nama}! Mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
+                      . "⚠️ ATURAN SEBELUM MCU:\n"
+                      . "1. Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
+                      . "2. Hindari begadang dan istirahat yang cukup.\n"
+                      . "3. Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
+                      . "Ketuk tombol di bawah untuk panduan lengkapnya!";
+                
+                // 5. Tautan ke Aturan MCU (Ditangkap oleh Flutter)
+                // Ganti URL ini dengan link panduan yang kamu inginkan. Tombol "Buka Tautan Lampiran" di Flutter akan otomatis muncul!
+                $actionLink = 'route:/informasi-mcu'; 
 
-                // Panggil Service FCM kita
-                $isSent = \App\Services\FCMService::sendPushNotification(
-                    $karyawan->fcm_token,
+                $isSent = FCMService::sendPushNotification(
+                    $targetUser->fcm_token,
                     $title,
-                    $body
+                    $body,
+                    $actionLink
                 );
 
                 if ($isSent) {
                     $successCount++;
-                    Log::info("CRON: Notifikasi berhasil dikirim ke " . $karyawan->nama_karyawan);
-                } else {
-                    Log::error("CRON: Gagal kirim notifikasi ke " . $karyawan->nama_karyawan);
+                    Log::info("CRON: Notifikasi {$waktuTeks} terkirim ke {$nama}");
                 }
-            } else {
-                Log::warning("CRON: Karyawan tidak ditemukan atau Token FCM kosong untuk Jadwal ID: " . $jadwal->id);
             }
         }
 
-        \App\Models\NotificationLog::create([
+        // 6. Simpan Log Riwayat
+        NotificationLog::create([
             'mode' => 'automatic',
-            'scheduled_date' => $besok,
-            'total_targets' => $jadwalBesok->count(),
+            'scheduled_date' => $targetTanggal,
+            'total_targets' => $jadwalTarget->count(),
             'fcm_success' => $successCount,
             'email_success' => 0,
         ]);
 
-        $this->info("CRON SUKSES: Mengirim {$successCount} pengingat otomatis.");
-        Log::info("CRON: Selesai. Total sukses: {$successCount}");
+        $this->info("CRON SUKSES: Mengirim {$successCount} pengingat untuk jadwal {$waktuTeks}.");
     }
 }
