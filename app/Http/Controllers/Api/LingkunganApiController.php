@@ -14,6 +14,11 @@ class LingkunganApiController extends Controller
         try {
             $query = PemantauanLingkungan::with(['departemen', 'unitKerja']);
 
+            // Filter Tanggal
+            if ($request->has('start_date') && $request->has('end_date')) {
+                $query->whereBetween('tanggal_pemantauan', [$request->start_date, $request->end_date]);
+            }
+
             if ($request->has('location') && $request->location != 'Semua') {
                 $query->where('area', $request->location);
             }
@@ -30,9 +35,11 @@ class LingkunganApiController extends Controller
                 });
             }
 
-            $data = $query->orderBy('tanggal_pemantauan', 'desc')->get();
+            // Gunakan pagination (Default 15 data per halaman)
+            $perPage = $request->input('per_page', 15);
+            $data = $query->orderBy('tanggal_pemantauan', 'desc')->paginate($perPage);
 
-            $transformedData = $data->map(function ($item) {
+            $transformedData = $data ->getCollection()->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'location' => $item->area,
@@ -58,7 +65,12 @@ class LingkunganApiController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data' => $transformedData
+                'data' => $transformedData,
+                'meta' => [
+                    'current_page' => $data->currentPage(),
+                    'last_page' => $data->lastPage(),
+                    'total' => $data->total(),
+                ]
             ], 200);
 
         } catch (\Exception $e) {
