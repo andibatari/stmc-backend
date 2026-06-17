@@ -17,32 +17,26 @@ class SendAutomatedMcuReminders extends Command
 
     public function handle()
     {
-        // 1. Cek Jam Server Saat Ini 
-        // 🌟 SAYA BIARKAN ANGKA 19 AGAR KAMU BISA LANGSUNG TEST DI TERMINAL
-        // Jika sudah selesai test, hapus angka 19 dan aktifkan kembali Carbon::now()->hour;
-        // $jamSekarang = Carbon::now()->hour;
+        // 1. Cek Jam Server (Test Mode: 19)
         $jamSekarang = 19;
 
-        // 2. Tentukan Tanggal Target & Teks Notifikasi Berdasarkan Jam
+        // 2. Tentukan Tanggal Target & Teks
         if ($jamSekarang == 19) {
-            // JIKA JAM 7 MALAM -> Kirim Pengingat H-1 (Untuk Jadwal Besok)
             $targetTanggal = Carbon::tomorrow()->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
         } elseif ($jamSekarang == 6) {
-            // JIKA JAM 6 PAGI -> Kirim Pengingat H-H (Untuk Jadwal Hari Ini)
             $targetTanggal = Carbon::today()->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
         } else {
-            // Mencegah command berjalan di jam yang salah
             $this->warn("Command berjalan di luar jadwal. Harus jam 06:00 atau 19:00.");
             return;
         }
 
-        // 3. Tarik Data Jadwal Sesuai Target Tanggal
+        // 3. Tarik Data Jadwal
         $jadwalTarget = JadwalMcu::whereDate('tanggal_mcu', $targetTanggal)
-                                ->where('status', 'Scheduled') // Hanya yang belum hadir
+                                ->where('status', 'Scheduled') 
                                 ->with(['karyawan', 'pesertaMcu']) 
                                 ->get();
 
@@ -53,18 +47,13 @@ class SendAutomatedMcuReminders extends Command
 
         $successCount = 0;
         
-        // 🌟 LINK GAMBAR BANNER (Bisa kamu ganti nanti dengan gambar aslimu)
-        $bannerUrl = 'https://imgur.com/a/FY7RhPV';
-
         foreach ($jadwalTarget as $jadwal) {
-            
             $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
 
             if ($targetUser && !empty($targetUser->fcm_token)) {
-                
                 $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
                 
-                // 4. Susun Pesan Aturan (Teks Diperpadat agar pas di layar)
+                // 4. Pesan Unik dan Menarik
                 $body = "Halo, {$nama}! 👋\n"
                       . "Kami mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
                       . "🌟 PERSIAPAN WAJIB:\n"
@@ -73,17 +62,14 @@ class SendAutomatedMcuReminders extends Command
                       . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan\n\n"
                       . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
                 
-                // 5. Tautan ke Aturan MCU
                 $actionLink = 'route:/informasi-mcu'; 
 
-                // 6. Kirim Notifikasi
-                // Menambahkan parameter tambahan untuk memicu Action di Flutter
+                // 5. Kirim Notifikasi (Tanpa Banner)
                 $isSent = FCMService::sendPushNotification(
                     $targetUser->fcm_token,
                     $title,
                     $body,
-                    $actionLink,
-                    $bannerUrl
+                    $actionLink
                 );
 
                 if ($isSent) {
@@ -93,7 +79,6 @@ class SendAutomatedMcuReminders extends Command
             }
         }
 
-        // 7. Simpan Log Riwayat
         NotificationLog::create([
             'mode' => 'automatic',
             'scheduled_date' => $targetTanggal,

@@ -8,8 +8,7 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FCMService
 {
-    // 🌟 PERBAIKAN: Menambahkan parameter $imageUrl dengan nilai default null
-    public static function sendPushNotification($fcmToken, $title, $body, $link = null, $imageUrl = null)
+    public static function sendPushNotification($fcmToken, $title, $body, $link = null)
     {
         try {
             $credentialsPath = storage_path('app/firebase_credentials.json');
@@ -19,11 +18,10 @@ class FCMService
                 return false;
             }
 
-            // Membaca Project ID dari file JSON
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            // 🌟 Menyusun Payload Pesan
+            // 🌟 Payload bersih tanpa gambar
             $messagePayload = [
                 'token' => $fcmToken,
                 'notification' => [
@@ -37,18 +35,12 @@ class FCMService
                 'android' => [
                     'priority' => 'high',
                     'notification' => [
-                        'color' => '#C00000', // 🌟 WARNA MERAH UNTUK BACKGROUND IKON
+                        'color' => '#C00000',
                         'sound' => 'default',
                     ]
                 ],
             ];
 
-            // 🌟 Jika ada URL gambar, masukkan ke dalam payload
-            if (!empty($imageUrl)) {
-                $messagePayload['notification']['image'] = $imageUrl;
-            }
-
-            // Menggunakan Laravel Http Client untuk mengirim ke Firebase HTTP v1 API
             $response = Http::withToken(self::getAccessToken($credentialsPath))
                 ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", [
                     'message' => $messagePayload
