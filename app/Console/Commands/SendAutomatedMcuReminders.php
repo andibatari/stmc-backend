@@ -54,7 +54,7 @@ class SendAutomatedMcuReminders extends Command
         $successCount = 0;
         
         // 🌟 LINK GAMBAR BANNER (Bisa kamu ganti nanti dengan gambar aslimu)
-        $bannerUrl = asset('images/banner_wajib_puasa.png');
+        $bannerUrl = asset('public/images/bannerWajibPuasa.jpg');
 
         foreach ($jadwalTarget as $jadwal) {
             
@@ -65,23 +65,25 @@ class SendAutomatedMcuReminders extends Command
                 $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
                 
                 // 4. Susun Pesan Aturan (Teks Diperpadat agar pas di layar)
-                $body = "Halo {$nama}! Mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
-                      . "⚠️ ATURAN SEBELUM MCU:\n"
-                      . "1. Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
-                      . "2. Hindari begadang dan istirahat yang cukup.\n"
-                      . "3. Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
-                      . "Ketuk tombol di bawah untuk panduan lengkapnya!";
+                $body = "Halo, {$nama}! 👋\n"
+                      . "Kami mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
+                      . "🌟 PERSIAPAN WAJIB:\n"
+                      . "• 💧 Wajib puasa 10-12 jam (Hanya air putih)\n"
+                      . "• 😴 Istirahat cukup, hindari begadang\n"
+                      . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan\n\n"
+                      . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
                 
-                // 5. Tautan ke Aturan MCU (Ditangkap oleh Flutter)
+                // 5. Tautan ke Aturan MCU
                 $actionLink = 'route:/informasi-mcu'; 
 
-                // 6. Kirim Notifikasi menggunakan FCMService yang baru
+                // 6. Kirim Notifikasi
+                // Menambahkan parameter tambahan untuk memicu Action di Flutter
                 $isSent = FCMService::sendPushNotification(
                     $targetUser->fcm_token,
                     $title,
                     $body,
                     $actionLink,
-                    $bannerUrl // 🌟 MENYELIPKAN GAMBAR DI SINI
+                    $bannerUrl
                 );
 
                 if ($isSent) {
