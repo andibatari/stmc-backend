@@ -379,7 +379,7 @@ class PemantauanLingkunganIndex extends Component
         $lokasiAman = $totalData - $lokasiBahaya;
 
         // 🌟 PEMBATASAN DATA (PAGINATION)
-        $perPage = 15;
+        $perPage = 10;
         $page = $this->getPage();
         $paginatedItems = new LengthAwarePaginator(
             $filteredCollection->forPage($page, $perPage),
