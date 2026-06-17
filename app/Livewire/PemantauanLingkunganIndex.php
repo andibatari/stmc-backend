@@ -128,9 +128,15 @@ class PemantauanLingkunganIndex extends Component
         $this->unitKerjas = UnitKerja::all();
         $this->uniqueAreas = PemantauanLingkungan::distinct()->pluck('area')->sort()->toArray();
 
+        // Secara default, batasi pencarian dari 1 bulan yang lalu sampai hari ini
+        $this->startDate = Carbon::now()->subMonth()->toDateString();
+        $this->endDate = Carbon::now()->toDateString();
+
         if (request()->has('filterArea')) {
             $this->filterArea = request()->query('filterArea');
-            session()->flash('message', 'Filter Area "' . $this->filterArea . '" otomatis diterapkan dari Dashboard karena melampaui NAB.');
+            // Jika dilempar dari dashboard, buka filter tanggalnya agar data history kelihatan
+            $this->startDate = '';
+            $this->endDate = '';
         }
     }
 
