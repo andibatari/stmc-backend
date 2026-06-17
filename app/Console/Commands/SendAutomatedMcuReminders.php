@@ -17,7 +17,9 @@ class SendAutomatedMcuReminders extends Command
 
     public function handle()
     {
-        // 1. Cek Jam Server Saat Ini
+        // 1. Cek Jam Server Saat Ini 
+        // 🌟 SAYA BIARKAN ANGKA 19 AGAR KAMU BISA LANGSUNG TEST DI TERMINAL
+        // Jika sudah selesai test, hapus angka 19 dan aktifkan kembali Carbon::now()->hour;
         // $jamSekarang = Carbon::now()->hour;
         $jamSekarang = 19;
 
@@ -50,6 +52,10 @@ class SendAutomatedMcuReminders extends Command
         }
 
         $successCount = 0;
+        
+        // 🌟 LINK GAMBAR BANNER (Bisa kamu ganti nanti dengan gambar aslimu)
+        $bannerUrl = asset('images/banner_wajib_puasa.svg');
+
         foreach ($jadwalTarget as $jadwal) {
             
             $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
@@ -58,23 +64,23 @@ class SendAutomatedMcuReminders extends Command
                 
                 $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
                 
-                // 4. Susun Pesan Aturan (Teks Unik Sesuai Waktu)
-                $body = "Halo {$nama}! Mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
-                      . "⚠️ ATURAN SEBELUM MCU:\n"
-                      . "1. Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
-                      . "2. Hindari begadang dan istirahat yang cukup.\n"
-                      . "3. Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
-                      . "Ketuk tombol di bawah untuk panduan lengkapnya!";
+                // 4. Susun Pesan Aturan (Teks Diperpadat agar pas di layar)
+                $body = "Halo {$nama}! Jangan lupa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
+                      . "🛑 PERSIAPAN WAJIB:\n"
+                      . "• Puasa 10-12 jam (Boleh minum air putih)\n"
+                      . "• Istirahat cukup malam ini\n"
+                      . "• Bawa ID Card Perusahaan";
                 
                 // 5. Tautan ke Aturan MCU (Ditangkap oleh Flutter)
-                // Ganti URL ini dengan link panduan yang kamu inginkan. Tombol "Buka Tautan Lampiran" di Flutter akan otomatis muncul!
                 $actionLink = 'route:/informasi-mcu'; 
 
+                // 6. Kirim Notifikasi menggunakan FCMService yang baru
                 $isSent = FCMService::sendPushNotification(
                     $targetUser->fcm_token,
                     $title,
                     $body,
-                    $actionLink
+                    $actionLink,
+                    $bannerUrl // 🌟 MENYELIPKAN GAMBAR DI SINI
                 );
 
                 if ($isSent) {
@@ -84,7 +90,7 @@ class SendAutomatedMcuReminders extends Command
             }
         }
 
-        // 6. Simpan Log Riwayat
+        // 7. Simpan Log Riwayat
         NotificationLog::create([
             'mode' => 'automatic',
             'scheduled_date' => $targetTanggal,
