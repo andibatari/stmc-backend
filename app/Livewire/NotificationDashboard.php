@@ -200,9 +200,10 @@ class NotificationDashboard extends Component
             if ($this->searchQuery) {
                 $searchTerm = '%' . $this->searchQuery . '%';
                 $query->where(function ($q) use ($searchTerm) {
+                    // 🌟 PERBAIKAN: Ganti tanda titik (.) menjadi tanda panah (->)
                     $q->where('nama_pasien', 'like', $searchTerm)
-                      .orWhere('no_sap', 'like', $searchTerm)
-                      .orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
+                      ->orWhere('no_sap', 'like', $searchTerm)
+                      ->orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
                           $qKar->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
                       });
                 });
