@@ -31,7 +31,7 @@
 
             <div class="p-5 md:p-8">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-6">
-                    <div class="md:col-span-2 lg:col-span-1 relative z-50">
+                    <div class="md:col-span-2 lg:col-span-1 relative z-20">
                         @livewire('searchable-departemen', ['initialDepartemenId' => $departemens_id, 'initialUnitKerjaId' => $unit_kerjas_id], key('departemen-unit-picker'))
                     </div>
                     
