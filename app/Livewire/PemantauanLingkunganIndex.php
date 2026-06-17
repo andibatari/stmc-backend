@@ -408,7 +408,7 @@ class PemantauanLingkunganIndex extends Component
         $lokasiAman = $totalData - $lokasiBahaya;
 
         // 4. Paginasi Natif Database (Mengambil 15 baris data saja ke RAM)
-        $paginatedItems = $query->latest('tanggal_pemantauan')->paginate(15);
+        $paginatedItems = $query->latest('tanggal_pemantauan')->paginate(10);
 
         // 5. Grouping area dilakukan terbatas hanya pada 15 data yang tampil di halaman aktif
         $pemantauanLingkunganGrouped = collect($paginatedItems->items())->groupBy('area');
