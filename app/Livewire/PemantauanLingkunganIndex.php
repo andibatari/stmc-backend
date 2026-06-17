@@ -142,7 +142,9 @@ class PemantauanLingkunganIndex extends Component
 
     public function downloadExcel()
     {
-        $dataToExport = $this->applyFilters(PemantauanLingkungan::query()); 
+        // PERBAIKAN: Tambahkan ->get() di akhir karena applyFilters sekarang mengembalikan Query Builder
+        $dataToExport = $this->applyFilters(PemantauanLingkungan::query())->get(); 
+        
         return Excel::download(new PemantauanLingkunganExport($dataToExport), 'LaporanPemantauanLingkungan_' . Carbon::now()->format('Ymd_His') . '.xlsx');
     }
 
@@ -150,10 +152,12 @@ class PemantauanLingkunganIndex extends Component
     {
         $query->with(['departemen', 'unitKerja']);
 
+        // 1. Filter Pencarian (Cari berdasarkan Lokasi)
         if ($this->searchQuery) {
             $query->where('lokasi', 'like', '%' . $this->searchQuery . '%');
         }
 
+        // 2. Filter Rentang Waktu (Date Range)
         if ($this->startDate && $this->endDate) {
             $query->whereBetween('tanggal_pemantauan', [$this->startDate, $this->endDate]);
         } elseif ($this->startDate) {
@@ -162,6 +166,7 @@ class PemantauanLingkunganIndex extends Component
             $query->whereDate('tanggal_pemantauan', '<=', $this->endDate);
         }
 
+        // 3. Filter Dropdown Standar
         if ($this->filterArea) {
             $query->where('area', $this->filterArea);
         }
@@ -171,34 +176,42 @@ class PemantauanLingkunganIndex extends Component
         if ($this->filterUnitKerja) {
             $query->where('unit_kerjas_id', $this->filterUnitKerja);
         }
+
+        // 4. 🔥 FILTER NAB NATIF DATABASE (Menggunakan Operator JSON MySQL `->>`)
         
-        $allData = $query->latest('tanggal_pemantauan')->get();
+        // Logika Filter Cahaya (Bahaya jika DI BAWAH NAB)
+        if ($this->filterNabCahaya === 'above') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.cahaya" AS DECIMAL(10,2)) < nab_cahaya');
+        } elseif ($this->filterNabCahaya === 'below') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.cahaya" AS DECIMAL(10,2)) >= nab_cahaya');
+        }
+        
+        // Logika Filter Bising (Bahaya jika DI ATAS NAB)
+        if ($this->filterNabBising === 'above') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.bising" AS DECIMAL(10,2)) > nab_bising');
+        } elseif ($this->filterNabBising === 'below') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.bising" AS DECIMAL(10,2)) <= nab_bising');
+        }
 
-        $filteredData = $allData->filter(function ($data) {
-            $cahayaStatus = $this->checkNabStatus($data, 'cahaya', 'nab_cahaya'); 
-            $bisingStatus = $this->checkNabStatus($data, 'bising', 'nab_bising');
-            $debuStatus = $this->checkNabStatus($data, 'debu', 'nab_debu');
-            
-            $isbbIndoorStatus = $this->checkNabStatus($data, 'isbb_indoor', 'nab_suhu');
-            $isbbOutdoorStatus = $this->checkNabStatus($data, 'isbb_outdoor', 'nab_suhu');
-            $isbbStatus = $isbbIndoorStatus || $isbbOutdoorStatus; 
-
-            if ($this->filterNabCahaya === 'above' && !$cahayaStatus) return false;
-            if ($this->filterNabCahaya === 'below' && $cahayaStatus) return false;
-            
-            if ($this->filterNabBising === 'above' && !$bisingStatus) return false;
-            if ($this->filterNabBising === 'below' && $bisingStatus) return false;
-
-            if ($this->filterNabDebu === 'above' && !$debuStatus) return false;
-            if ($this->filterNabDebu === 'below' && $debuStatus) return false;
-            
-            if ($this->filterNabSuhuIsbb === 'above' && !$isbbStatus) return false;
-            if ($this->filterNabSuhuIsbb === 'below' && $isbbStatus) return false;
-            
-            return true;
-        });
-
-        return $filteredData; 
+        // Logika Filter Debu (Mencopot string satuan otomatis saat CAST ke desimal)
+        if ($this->filterNabDebu === 'above') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.debu" AS DECIMAL(10,2)) > CAST(nab_debu AS DECIMAL(10,2))');
+        } elseif ($this->filterNabDebu === 'below') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.debu" AS DECIMAL(10,2)) <= CAST(nab_debu AS DECIMAL(10,2))');
+        }
+        
+        // Logika Filter Suhu/ISBB (Bahaya jika salah satu ISBB melewati batas)
+        if ($this->filterNabSuhuIsbb === 'above') {
+            $query->where(function($q) {
+                $q->whereRaw('CAST(data_pemantauan->>"$.isbb_indoor" AS DECIMAL(10,2)) > nab_suhu')
+                  ->orWhereRaw('CAST(data_pemantauan->>"$.isbb_outdoor" AS DECIMAL(10,2)) > nab_suhu');
+            });
+        } elseif ($this->filterNabSuhuIsbb === 'below') {
+            $query->whereRaw('CAST(data_pemantauan->>"$.isbb_indoor" AS DECIMAL(10,2)) <= nab_suhu')
+                  ->whereRaw('CAST(data_pemantauan->>"$.isbb_outdoor" AS DECIMAL(10,2)) <= nab_suhu');
+        }
+        
+        return $query; // Mengembalikan Query Builder, bukan Collection lagi
     }
 
     public function edit($id)
@@ -373,28 +386,31 @@ class PemantauanLingkunganIndex extends Component
 
     public function render()
     {
-        $filteredCollection = $this->applyFilters(PemantauanLingkungan::query());
+        // 1. Inisialisasi Query dasar
+        $query = PemantauanLingkungan::query();
         
-        $totalData = $filteredCollection->count();
-        $lokasiBahaya = 0;
-        foreach ($filteredCollection as $data) {
-            if ($this->isBahaya($data)) {
-                $lokasiBahaya++;
-            }
-        }
+        // 2. Terapkan filter database
+        $this->applyFilters($query);
+        
+        // 3. Hitung Data untuk Summary Cards secara instan lewat SQL Count
+        $totalData = $query->count();
+        
+        // Kloning query utama untuk menghitung jumlah lokasi bahaya secara natif di SQL
+        $queryBahaya = clone $query;
+        $lokasiBahaya = $queryBahaya->where(function ($q) {
+            $q->whereRaw('CAST(data_pemantauan->>"$.cahaya" AS DECIMAL(10,2)) < nab_cahaya')
+              ->orWhereRaw('CAST(data_pemantauan->>"$.bising" AS DECIMAL(10,2)) > nab_bising')
+              ->orWhereRaw('CAST(data_pemantauan->>"$.debu" AS DECIMAL(10,2)) > CAST(nab_debu AS DECIMAL(10,2))')
+              ->orWhereRaw('CAST(data_pemantauan->>"$.isbb_indoor" AS DECIMAL(10,2)) > nab_suhu')
+              ->orWhereRaw('CAST(data_pemantauan->>"$.isbb_outdoor" AS DECIMAL(10,2)) > nab_suhu');
+        })->count();
+        
         $lokasiAman = $totalData - $lokasiBahaya;
 
-        // 🌟 PEMBATASAN DATA (PAGINATION)
-        $perPage = 10;
-        $page = $this->getPage();
-        $paginatedItems = new LengthAwarePaginator(
-            $filteredCollection->forPage($page, $perPage),
-            $totalData,
-            $perPage,
-            $page,
-            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
-        );
+        // 4. Paginasi Natif Database (Mengambil 15 baris data saja ke RAM)
+        $paginatedItems = $query->latest('tanggal_pemantauan')->paginate(15);
 
+        // 5. Grouping area dilakukan terbatas hanya pada 15 data yang tampil di halaman aktif
         $pemantauanLingkunganGrouped = collect($paginatedItems->items())->groupBy('area');
 
         $filteredUnits = $this->unitKerjas;

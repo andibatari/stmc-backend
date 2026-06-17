@@ -229,7 +229,13 @@
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Area / Gedung</label>
                                 <input type="text" wire:model.defer="editingData.area" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500">
                             </div>
+                            {{-- 🔥 PERBAIKAN: Input Tanggal Ditambahkan di sini --}}
                             <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tanggal Pemantauan</label>
+                                <input type="date" wire:model.defer="editingData.tanggal_pemantauan" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500">
+                            </div>
+                            {{-- 🔥 Kolom Titik Lokasi membentang penuh (col-span-2) agar layout grid rapi --}}
+                            <div class="col-span-2">
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Titik Lokasi (Ruangan)</label>
                                 <input type="text" wire:model.defer="editingData.lokasi" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500">
                             </div>
@@ -246,7 +252,13 @@
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Area / Gedung</label>
                                 <input type="text" value="{{ $newLocationData['area'] ?? '' }}" disabled class="w-full bg-slate-50 text-slate-500 rounded-xl border-slate-200 text-xs p-2.5">
                             </div>
+                            {{-- 🔥 PERBAIKAN: Input Tanggal (Mode Tambah Anak Lokasi) - Bersifat read-only --}}
                             <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tanggal Pemantauan</label>
+                                <input type="date" value="{{ $newLocationData['tanggal_pemantauan'] ?? '' }}" disabled class="w-full bg-slate-50 text-slate-500 rounded-xl border-slate-200 text-xs p-2.5">
+                            </div>
+                            {{-- 🔥 Kolom Lokasi Baru membentang penuh (col-span-2) --}}
+                            <div class="col-span-2">
                                 <label class="block text-[10px] font-bold text-emerald-600 uppercase mb-1">Lokasi Baru *</label>
                                 <input type="text" wire:model.defer="newLocationData.lokasi" class="w-full rounded-xl border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500 text-xs p-2.5 shadow-sm" placeholder="Ketik nama titik/ruangan">
                             </div>
