@@ -57,11 +57,11 @@ class SendAutomatedMcuReminders extends Command
                 $body = "Halo, {$nama}! 👋\n"
                       . "Kami mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
                       . "🌟 PERSIAPAN WAJIB:\n"
-                      . "• 💧 Wajib puasa 10-12 jam (Hanya air putih)\n"
-                      . "• 😴 Istirahat cukup, hindari begadang\n"
-                      . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan\n\n"
+                      . "• 💧 Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
+                      . "• 😴 Hindari begadang dan istirahat yang cukup.\n"
+                      . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
                       . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
-                
+
                 $actionLink = 'route:/informasi-mcu'; 
 
                 // 5. Kirim Notifikasi (Tanpa Banner)
