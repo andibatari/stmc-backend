@@ -90,9 +90,34 @@ class ProcessSubmissionReminders implements ShouldQueue
             // --- 4. PROSES PENGIRIMAN NOTIFIKASI APLIKASI (FCM) ---
             if ($fcmToken) {
                 try {
-                    // Panggil notifikasi pada Model (Pastikan PesertaMcu juga menggunakan trait Notifiable)
-                    $userTarget->notify(new McuSubmissionNotification($userTarget, $this->notificationLog->scheduled_date));
-                    $successAppCount++;
+                    // Buat pesan ajakan yang unik dan menarik
+                    $nama = $userTarget->nama_karyawan ?? $userTarget->nama_lengkap ?? 'Karyawan';
+                    
+                    $title = "📢 Yuk, Atur Jadwal MCU Kamu!";
+                    $body = "Halo {$nama}! 👋\n\n"
+                          . "Kami perhatikan kamu belum menentukan jadwal Medical Check Up di Klinik STMC. "
+                          . "Jika kebetulan besok kamu ada waktu kosong, yuk segera ajukan jadwal MCU kamu sekarang!\n\n"
+                          . "Kesehatanmu adalah prioritas kami. 🏥✨\n"
+                          . "Klik tombol di bawah ini untuk memilih jadwal ya! 👇";
+                          
+                    // Sesuaikan actionLink ini dengan route/halaman pengajuan di aplikasi Android kamu
+                    $actionLink = 'route:/pengajuan-mcu'; 
+
+                    // Kirim notifikasi menggunakan FCM Service
+                    $statusFCM = \App\Services\FCMService::sendPushNotification(
+                        $fcmToken,
+                        $title,
+                        $body,
+                        $actionLink
+                    );
+
+                    if ($statusFCM) {
+                        $successAppCount++;
+                    }
+
+                    // Opsional: Jika kamu tetap butuh menjalankan notifikasi bawaan Laravel untuk simpan ke database
+                    // $userTarget->notify(new McuSubmissionNotification($userTarget, $this->notificationLog->scheduled_date));
+                    
                 } catch (Throwable $e) {
                     Log::warning("Gagal kirim FCM pengajuan MCU ke NIK {$nik}. Error: " . $e->getMessage());
                     $failedRecipients[] = ['nik' => $nik, 'type' => 'FCM', 'reason' => substr($e->getMessage(), 0, 100)];

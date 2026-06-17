@@ -35,26 +35,32 @@ class ProcessMcuReminders implements ShouldQueue
         $fcmSuccessCount = 0;
 
         foreach ($jadwals as $jadwal) {
-            // 🌟 PERBAIKAN 2: Cek apakah ini Karyawan PTST atau Pasien Umum
             $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
 
             if ($targetUser && !empty($targetUser->fcm_token)) {
-                // Tarik nama sesuai struktur tabelnya
                 $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
                 
-                // 🌟 PERBAIKAN 3: Format tanggal agar teksnya akurat
-                Carbon::setLocale('id'); // Pastikan format bahasa Indonesia
+                Carbon::setLocale('id'); 
                 $tanggal = Carbon::parse($jadwal->tanggal_mcu)->translatedFormat('l, d F Y');
 
-                $title = "Pengingat Jadwal MCU";
-                $body = "Halo {$nama}, pengingat jadwal Medical Check Up kamu pada {$tanggal}. Mohon perhatikan protokol kesehatan dan datang tepat waktu. Terima kasih.";
+                // Menyesuaikan dengan format SendAutomatedMcuReminders
+                $title = "⏰ Pengingat: Jadwal MCU Anda!";
+                $body = "Halo, {$nama}! 👋\n"
+                    . "Kami mengingatkan bahwa pada {$tanggal} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
+                    . "🌟 PERSIAPAN WAJIB:\n"
+                    . "• 💧 Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
+                    . "• 😴 Hindari begadang dan istirahat yang cukup.\n"
+                    . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
+                    . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
+                    
+                $actionLink = 'route:/informasi-mcu';
 
                 try {
-                    // Kirim lewat FCMService
                     $statusFCM = FCMService::sendPushNotification(
                         $targetUser->fcm_token,
                         $title,
-                        $body
+                        $body,
+                        $actionLink // Menambahkan parameter action link
                     );
 
                     if ($statusFCM) {

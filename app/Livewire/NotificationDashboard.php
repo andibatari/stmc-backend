@@ -38,6 +38,8 @@ class NotificationDashboard extends Component
     public $notificationMode = 'scheduled'; 
     public $filterDepartemenId = '';
     public $departemenOptions; 
+    public $filterUnitKerjaId = '';
+    public $unitKerjaOptions = [];
 
     public function mount()
     {
@@ -227,12 +229,16 @@ class NotificationDashboard extends Component
     public function loadKaryawanForSubmission()
     {
         $this->jadwalsToNotify = collect(); 
-        
-        // Revert: Hanya memuat jika ada departemen dipilih agar tidak memberatkan server
         if (!$this->filterDepartemenId) return; 
         
         $karyawanQuery = Karyawan::with('departemen')->where('departemens_id', $this->filterDepartemenId);
-        
+
+        // ---- Tambahan Query Unit Kerja ----
+        if ($this->filterUnitKerjaId) {
+            $karyawanQuery->where('unit_kerja_id', $this->filterUnitKerjaId); // Sesuaikan dengan nama kolom di database kamu
+        }
+        // ------------------------------------
+
         $recentJadwalKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')
             ->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))
             ->pluck('karyawan_id')
@@ -254,8 +260,27 @@ class NotificationDashboard extends Component
     public function updatedFilterDate() { $this->loadData(); }
     public function updatedSpecificDate() { $this->loadData(); }
     public function updatedSearchQuery() { $this->loadData(); }
-    public function updatedNotificationMode() { $this->filterDepartemenId = ''; $this->loadData(); }
-    public function updatedFilterDepartemenId() { $this->loadData(); }
+    // 2. Tambahkan metode untuk me-reset unit kerja ketika departemen diganti
+    public function updatedFilterDepartemenId() 
+    { 
+        $this->filterUnitKerjaId = '';
+        
+        // (Opsional) Jika kamu punya Model UnitKerja yang berelasi dengan Departemen:
+        // $this->unitKerjaOptions = \App\Models\UnitKerja::where('departemen_id', $this->filterDepartemenId)->get();
+        
+        $this->loadData(); 
+    }
+
+    // 3. Tambahkan trigger saat unit kerja berubah
+    public function updatedFilterUnitKerjaId() { $this->loadData(); }
+
+    // 4. Update method updatedNotificationMode() untuk reset Unit Kerja juga
+    public function updatedNotificationMode() { 
+        $this->filterDepartemenId = ''; 
+        $this->filterUnitKerjaId = ''; // Tambahan
+        $this->unitKerjaOptions = [];  // Tambahan
+        $this->loadData(); 
+    }
 
     public function sendNotifications()
     {

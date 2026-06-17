@@ -146,6 +146,19 @@
                             @foreach ($departemenOptions as $dept) <option value="{{ $dept->id }}">{{ $dept->nama_departemen }}</option> @endforeach
                         </select>
                     </div>
+                    
+                    <div class="col-span-1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Unit Kerja</label>
+                        <select wire:model.live="filterUnitKerjaId" class="block w-full bg-white border-slate-200 rounded-lg shadow-sm p-2 text-xs font-bold cursor-pointer">
+                            <option value="">Semua Unit</option>
+                            @if($unitKerjaOptions)
+                                @foreach ($unitKerjaOptions as $unit) 
+                                    <option value="{{ $unit->id }}">{{ $unit->nama_unit }}</option> 
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Batas Akhir</label>
                         <input type="date" wire:model.live="specificDate" class="block w-full bg-white border-slate-200 rounded-lg shadow-sm p-2 text-xs font-bold">
@@ -185,7 +198,7 @@
                         <tr wire:key="row-{{ $data->id }}" class="hover:bg-slate-50">
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" 
-                                    wire:model="selectedRecipients" 
+                                    wire:model.live="selectedRecipients" 
                                     value="{{ $data->id }}" 
                                     class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
                             </td>
