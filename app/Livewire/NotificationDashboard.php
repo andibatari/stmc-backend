@@ -35,6 +35,7 @@ class NotificationDashboard extends Component
     public $searchQuery = ''; 
     public $jadwalsToNotify;
     public array $selectedRecipients = [];
+    public $selectAll = false;
     public $notificationMode = 'scheduled'; 
     public $filterDepartemenId = '';
     public $departemenOptions; 
@@ -223,7 +224,8 @@ class NotificationDashboard extends Component
             $this->jadwalsToNotify = collect(); 
         }
 
-        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
+        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->selectAll = $this->jadwalsToNotify->count() > 0;
     }
 
     public function loadKaryawanForSubmission()
@@ -254,7 +256,8 @@ class NotificationDashboard extends Component
         }
 
         $this->jadwalsToNotify = $karyawanQuery->get();
-        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
+        $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        $this->selectAll = $this->jadwalsToNotify->count() > 0;
     }
 
     public function updatedFilterDate() { $this->loadData(); }
@@ -311,14 +314,21 @@ class NotificationDashboard extends Component
         $this->loadData();
     }
 
-    public function toggleSelectAll()
+    // 🌟 FUNGSI BARU 1: Otomatis jalan saat Checkbox Master diklik
+    public function updatedSelectAll($value)
     {
-        // Revert: Kembali menggunakan Collection murni
-        if (count($this->selectedRecipients) === $this->jadwalsToNotify->count()) {
-            $this->selectedRecipients = [];
+        if ($value) {
+            $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->map(fn($id) => (string) $id)->toArray();
         } else {
-            $this->selectedRecipients = $this->jadwalsToNotify->pluck('id')->toArray();
+            $this->selectedRecipients = [];
         }
+    }
+
+    // 🌟 FUNGSI BARU 2: Otomatis jalan saat Checkbox Karyawan diklik satu-satu
+    public function updatedSelectedRecipients()
+    {
+        // Mengecek apakah jumlah karyawan yang dicentang sama dengan total data
+        $this->selectAll = count($this->selectedRecipients) === $this->jadwalsToNotify->count() && $this->jadwalsToNotify->count() > 0;
     }
 
     public function render()
