@@ -109,34 +109,38 @@ class PemantauanLingkunganIndex extends Component
         $dataValue = $data->data_pemantauan[$dataKey] ?? null;
         $nabValue = null;
 
-        // Menghapus logika lama dan fokus pada mendapatkan NAB dan Data
-        
+        // Ambil nilai NAB dari database
         if ($nabKey === 'nab_cahaya') {
             $nabValue = $data->nab_cahaya;
         } elseif ($nabKey === 'nab_bising') {
             $nabValue = $data->nab_bising;
         } elseif ($nabKey === 'nab_debu') {
             $nabString = $data->nab_debu;
-            // Hanya ambil angka pertama dari string nab_debu
+            // Hanya ambil angka pertama dari string nab_debu (misal dari "10 mg/Nm3" jadi 10)
             $matches = [];
             if (preg_match('/^(\d+(\.\d+)?)/', $nabString, $matches)) {
                 $nabValue = (float)$matches[1];
             }
-            $dataValue = (float) $dataValue; // Pastikan dataValue juga float
+            $dataValue = (float) $dataValue; 
         } elseif ($nabKey === 'nab_suhu') {
             if ($dataKey === 'isbb_indoor' || $dataKey === 'isbb_outdoor') {
                 $nabValue = $data->nab_suhu; 
             }
         }
         
-        // PENTING: Mengembalikan status NAB
-        // true = DI ATAS NAB (Melampaui Batas)
-        // false = DI BAWAH NAB (Aman/Memenuhi Batas)
+        // PENTING: MENGEMBALIKAN STATUS BAHAYA (TRUE = Merah, FALSE = Aman)
         if (is_numeric($dataValue) && is_numeric($nabValue) && $nabValue > 0) {
+            
+            // 🌟 ATURAN KHUSUS CAHAYA: Bahaya jika DI BAWAH batas minimal NAB
+            if ($dataKey === 'cahaya') {
+                return $dataValue < $nabValue;
+            }
+            
+            // 🌟 ATURAN DEFAULT (Bising, Debu, Suhu): Bahaya jika DI ATAS batas maksimal NAB
             return $dataValue > $nabValue; 
         }
 
-        return false; // Jika salah satu tidak valid, anggap aman/tidak dapat dibandingkan
+        return false; // Jika data kosong, anggap aman agar tidak error
     }
 
     public function mount()
