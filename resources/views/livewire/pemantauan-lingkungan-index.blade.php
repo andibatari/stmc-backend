@@ -3,14 +3,12 @@
     {{-- px-2 md:px-4: Padding kiri-kanan disusutkan untuk layar HP (px-2) agar tabel tidak terpotong --}}
     <div class="px-2 md:px-4 py-4 md:py-6 min-h-screen">
 
-        {{-- HEADER TOMBOL: flex-col di HP (turun ke bawah), flex-row di tablet/desktop (menyamping) --}}
+        {{-- HEADER TOMBOL --}}
         <div class="flex flex-col md:flex-row md:items-center justify-end mb-4 md:mb-6 gap-3">
             <div class="flex gap-2 w-full md:w-auto">
-                {{-- Tombol Download Excel --}}
                 <button wire:click="downloadExcel" class="flex-1 md:flex-none inline-flex items-center justify-center bg-white border border-emerald-500 text-emerald-600 font-bold py-2 px-3 rounded-lg hover:bg-emerald-50 text-xs shadow-sm transition-colors">
                     <i class="fas fa-file-excel mr-1.5"></i> Excel
                 </button>
-                {{-- Tombol Tambah Data Baru (Membuka halaman baru) --}}
                 <a href="{{ route('pemantauan.create') }}" class="flex-1 md:flex-none inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg shadow-md text-xs transition-colors">
                     <i class="fas fa-plus mr-1.5"></i> Tambah Baru
                 </a>
@@ -29,7 +27,6 @@
             <div class="p-3 md:p-5">
                 
                 {{-- 1. DASHBOARD MINI (Total, Aman, Bahaya) --}}
-                {{-- grid-cols-3: Membagi menjadi 3 kolom sama rata --}}
                 <div class="grid grid-cols-3 gap-2 md:gap-4 mb-5">
                     <div class="bg-blue-50 border border-blue-100 rounded-xl p-2 md:p-3 text-center">
                         <p class="text-[8px] md:text-[10px] font-bold text-blue-600 uppercase mb-0.5">Total</p>
@@ -52,7 +49,6 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-3 pb-3 border-b border-slate-200">
                         <div class="col-span-2">
                             <label class="block text-[9px] font-bold text-slate-500 uppercase mb-1">Cari Lokasi</label>
-                            {{-- wire:model.live.debounce.500ms: Delay 0.5 detik sebelum Livewire mencari data agar server tidak lemot --}}
                             <input type="text" wire:model.live.debounce.500ms="searchQuery" placeholder="Nama lokasi..." class="w-full rounded-lg border-slate-200 text-xs py-1.5 px-2.5 focus:border-red-500 focus:ring-red-500">
                         </div>
                         <div>
@@ -107,7 +103,7 @@
                         @endforeach
                     </div>
 
-                    {{-- 🌟 TAMBAHAN: KETERANGAN HINT DATA TERBARU DI WEB --}}
+                    {{-- KETERANGAN HINT DATA TERBARU DI WEB --}}
                     <div class="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2 text-slate-500 text-[10px] md:text-xs font-medium italic">
                         <i class="fas fa-info-circle text-blue-500"></i>
                         <span>Data yang ditampilkan secara default adalah data terbaru. Untuk melihat atau mencari data lampau, silakan gunakan filter rentang tanggal di atas.</span>
@@ -116,8 +112,6 @@
 
                 {{-- 3. TABEL DATA PEMANTAUAN --}}
                 @if ($pemantauanLingkunganGrouped->count() > 0)
-                    {{-- overflow-x-auto: Memungkinkan tabel digeser ke kanan-kiri di layar HP --}}
-                    {{-- max-h-[500px]: Tinggi maksimal tabel agar tidak merusak layout, bisa di-scroll ke bawah --}}
                     <div class="overflow-x-auto border border-slate-200 rounded-lg hide-scrollbar max-h-[500px]">
                         <table class="min-w-full divide-y divide-slate-200 bg-white text-left border-collapse whitespace-nowrap sticky-header">
                             
@@ -145,11 +139,11 @@
                             
                             {{-- Isi Tabel (Di-group berdasarkan Area) --}}
                             <tbody class="divide-y divide-slate-100">
-                                @php $globalIndex = 0; @endphp
+                                @php $globalIndex = ($paginator->currentPage() - 1) * $paginator->perPage(); @endphp
                                 @foreach ($pemantauanLingkunganGrouped as $area => $lokasis)
                                     {{-- Baris Judul Area --}}
                                     <tr class="bg-slate-100/70 border-t border-slate-200">
-                                        <td colspan="12" class="px-3 py-1.5 text-[10px] font-black text-slate-800 uppercase">
+                                        <td colspan="13" class="px-3 py-1.5 text-[10px] font-black text-slate-800 uppercase">
                                             <i class="fas fa-map-marker-alt text-red-500 mr-1"></i> AREA: {{ $area }}
                                         </td>
                                     </tr>
@@ -162,7 +156,6 @@
                                                 <p class="text-[9px] text-slate-500">{{ \Carbon\Carbon::parse($data->tanggal_pemantauan)->format('d/m/y') }} | {{ $data->departemen->nama_departemen ?? '-' }}</p>
                                             </td>
                                             
-                                            {{-- Jika nilai melewati batas NAB, text menjadi merah tebal (bg-red-50 text-red-700 font-bold) --}}
                                             <td class="px-2 py-2 text-[10px] font-mono text-center border-r border-slate-100 @if ($this->checkNabStatus($data, 'cahaya', 'nab_cahaya')) bg-red-50 text-red-700 font-bold @endif">{{ $data->data_pemantauan['cahaya'] ?? '-' }}</td>
                                             <td class="px-2 py-2 text-[10px] font-mono text-center border-r border-slate-100 @if ($this->checkNabStatus($data, 'bising', 'nab_bising')) bg-red-50 text-red-700 font-bold @endif">{{ $data->data_pemantauan['bising'] ?? '-' }}</td>
                                             <td class="px-2 py-2 text-[10px] font-mono text-center border-r border-slate-100 @if ($this->checkNabStatus($data, 'debu', 'nab_debu')) bg-red-50 text-red-700 font-bold @endif">{{ $data->data_pemantauan['debu'] ?? '-' }}</td>
@@ -175,7 +168,6 @@
                                             <td class="px-3 py-2 text-[9px] font-medium text-slate-600 border-r border-slate-100 max-w-[150px] truncate" title="{{ $data->kesimpulan }}">
                                                 {{ $data->kesimpulan ?? '-' }}
                                             </td>
-
                                             <td class="px-3 py-2 text-center">
                                                 <button wire:click="edit({{ $data->id }})" class="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-600 hover:text-white mr-1 transition-colors"><i class="fas fa-pen text-[10px]"></i></button>
                                                 <button onclick="confirm('Hapus data ini?') || event.stopImmediatePropagation()" wire:click="delete({{ $data->id }})" class="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-600 hover:text-white transition-colors"><i class="fas fa-trash text-[10px]"></i></button>
@@ -186,7 +178,11 @@
                             </tbody>
                         </table>
                     </div>
-                    @if ($paginator->hasPages()) <div class="mt-3">{{ $paginator->links() }}</div> @endif
+                    
+                    {{-- TOMBOL PAGINATION DITAMPILKAN DI SINI --}}
+                    @if ($paginator->hasPages()) 
+                        <div class="mt-4">{{ $paginator->links() }}</div> 
+                    @endif
                 @else
                     <div class="bg-slate-50 py-8 text-center rounded-xl border border-slate-100 text-xs font-bold text-slate-500">Tidak ada data ditemukan.</div>
                 @endif
@@ -198,14 +194,9 @@
          4. MODAL EDIT & TAMBAH LOKASI
          ========================================== --}}
     @if ($isAddingNewLocation || $isEditing)
-    {{-- fixed inset-0: Modal akan menutupi seluruh layar (overlay) --}}
-    {{-- z-[100]: Memastikan modal berada di lapisan paling atas dari elemen lain --}}
     <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm overflow-y-auto flex items-center justify-center z-[100] p-3 animate-fade-in">
-        
-        {{-- max-w-xl: Lebar maksimal modal dibatasi agar tidak memanjang merusak estetika --}}
         <div class="bg-white w-full max-w-xl mx-auto rounded-2xl shadow-2xl overflow-hidden"> 
             
-            {{-- Header Modal --}}
             <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="text-base font-black text-slate-800 flex items-center">
                     <i class="fas {{ $isEditing ? 'fa-edit text-blue-500' : 'fa-plus-circle text-emerald-500' }} mr-2"></i> 
@@ -216,11 +207,9 @@
                 </button>
             </div>
 
-            {{-- Body Modal (Form) --}}
             <div class="p-5 max-h-[65vh] overflow-y-auto custom-scrollbar">
                 <form wire:submit.prevent="{{ $isEditing ? 'update' : 'saveNewLocation' }}" class="space-y-5">
                     
-                    {{-- Blok Info Dasar Lokasi --}}
                     <div class="grid grid-cols-2 gap-4"> 
                         @if($isEditing)
                             <div>
@@ -245,7 +234,6 @@
                                 <input type="text" wire:model.defer="editingData.lokasi" class="w-full rounded-xl border-slate-200 text-xs p-2.5 focus:border-blue-500">
                             </div>
                         @else
-                            {{-- Jika Tambah Titik Baru, data Area & Dept mewarisi data induk, jadi dikunci (disabled) --}}
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Departemen</label>
                                 <input type="text" value="{{ $departments->find($newLocationData['departemens_id'])->nama_departemen ?? '-' }}" disabled class="w-full bg-slate-50 text-slate-500 rounded-xl border-slate-200 text-xs p-2.5">
@@ -265,7 +253,6 @@
                         @endif
                     </div>
 
-                    {{-- Blok Batas NAB --}}
                     <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
                         <h4 class="text-[10px] font-bold text-amber-700 uppercase mb-3"><i class="fas fa-exclamation-triangle mr-1"></i> Batas NAB (Nilai Ambang Batas)</h4>
                         <div class="grid grid-cols-4 gap-3">
@@ -278,7 +265,6 @@
                         </div>
                     </div>
 
-                    {{-- GROUP 3: Hasil Pengukuran Aktual (Grid yang lebih rapat) --}}
                     <div>
                         <h4 class="text-[10px] font-bold text-slate-600 uppercase mb-2"><i class="fas fa-clipboard-list mr-1"></i> Hasil Ukur Aktual</h4>
                         <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
@@ -290,23 +276,15 @@
                             @endforeach
                         </div>
 
-                        {{-- ===================================== --}}
-                        {{-- TAMBAHAN: INPUT EDIT KESIMPULAN --}}
-                        {{-- ===================================== --}}
                         <div class="mt-4">
                             <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Kesimpulan / Rekomendasi (Opsional)</label>
                             <textarea rows="2" wire:model.defer="{{ $isEditing ? 'editingData.kesimpulan' : 'newLocationData.kesimpulan' }}" class="w-full rounded-xl border-slate-200 text-xs p-3 focus:border-blue-500 shadow-sm resize-none" placeholder="Tuliskan catatan atau rekomendasi di titik ini..."></textarea>
                         </div>
-                        {{-- ===================================== --}}
-                        
                     </div>
                 </form>
             </div>
 
-            {{-- Footer Modal (Area Tombol Aksi) --}}
             <div class="px-5 py-4 border-t border-slate-100 bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-3">
-                
-                {{-- TOMBOL SHORTCUT TAMBAH LOKASI (Hanya Muncul Saat Edit Mode) --}}
                 <div class="w-full md:w-auto">
                     @if($isEditing)
                         <button type="button" wire:click="startAddLocation" class="w-full md:w-auto px-4 py-2 bg-emerald-100 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 text-xs font-bold rounded-xl transition-colors text-left md:text-center">
@@ -315,26 +293,18 @@
                     @endif
                 </div>
 
-                {{-- TOMBOL BATAL & SIMPAN --}}
                 <div class="flex w-full md:w-auto gap-2">
                     <button type="button" wire:click="{{ $isEditing ? 'cancelEdit' : 'cancelAddLocation' }}" class="flex-1 md:flex-none px-5 py-2 border border-slate-300 text-xs font-bold rounded-xl text-slate-600 bg-white hover:bg-slate-100 transition-colors">Batal</button>
                     <button type="button" wire:click="{{ $isEditing ? 'update' : 'saveNewLocation' }}" class="flex-1 md:flex-none px-6 py-2 text-xs font-bold rounded-xl text-white bg-slate-800 hover:bg-slate-700 shadow-md transition-colors">Simpan Data</button>
                 </div>
-                
             </div>
         </div>
     </div>
     @endif
-
-    @if ($paginator->hasPages()) 
-        <div class="mt-3">{{ $paginator->links() }}</div> 
-    @endif
     
-    {{-- Menyembunyikan scrollbar bawaan browser agar tabel terlihat lebih bersih --}}
     <style>
         .hide-scrollbar::-webkit-scrollbar{display:none;}
         .animate-fade-in { animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
-    
 </div>

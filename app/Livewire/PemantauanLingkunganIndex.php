@@ -15,17 +15,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class PemantauanLingkunganIndex extends Component
 {
-    use WithPagination; // Aktifkan pagination untuk tabel
+    use WithPagination;
     
-    // Properti utama untuk menampung semua data
     public $pemantauanLingkungan;
 
-    // --- Properti Filter Baru ---
     public $filterArea = '';
     public $filterDepartemen = '';
     public $filterUnitKerja = '';
 
-    // Properti untuk mengelola status edit/tambah
     public $isEditing = false;
     public $isAddingNewLocation = false; 
 
@@ -33,64 +30,53 @@ class PemantauanLingkunganIndex extends Component
     public $editingData = [];
     public $newLocationData = [];
 
-    // Data Departemen dan Unit Kerja (diambil dari Model)
     public $departments;
     public $unitKerjas;
     public $availableUnitsEdit = []; 
     public $availableUnitsNew = []; 
     
-    // Properti untuk daftar nilai unik Area
     public $uniqueAreas;
 
-    // Menambahkan $listeners untuk memastikan Unit Kerja diperbarui
     protected $listeners = ['departemenFilterUpdated' => 'applyDepartemenFilter'];
 
-    // --- Properti Filter NAB Baru ---
-    public $filterNabCahaya = ''; // 'below', 'above'
+    public $filterNabCahaya = ''; 
     public $filterNabBising = ''; 
     public $filterNabDebu = '';
-    public $filterNabSuhuIsbb = ''; // Menggabungkan ISBB Indoor dan Outdoor
+    public $filterNabSuhuIsbb = ''; 
 
-    // --- Properti Filter Tanggal & Pencarian ---
     public $searchQuery = '';
     public $startDate = '';
     public $endDate = '';
 
-    // Reset paginasi jika filter diketik/diubah
     public function updatingSearchQuery() { $this->resetPage(); }
     public function updatingStartDate() { $this->resetPage(); }
     public function updatingEndDate() { $this->resetPage(); }
     public function updatingFilterDepartemen() { $this->resetPage(); }
     public function updatingFilterArea() { $this->resetPage(); }
 
-    // Lifecycle hook to handle Department change in EDIT modal
     public function updatedEditingDataDepartemensId($value) 
     {
         $this->editingData['unit_kerjas_id'] = null; 
         $this->availableUnitsEdit = UnitKerja::where('departemens_id', $value)->get()->toArray(); 
     }
     
-    // Lifecycle hook to handle Department change in NEW LOCATION modal
     public function updatedNewLocationDataDepartemensId($value) 
     {
         $this->newLocationData['unit_kerjas_id'] = null; 
         $this->availableUnitsNew = UnitKerja::where('departemens_id', $value)->get()->toArray(); 
     }
 
-    // --- Logika Filter Unit Kerja (khusus di modal) ---
     public function updatedFilterDepartemen($value)
     {
-        // Reset Unit Kerja saat Departemen Filter berubah
         $this->filterUnitKerja = ''; 
     }
 
-    // --- FUNGSI BARU UNTUK MERESET SEMUA FILTER SECARA EKSPLISIT ---
     public function resetFilters()
     {
         $this->reset([
             'filterArea', 'filterDepartemen', 'filterUnitKerja', 
             'filterNabCahaya', 'filterNabBising', 'filterNabDebu', 'filterNabSuhuIsbb',
-            'searchQuery', 'startDate', 'endDate' // Tambahan baru
+            'searchQuery', 'startDate', 'endDate'
         ]);
         $this->resetPage();
     }
@@ -109,14 +95,12 @@ class PemantauanLingkunganIndex extends Component
         $dataValue = $data->data_pemantauan[$dataKey] ?? null;
         $nabValue = null;
 
-        // Ambil nilai NAB dari database
         if ($nabKey === 'nab_cahaya') {
             $nabValue = $data->nab_cahaya;
         } elseif ($nabKey === 'nab_bising') {
             $nabValue = $data->nab_bising;
         } elseif ($nabKey === 'nab_debu') {
             $nabString = $data->nab_debu;
-            // Hanya ambil angka pertama dari string nab_debu (misal dari "10 mg/Nm3" jadi 10)
             $matches = [];
             if (preg_match('/^(\d+(\.\d+)?)/', $nabString, $matches)) {
                 $nabValue = (float)$matches[1];
@@ -128,58 +112,42 @@ class PemantauanLingkunganIndex extends Component
             }
         }
         
-        // PENTING: MENGEMBALIKAN STATUS BAHAYA (TRUE = Merah, FALSE = Aman)
         if (is_numeric($dataValue) && is_numeric($nabValue) && $nabValue > 0) {
-            
-            // 🌟 ATURAN KHUSUS CAHAYA: Bahaya jika DI BAWAH batas minimal NAB
             if ($dataKey === 'cahaya') {
                 return $dataValue < $nabValue;
             }
-            
-            // 🌟 ATURAN DEFAULT (Bising, Debu, Suhu): Bahaya jika DI ATAS batas maksimal NAB
             return $dataValue > $nabValue; 
         }
 
-        return false; // Jika data kosong, anggap aman agar tidak error
+        return false;
     }
 
     public function mount()
     {
-        // Load data master untuk dropdown dan filter
         $this->departments = Departemen::all();
         $this->unitKerjas = UnitKerja::all();
-        
-        // Memuat semua area unik saat mount
         $this->uniqueAreas = PemantauanLingkungan::distinct()->pluck('area')->sort()->toArray();
 
-        // KRITIS: Cek query string untuk filter dari Dashboard
         if (request()->has('filterArea')) {
             $this->filterArea = request()->query('filterArea');
-            // Flash message opsional untuk memberi tahu filter telah diterapkan
             session()->flash('message', 'Filter Area "' . $this->filterArea . '" otomatis diterapkan dari Dashboard karena melampaui NAB.');
         }
     }
 
     public function downloadExcel()
     {
-        // Untuk fungsi ini, kita harus mengambil data berdasarkan filter yang aktif
-        $dataToExport = $this->applyFilters(PemantauanLingkungan::query()); // applyFilters sekarang mengembalikan Collection
-        
-        // Tidak perlu lagi ->get() karena applyFilters sudah mengembalikan Collection
+        $dataToExport = $this->applyFilters(PemantauanLingkungan::query()); 
         return Excel::download(new PemantauanLingkunganExport($dataToExport), 'LaporanPemantauanLingkungan_' . Carbon::now()->format('Ymd_His') . '.xlsx');
     }
 
-    // --- Metode Baru untuk Menerapkan Filter Query ---
     protected function applyFilters($query)
     {
         $query->with(['departemen', 'unitKerja']);
 
-        // Filter Pencarian (Cari berdasarkan Lokasi)
         if ($this->searchQuery) {
             $query->where('lokasi', 'like', '%' . $this->searchQuery . '%');
         }
 
-        // Filter Rentang Waktu (Date Range)
         if ($this->startDate && $this->endDate) {
             $query->whereBetween('tanggal_pemantauan', [$this->startDate, $this->endDate]);
         } elseif ($this->startDate) {
@@ -188,7 +156,6 @@ class PemantauanLingkunganIndex extends Component
             $query->whereDate('tanggal_pemantauan', '<=', $this->endDate);
         }
 
-        // Filter Dropdown Lama
         if ($this->filterArea) {
             $query->where('area', $this->filterArea);
         }
@@ -201,52 +168,33 @@ class PemantauanLingkunganIndex extends Component
         
         $allData = $query->latest('tanggal_pemantauan')->get();
 
-        if ($this->filterArea) {
-            $query->where('area', $this->filterArea);
-        }
-
-        if ($this->filterDepartemen) {
-            $query->where('departemens_id', $this->filterDepartemen);
-        }
-
-        if ($this->filterUnitKerja) {
-            $query->where('unit_kerjas_id', $this->filterUnitKerja);
-        }
-
-        // 2. Filter Collection berdasarkan status NAB
         $filteredData = $allData->filter(function ($data) {
-            $cahayaStatus = $this->checkNabStatus($data, 'cahaya', 'nab_cahaya'); // true = di atas NAB
+            $cahayaStatus = $this->checkNabStatus($data, 'cahaya', 'nab_cahaya'); 
             $bisingStatus = $this->checkNabStatus($data, 'bising', 'nab_bising');
             $debuStatus = $this->checkNabStatus($data, 'debu', 'nab_debu');
             
-            // ISBB Indoor atau Outdoor > NAB Suhu
             $isbbIndoorStatus = $this->checkNabStatus($data, 'isbb_indoor', 'nab_suhu');
             $isbbOutdoorStatus = $this->checkNabStatus($data, 'isbb_outdoor', 'nab_suhu');
-            $isbbStatus = $isbbIndoorStatus || $isbbOutdoorStatus; // true jika salah satu ISBB di atas NAB
+            $isbbStatus = $isbbIndoorStatus || $isbbOutdoorStatus; 
 
-            // Logika Filter Cahaya
             if ($this->filterNabCahaya === 'above' && !$cahayaStatus) return false;
             if ($this->filterNabCahaya === 'below' && $cahayaStatus) return false;
             
-            // Logika Filter Bising
             if ($this->filterNabBising === 'above' && !$bisingStatus) return false;
             if ($this->filterNabBising === 'below' && $bisingStatus) return false;
 
-            // Logika Filter Debu
             if ($this->filterNabDebu === 'above' && !$debuStatus) return false;
             if ($this->filterNabDebu === 'below' && $debuStatus) return false;
             
-            // Logika Filter Suhu/ISBB
             if ($this->filterNabSuhuIsbb === 'above' && !$isbbStatus) return false;
             if ($this->filterNabSuhuIsbb === 'below' && $isbbStatus) return false;
             
             return true;
         });
 
-        return $filteredData; // Kembalikan Collection yang sudah difilter
+        return $filteredData; 
     }
 
-    // Metode Edit, SaveNewLocation, Update, Cancel, Delete tetap sama
     public function edit($id)
     {
         $data = PemantauanLingkungan::find($id);
@@ -255,7 +203,6 @@ class PemantauanLingkunganIndex extends Component
             $this->isEditing = true;
             $this->editingDataId = $id;
             
-            // PENGAMANAN DATA JSON
             $dataPemantauanAsli = is_string($data->data_pemantauan) ? json_decode($data->data_pemantauan, true) : $data->data_pemantauan;
             $dataPemantauanAman = is_array($dataPemantauanAsli) ? array_merge($this->getDefaultPemantauanData(), $dataPemantauanAsli) : $this->getDefaultPemantauanData();
             
@@ -265,10 +212,7 @@ class PemantauanLingkunganIndex extends Component
                 'unit_kerjas_id' => $data->unit_kerjas_id, 
                 'area' => $data->area,
                 'lokasi' => $data->lokasi,
-                
-                // PENGAMANAN TANGGAL
                 'tanggal_pemantauan' => $data->tanggal_pemantauan ? Carbon::parse($data->tanggal_pemantauan)->format('Y-m-d') : '',
-                
                 'data_pemantauan' => $dataPemantauanAman,
                 'nab_cahaya' => $data->nab_cahaya,
                 'nab_bising' => $data->nab_bising,
@@ -295,12 +239,10 @@ class PemantauanLingkunganIndex extends Component
                 'area' => $this->editingData['area'],
                 'tanggal_pemantauan' => $this->editingData['tanggal_pemantauan'],
                 'lokasi' => '',
-                
                 'nab_cahaya' => $this->editingData['nab_cahaya'],
                 'nab_bising' => $this->editingData['nab_bising'],
                 'nab_debu' => $this->editingData['nab_debu'],
                 'nab_suhu' => $this->editingData['nab_suhu'], 
-                
                 'pemantauan' => $this->getDefaultPemantauanData(), 
                 'kesimpulan' => null,
             ];
@@ -427,7 +369,6 @@ class PemantauanLingkunganIndex extends Component
     {
         $filteredCollection = $this->applyFilters(PemantauanLingkungan::query());
         
-        // 1. Hitung Data untuk Summary Cards
         $totalData = $filteredCollection->count();
         $lokasiBahaya = 0;
         foreach ($filteredCollection as $data) {
@@ -437,7 +378,7 @@ class PemantauanLingkunganIndex extends Component
         }
         $lokasiAman = $totalData - $lokasiBahaya;
 
-        // 2. Paginasi Manual untuk Collection (15 Data per halaman)
+        // 🌟 PEMBATASAN DATA (PAGINATION)
         $perPage = 15;
         $page = $this->getPage();
         $paginatedItems = new LengthAwarePaginator(
@@ -448,7 +389,6 @@ class PemantauanLingkunganIndex extends Component
             ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
         );
 
-        // 3. Grouping data yang SUDAH di-paginate
         $pemantauanLingkunganGrouped = collect($paginatedItems->items())->groupBy('area');
 
         $filteredUnits = $this->unitKerjas;
@@ -458,7 +398,7 @@ class PemantauanLingkunganIndex extends Component
 
         return view('livewire.pemantauan-lingkungan-index', [
             'pemantauanLingkunganGrouped' => $pemantauanLingkunganGrouped,
-            'paginator' => $paginatedItems, // Kirim paginator ke view
+            'paginator' => $paginatedItems, 
             'totalData' => $totalData,
             'lokasiAman' => $lokasiAman,
             'lokasiBahaya' => $lokasiBahaya,
