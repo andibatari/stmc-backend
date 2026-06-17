@@ -89,14 +89,21 @@ class AuthController extends Controller
         $user = $request->user('sanctum');
 
         if ($user) {
-            // 🌟 3. Hapus FCM Token saat Logout agar HP tidak bunyi jika akun sudah keluar
-            if ($user instanceof EmployeeLogin && $user->karyawan) {
-                $user->karyawan->update(['fcm_token' => null]);
-            } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
-                $user->pasien->update(['fcm_token' => null]);
+            try {
+                // 🌟 1. Hapus FCM Token dengan metode query yang lebih pasti
+                if ($user instanceof EmployeeLogin && $user->karyawan) {
+                    // Gunakan update() langsung pada relasi agar lebih efisien & pasti tersimpan
+                    $user->karyawan()->update(['fcm_token' => null]);
+                    Log::info("Logout: Token Karyawan ID {$user->karyawan->id} telah dihapus.");
+                } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
+                    $user->pasien()->update(['fcm_token' => null]);
+                    Log::info("Logout: Token Pasien ID {$user->pasien->id} telah dihapus.");
+                }
+            } catch (\Exception $e) {
+                Log::error("Error saat menghapus FCM Token saat logout: " . $e->getMessage());
             }
 
-            // Hapus session login
+            // 🌟 2. Hapus session login (Sanctum Token)
             if ($user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
             }
@@ -104,7 +111,7 @@ class AuthController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Berhasil logout'
+            'message' => 'Berhasil logout dan token dibersihkan'
         ]);
     }
 
