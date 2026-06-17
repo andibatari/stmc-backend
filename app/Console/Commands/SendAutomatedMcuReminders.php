@@ -54,7 +54,7 @@ class SendAutomatedMcuReminders extends Command
         $successCount = 0;
         
         // 🌟 LINK GAMBAR BANNER (Bisa kamu ganti nanti dengan gambar aslimu)
-        $bannerUrl = asset('public/images/bannerWajibPuasa.jpg');
+        $bannerUrl = 'https://imgur.com/a/FY7RhPV';
 
         foreach ($jadwalTarget as $jadwal) {
             
