@@ -223,7 +223,7 @@
                             </button>
                             <ul id="submenuLingkungan" class="sub-menu pl-11 pr-2 mt-1 space-y-1 {{ request()->routeIs('pemantauan.*') ? 'block' : 'hidden' }}">
                                 <li>
-                                    <a href="{{ route('pemantauan.index') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('pemantauan.index') ? 'active' : '' }}">Pemantauan NAB</a>
+                                    <a href="{{ route('pemantauan.index') }}" class="block py-2 text-sm text-brand-200 {{ request()->routeIs('pemantauan.index') ? 'active' : '' }}">Monitoring Area</a>
                                 </li>
                             </ul>
                         </li>
