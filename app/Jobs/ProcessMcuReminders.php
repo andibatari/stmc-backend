@@ -52,13 +52,16 @@ class ProcessMcuReminders implements ShouldQueue
                     . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
                     
                 $actionLink = 'route:/informasi-mcu';
+                // 🌟 Ambil identitas unik user
+                $recipientSap = $targetUser->no_sap ?? $targetUser->nik_karyawan ?? $targetUser->nik_pasien ?? 'ALL';
 
                 try {
                     $statusFCM = FCMService::sendPushNotification(
                         $targetUser->fcm_token,
                         $title,
                         $body,
-                        $actionLink 
+                        $actionLink,
+                        $recipientSap // 🌟 Masukkan ke parameter baru
                     );
 
                     if ($statusFCM) {

@@ -71,7 +71,6 @@ class ProcessSubmissionReminders implements ShouldQueue
                 continue;
             }
 
-            // --- PROSES PENGIRIMAN EMAIL ---
             if ($email) {
                 try {
                     Mail::to($email)->send(new SubmissionReminderMail($userTarget, $this->notificationLog->scheduled_date));
@@ -82,7 +81,6 @@ class ProcessSubmissionReminders implements ShouldQueue
                 }
             }
 
-            // --- PROSES PENGIRIMAN FCM ---
             if ($fcmToken) {
                 try {
                     $nama = $userTarget->nama_karyawan ?? $userTarget->nama_lengkap ?? 'Karyawan';
@@ -95,12 +93,15 @@ class ProcessSubmissionReminders implements ShouldQueue
                           . "Klik tombol di bawah ini untuk memilih jadwal ya! 👇";
                           
                     $actionLink = 'route:/pengajuan-mcu'; 
+                    // 🌟 Ambil identitas unik user
+                    $recipientSap = $userTarget->no_sap ?? $userTarget->nik_karyawan ?? $userTarget->nik_pasien ?? 'ALL';
 
                     $statusFCM = \App\Services\FCMService::sendPushNotification(
                         $fcmToken,
                         $title,
                         $body,
-                        $actionLink
+                        $actionLink,
+                        $recipientSap // 🌟 Masukkan ke parameter baru
                     );
 
                     if ($statusFCM) {
@@ -115,7 +116,6 @@ class ProcessSubmissionReminders implements ShouldQueue
             }
         }
 
-        // --- PEMBARUAN LOG ---
         try {
             $this->notificationLog->update([
                 'email_success' => $successEmailCount,

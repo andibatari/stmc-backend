@@ -14,9 +14,6 @@ use Carbon\Carbon;
 
 class NotificationDashboard extends Component
 {
-    // ==========================================
-    // PROPERTI TAB 1: PENGUMUMAN BEBAS (BROADCAST)
-    // ==========================================
     public $broadcastTitle = '';
     public $broadcastMessage = '';
     public $broadcastTargetType = 'all'; 
@@ -27,9 +24,6 @@ class NotificationDashboard extends Component
     public $employeeSearchResults = [];
     public $selectedIndividualEmployees = []; 
 
-    // ==========================================
-    // PROPERTI TAB 2: PENGINGAT MCU 
-    // ==========================================
     public $filterDate = 'tomorrow'; 
     public $specificDate;
     public $searchQuery = ''; 
@@ -55,9 +49,6 @@ class NotificationDashboard extends Component
         $this->loadData();
     }
 
-    // ==========================================
-    // FUNGSI PENCARIAN (GABUNGAN UNTUK BROADCAST)
-    // ==========================================
     public function updatedSearchEmployeeQuery()
     {
         if (strlen($this->searchEmployeeQuery) >= 2) {
@@ -107,9 +98,6 @@ class NotificationDashboard extends Component
         $this->selectedIndividualEmployees = [];
     }
 
-    // ==========================================
-    // FUNGSI KIRIM BROADCAST
-    // ==========================================
     public function sendBroadcast()
     {
         $this->validate([
@@ -152,14 +140,19 @@ class NotificationDashboard extends Component
             return;
         }
 
-        $uniqueTokens = $targets->pluck('fcm_token')->filter()->unique();
+        // 🌟 PERBAIKAN: Bersihkan token ganda, kirim unik berdasarkan token perangkat
+        $uniqueTargets = $targets->unique('fcm_token');
 
-        foreach ($uniqueTokens as $token) {
+        foreach ($uniqueTargets as $target) {
+            // Jika tipe broadcast individual, kita tahu SAP-nya, jika massal kita set 'ALL'
+            $recipientSap = ($this->broadcastTargetType === 'individual') ? ($target->no_sap ?? $target->nik_karyawan ?? $target->nik_pasien ?? 'ALL') : 'ALL';
+
             $statusFCM = \App\Services\FCMService::sendPushNotification(
-                $token, 
+                $target->fcm_token, 
                 $this->broadcastTitle, 
                 $this->broadcastMessage, 
-                $this->broadcastLink
+                $this->broadcastLink,
+                $recipientSap // 🌟 Masukkan parameter penerima
             );
             
             if ($statusFCM) {
@@ -181,9 +174,6 @@ class NotificationDashboard extends Component
         $this->broadcastTargetType = 'individual';
     }
     
-    // ==========================================
-    // FUNGSI TAB 2: PENGINGAT MCU (KEMBALI KE KARYAWAN ONLY)
-    // ==========================================
     public function loadData()
     {
         if ($this->notificationMode === 'scheduled') {
@@ -203,7 +193,6 @@ class NotificationDashboard extends Component
         elseif ($this->filterDate === 'specific' && $this->specificDate) $targetDate = Carbon::parse($this->specificDate)->toDateString();
         
         if ($targetDate) {
-            // Revert: Hanya narik Karyawan
             $query = JadwalMcu::with(['karyawan', 'karyawan.departemen']) 
                 ->whereDate('tanggal_mcu', $targetDate)
                 ->whereIn('status', ['Scheduled', 'Present']);
@@ -212,8 +201,8 @@ class NotificationDashboard extends Component
                 $searchTerm = '%' . $this->searchQuery . '%';
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('nama_pasien', 'like', $searchTerm)
-                      ->orWhere('no_sap', 'like', $searchTerm)
-                      ->orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
+                      .orWhere('no_sap', 'like', $searchTerm)
+                      .orWhereHas('karyawan', function ($qKar) use ($searchTerm) {
                           $qKar->where('nama_karyawan', 'like', $searchTerm)->orWhere('no_sap', 'like', $searchTerm);
                       });
                 });
@@ -235,11 +224,9 @@ class NotificationDashboard extends Component
         
         $karyawanQuery = Karyawan::with('departemen')->where('departemens_id', $this->filterDepartemenId);
 
-        // ---- Tambahan Query Unit Kerja ----
         if ($this->filterUnitKerjaId) {
-            $karyawanQuery->where('unit_kerja_id', $this->filterUnitKerjaId); // Sesuaikan dengan nama kolom di database kamu
+            $karyawanQuery->where('unit_kerja_id', $this->filterUnitKerjaId); 
         }
-        // ------------------------------------
 
         $recentJadwalKaryawanIds = JadwalMcu::whereNotNull('karyawan_id')
             ->whereDate('tanggal_mcu', '>=', Carbon::now()->subYears(1))
@@ -263,25 +250,18 @@ class NotificationDashboard extends Component
     public function updatedFilterDate() { $this->loadData(); }
     public function updatedSpecificDate() { $this->loadData(); }
     public function updatedSearchQuery() { $this->loadData(); }
-    // 2. Tambahkan metode untuk me-reset unit kerja ketika departemen diganti
     public function updatedFilterDepartemenId() 
     { 
         $this->filterUnitKerjaId = '';
-        
-        // (Opsional) Jika kamu punya Model UnitKerja yang berelasi dengan Departemen:
-        // $this->unitKerjaOptions = \App\Models\UnitKerja::where('departemen_id', $this->filterDepartemenId)->get();
-        
         $this->loadData(); 
     }
 
-    // 3. Tambahkan trigger saat unit kerja berubah
     public function updatedFilterUnitKerjaId() { $this->loadData(); }
 
-    // 4. Update method updatedNotificationMode() untuk reset Unit Kerja juga
     public function updatedNotificationMode() { 
         $this->filterDepartemenId = ''; 
-        $this->filterUnitKerjaId = ''; // Tambahan
-        $this->unitKerjaOptions = [];  // Tambahan
+        $this->filterUnitKerjaId = ''; 
+        $this->unitKerjaOptions = [];  
         $this->loadData(); 
     }
 
@@ -314,7 +294,6 @@ class NotificationDashboard extends Component
         $this->loadData();
     }
 
-    // 🌟 FUNGSI BARU 1: Otomatis jalan saat Checkbox Master diklik
     public function updatedSelectAll($value)
     {
         if ($value) {
@@ -324,10 +303,8 @@ class NotificationDashboard extends Component
         }
     }
 
-    // 🌟 FUNGSI BARU 2: Otomatis jalan saat Checkbox Karyawan diklik satu-satu
     public function updatedSelectedRecipients()
     {
-        // Mengecek apakah jumlah karyawan yang dicentang sama dengan total data
         $this->selectAll = count($this->selectedRecipients) === $this->jadwalsToNotify->count() && $this->jadwalsToNotify->count() > 0;
     }
 

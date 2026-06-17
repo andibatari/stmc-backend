@@ -8,7 +8,8 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FCMService
 {
-    public static function sendPushNotification($fcmToken, $title, $body, $link = null)
+    // 🌟 PERBAIKAN: Tambahkan parameter $recipientSap untuk validasi kepemilikan perangkat di mobile
+    public static function sendPushNotification($fcmToken, $title, $body, $link = null, $recipientSap = null)
     {
         try {
             $credentialsPath = storage_path('app/firebase_credentials.json');
@@ -28,8 +29,9 @@ class FCMService
                     'body' => $body,
                 ],
                 'data' => [
-                    // 🌟 PERBAIKAN: Ubah menjadi action_link agar terbaca oleh navigasi Flutter
+                    'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     'action_link' => $link ?? '', 
+                    'recipient_sap' => $recipientSap ?? 'ALL', // 🌟 Dikirim ke Flutter
                 ],
                 'android' => [
                     'priority' => 'high',
