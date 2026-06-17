@@ -106,6 +106,12 @@
                         </div>
                         @endforeach
                     </div>
+
+                    {{-- 🌟 TAMBAHAN: KETERANGAN HINT DATA TERBARU DI WEB --}}
+                    <div class="mt-4 pt-3 border-t border-slate-200 flex items-center gap-2 text-slate-500 text-[10px] md:text-xs font-medium italic">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                        <span>Data yang ditampilkan secara default adalah data terbaru. Untuk melihat atau mencari data lampau, silakan gunakan filter rentang tanggal di atas.</span>
+                    </div>
                 </div>
 
                 {{-- 3. TABEL DATA PEMANTAUAN --}}
