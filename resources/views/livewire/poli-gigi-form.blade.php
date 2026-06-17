@@ -218,10 +218,10 @@
                         <span class="flex items-center justify-center w-5 h-5 bg-red-600 border border-red-700 text-white rounded mr-2 text-[12px]">O</span> <span class="text-red-700">Berlubang (Caries)</span>
                     </div>
                     <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
-                        <span class="flex items-center justify-center w-5 h-5 bg-emerald-500 border border-emerald-600 text-white rounded mr-2 text-[12px]">T</span> <span class="text-emerald-700">Ditambal</span>
+                        <span class="flex items-center justify-center w-5 h-5 bg-slate-500 border border-slate-600 text-white rounded mr-2 text-[12px]">X</span> <span class="text-slate-700">Hilang / Cabut</span>
                     </div>
                     <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
-                        <span class="flex items-center justify-center w-5 h-5 bg-slate-500 border border-slate-600 text-white rounded mr-2 text-[12px]">X</span> <span class="text-slate-700">Hilang / Cabut</span>
+                        <span class="flex items-center justify-center w-5 h-5 bg-emerald-500 border border-emerald-600 text-white rounded mr-2 text-[12px]">T</span> <span class="text-emerald-700">Ditambal</span>
                     </div>
                 </div>
             </div>
