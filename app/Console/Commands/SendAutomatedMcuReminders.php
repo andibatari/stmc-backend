@@ -18,7 +18,8 @@ class SendAutomatedMcuReminders extends Command
     public function handle()
     {
         // 1. Cek Jam Server (Test Mode: 19)
-        $jamSekarang = 19;
+        // $jamSekarang = 19;
+        $jamSekarang = Carbon::now()->hour;
 
         // 2. Tentukan Tanggal Target & Teks
         if ($jamSekarang == 19) {
