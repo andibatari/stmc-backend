@@ -112,7 +112,7 @@
         <h3 class="text-base font-black mb-1 flex items-center text-slate-800"><i class="fas fa-calendar-check text-blue-500 mr-2"></i> Pengingat Manual</h3>
         
         <div class="bg-slate-50 p-3 md:p-4 rounded-xl border border-slate-100 mb-4 mt-3">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
                 <div class="col-span-2 md:col-span-1">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mode Notifikasi</label>
                     <select wire:model.live="notificationMode" class="block w-full bg-white border-slate-200 rounded-lg shadow-sm p-2 text-xs font-bold cursor-pointer focus:border-blue-500 focus:ring-blue-500">
@@ -138,6 +138,7 @@
                     @else
                         <div class="col-span-1 hidden md:block"></div>
                     @endif
+                    <div class="col-span-1 hidden md:block"></div>
                 @elseif ($notificationMode === 'submission')
                     <div class="col-span-1">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Departemen</label>
@@ -183,10 +184,11 @@
                 <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
                     <tr>
                         <th class="px-3 py-2 text-center w-10">
+                            {{-- 🌟 PERBAIKAN: Gunakan wire:model.live untuk checkbox Master --}}
                             <input type="checkbox" 
-                                @if($jadwalsToNotify->isNotEmpty()) wire:click="toggleSelectAll" @endif
-                                @checked(count($selectedRecipients) === $jadwalsToNotify->count() && $jadwalsToNotify->count() > 0) 
-                                class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer">
+                                wire:model.live="selectAll"
+                                @if($jadwalsToNotify->isEmpty()) disabled @endif
+                                class="rounded border-slate-300 text-blue-600 shadow-sm focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer disabled:opacity-50">
                         </th>
                         <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Karyawan</th>
                         <th class="px-3 py-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">Departemen</th>

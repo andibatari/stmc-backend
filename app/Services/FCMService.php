@@ -21,7 +21,6 @@ class FCMService
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            // 🌟 Payload bersih tanpa gambar
             $messagePayload = [
                 'token' => $fcmToken,
                 'notification' => [
@@ -30,7 +29,8 @@ class FCMService
                 ],
                 'data' => [
                     'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
-                    'link' => $link ?? '', 
+                    // 🌟 PERBAIKAN: Ubah menjadi action_link agar terbaca oleh navigasi Flutter
+                    'action_link' => $link ?? '', 
                 ],
                 'android' => [
                     'priority' => 'high',

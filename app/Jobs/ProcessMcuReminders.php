@@ -27,7 +27,6 @@ class ProcessMcuReminders implements ShouldQueue
 
     public function handle()
     {
-        // 🌟 PERBAIKAN 1: Ambil relasi karyawan DAN peserta_mcu (Pasien Umum)
         $jadwals = JadwalMcu::whereIn('id', $this->recipientIds)
                     ->with(['karyawan', 'pesertaMcu'])
                     ->get();
@@ -43,7 +42,6 @@ class ProcessMcuReminders implements ShouldQueue
                 Carbon::setLocale('id'); 
                 $tanggal = Carbon::parse($jadwal->tanggal_mcu)->translatedFormat('l, d F Y');
 
-                // Menyesuaikan dengan format SendAutomatedMcuReminders
                 $title = "⏰ Pengingat: Jadwal MCU Anda!";
                 $body = "Halo, {$nama}! 👋\n"
                     . "Kami mengingatkan bahwa pada {$tanggal} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
@@ -60,7 +58,7 @@ class ProcessMcuReminders implements ShouldQueue
                         $targetUser->fcm_token,
                         $title,
                         $body,
-                        $actionLink // Menambahkan parameter action link
+                        $actionLink 
                     );
 
                     if ($statusFCM) {
@@ -72,7 +70,6 @@ class ProcessMcuReminders implements ShouldQueue
             }
         }
 
-        // Update tabel riwayat log dengan jumlah yang berhasil dikirim
         $this->log->update([
             'fcm_success' => $fcmSuccessCount
         ]);
