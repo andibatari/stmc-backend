@@ -28,7 +28,7 @@ class SendAutomatedMcuReminders extends Command
             $targetTanggal = Carbon::tomorrow()->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == '10:19') {
+        } elseif ($jamSekarang == '10:22') {
             $targetTanggal = Carbon::today()->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
@@ -89,7 +89,7 @@ class SendAutomatedMcuReminders extends Command
                 'total_targets' => $jadwalTarget->count(),
                 'fcm_success' => $successCount,
                 'email_success' => 0,
-                'admin_users_id' => 1, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
+                // 'admin_users_id' => 1nu, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
             ]);
         } catch (\Exception $e) {
             // Jika gagal simpan, catat error-nya di storage/logs/laravel.log
