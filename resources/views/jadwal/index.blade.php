@@ -123,6 +123,23 @@
                         </a>
                     </div>
                 </div>
+                {{-- 🌟 TAMBAHAN: BARIS KONTROL DROPDOWN PAGINASI --}}
+                <div class="mt-4 pt-3 border-t border-slate-200 flex justify-between items-center px-1">
+                    <div class="text-xs font-bold text-slate-500">
+                        Total: <span class="text-red-600">{{ $jadwals->total() }}</span> Jadwal
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-medium">Tampilkan</span>
+                        {{-- Dropdown ini akan otomatis men-submit form filter di atasnya saat diubah --}}
+                        <select name="per_page" id="per_page" onchange="showLoading(); document.getElementById('filter-form').submit();" class="text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500 py-1.5 pl-3 pr-8 cursor-pointer shadow-sm appearance-none">
+                            <option value="15" {{ ($perPage ?? 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ ($perPage ?? 15) == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ ($perPage ?? 15) == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ ($perPage ?? 15) == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                        <span class="text-xs text-slate-500 font-medium hidden sm:inline">Data</span>
+                    </div>
+                </div>
             </form>
 
             {{-- TAMPILAN DATA DESKTOP --}}

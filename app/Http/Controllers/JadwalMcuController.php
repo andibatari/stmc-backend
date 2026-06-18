@@ -20,6 +20,9 @@ class JadwalMcuController extends Controller
         $status = $request->input('status');
         $search_sap = $request->input('search_sap');
         
+        // 🌟 TAMBAHAN: Tangkap input per_page, default ke 10
+        $perPage = $request->input('per_page', 10);
+
         // LOGIKA OTOMATIS: Jika tidak ada filter tanggal DAN tidak sedang mencari nama/SAP, default ke HARI INI
         // Tapi jika sedang mencari nama/SAP, kita kosongkan tanggal agar bisa mencari di seluruh riwayat
         if ($request->filled('search_sap')) {
@@ -61,8 +64,8 @@ class JadwalMcuController extends Controller
             });
         }
         
-        // Urutkan berdasarkan nomor antrean (karena fokusnya operasional harian)
-        $jadwals = $query->orderBy('no_antrean', 'asc')->paginate(15); 
+        // Gunakan variabel $perPage di paginate()
+        $jadwals = $query->orderBy('no_antrean', 'asc')->paginate($perPage);
 
         // 3. QUERY UNTUK CARD ANTREAN POLI (HARI INI)
         $polis = \App\Models\Poli::with(['jadwalPoli' => function ($query) {
@@ -90,6 +93,7 @@ class JadwalMcuController extends Controller
             'tanggal_filter' => $tanggal_filter, 
             'status' => $status,
             'search_sap' => $search_sap,
+            'perPage' => $perPage,
             'polis' => $polis,
             'kuotaTerisi' => $kuotaTerisi,
             'sisaKuota' => $sisaKuota,

@@ -94,6 +94,23 @@
             @endif
         </div>
     </div>
+    
+    {{-- 🌟 TAMBAHAN: DROPDOWN JUMLAH DATA PER HALAMAN --}}
+    <div class="flex justify-between items-center mb-3 px-1">
+        <div class="text-xs font-bold text-slate-500">
+            Total: <span class="text-red-600">{{ $items->total() }}</span> Data
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500 font-medium">Tampilkan</span>
+            <select wire:model.live="perPage" class="text-xs font-medium bg-white border border-slate-200 rounded-lg focus:border-red-500 focus:ring-red-500 py-1.5 pl-3 pr-8 cursor-pointer shadow-sm appearance-none relative">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-xs text-slate-500 font-medium hidden sm:inline">Data</span>
+        </div>
+    </div>
 
     {{-- DATA TABEL KARYAWAN PTST --}}
     @if ($activeTab === 'ptst')
@@ -105,7 +122,7 @@
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">SAP</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Karyawan</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Unit Kerja</th>
-                        <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden lg:table-cell">NIK</th> 
+                        <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden lg:table-cell">No KTP</th> 
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden sm:table-cell">L/P</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden md:table-cell">Jabatan</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase text-center">Aksi</th>
@@ -152,7 +169,7 @@
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">No</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Nama Pasien</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase">Perusahaan / Tipe</th>
-                        <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden sm:table-cell">NIK / SAP</th>
+                        <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden sm:table-cell">No. KTP / SAP</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden lg:table-cell">Tgl Lahir</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase hidden md:table-cell">Kontak</th>
                         <th class="py-3 px-3 text-[10px] font-bold text-slate-500 uppercase text-center">Aksi</th>

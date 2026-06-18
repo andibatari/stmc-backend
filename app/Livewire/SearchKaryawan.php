@@ -1,7 +1,5 @@
 <?php
 
-namespace App\Console\Commands; // Sesuaikan dengan namespace asli Anda jika bukan console commands, abaikan baris ini jika berbeda dan pertahankan namespace App\Livewire;
-
 namespace App\Livewire;
 
 use Livewire\Component;
@@ -26,34 +24,34 @@ class SearchKaryawan extends Component
     public $searchPerusahaanAsal = '';
 
     public $activeTab = 'ptst';
+    
+    // 🌟 TAMBAHAN: Properti untuk kontrol jumlah data per halaman (Default 10)
+    public $perPage = 10; 
 
     // List untuk Dropdown
     public $listDepartemen = [];
     public $listUnitKerja = [];
 
-    // FIX: Daftarkan 'activeTab' ke dalam query string agar Livewire memantau perubahan tab di URL
     protected $queryString = [
-        'activeTab' => ['except' => 'ptst', 'as' => 'tab'], // Menampilkan ?tab=non-ptst di URL
+        'activeTab' => ['except' => 'ptst', 'as' => 'tab'], 
         'searchSap', 
         'searchNama', 
         'searchUnitKerja', 
         'searchDepartemen', 
         'searchNik', 
         'searchNamaPasien', 
-        'searchPerusahaanAsal'
+        'searchPerusahaanAsal',
+        'perPage' // 🌟 TAMBAHAN: Agar pilihan per halaman tersimpan di URL
     ];
 
     public function mount()
     {
-        // FIX: Ambil parameter 'tab' langsung dari request URL saat halaman diakses pertama kali
         if (request()->has('tab')) {
             $this->activeTab = request()->query('tab');
         }
 
-        // Tarik semua data departemen saat halaman pertama dimuat
         $this->listDepartemen = Departemen::all();
         
-        // Tarik unit kerja jika ada departemen yang tersimpan di URL
         if ($this->searchDepartemen) {
             $this->listUnitKerja = UnitKerja::where('departemens_id', $this->searchDepartemen)->get();
         }
@@ -61,18 +59,18 @@ class SearchKaryawan extends Component
 
     public function updating($key)
     {
-        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal'])) {
-            $this->resetPage();
+        // 🌟 PERBAIKAN: Masukkan perPage ke trigger, dan reset page spesifik sesuai nama tabel
+        if (in_array($key, ['searchSap', 'searchNama', 'searchUnitKerja', 'searchDepartemen', 'searchNik', 'searchNamaPasien', 'searchPerusahaanAsal', 'perPage'])) {
+            $this->resetPage('ptstPage');
+            $this->resetPage('nonPtstPage');
         }
     }
 
-    // Fungsi otomatis berjalan ketika dropdown Departemen dipilih
     public function updatedSearchDepartemen($value)
     {
-        $this->searchUnitKerja = ''; // Reset pilihan unit kerja
+        $this->searchUnitKerja = ''; 
         
         if ($value) {
-            // Ambil anak unit kerja berdasarkan departemen yg dipilih
             $this->listUnitKerja = UnitKerja::where('departemens_id', $value)->get();
         } else {
             $this->listUnitKerja = [];
@@ -91,7 +89,9 @@ class SearchKaryawan extends Component
         $this->searchPerusahaanAsal = '';
         $this->listUnitKerja = [];
 
-        $this->resetPage();
+        // Reset page spesifik saat ganti tab
+        $this->resetPage('ptstPage');
+        $this->resetPage('nonPtstPage');
     }
     
     public function render()
@@ -102,11 +102,11 @@ class SearchKaryawan extends Component
             $query->when($this->searchSap, fn($q) => $q->where('no_sap', 'like', '%' . $this->searchSap . '%'));
             $query->when($this->searchNama, fn($q) => $q->where('nama_karyawan', 'like', '%' . $this->searchNama . '%'));
             
-            // Filter Exact Match ID untuk Dropdown
             $query->when($this->searchDepartemen, fn($q) => $q->where('departemens_id', $this->searchDepartemen));
             $query->when($this->searchUnitKerja, fn($q) => $q->where('unit_kerjas_id', $this->searchUnitKerja));
             
-            $items = $query->paginate(10, pageName: 'ptstPage');
+            // 🌟 TAMBAHAN: Ganti angka 10 statis menjadi dinamis mengikuti variabel $perPage
+            $items = $query->paginate($this->perPage, pageName: 'ptstPage');
         } else {
             $query = PesertaMcu::query()->with('karyawan');
             
@@ -114,7 +114,8 @@ class SearchKaryawan extends Component
             $query->when($this->searchNamaPasien, fn($q) => $q->where('nama_lengkap', 'like', '%' . $this->searchNamaPasien . '%'));
             $query->when($this->searchPerusahaanAsal, fn($q) => $q->where('perusahaan_asal', 'like', '%' . $this->searchPerusahaanAsal . '%'));
 
-            $items = $query->paginate(10, pageName: 'nonPtstPage');
+            // 🌟 TAMBAHAN: Ganti angka 10 statis menjadi dinamis mengikuti variabel $perPage
+            $items = $query->paginate($this->perPage, pageName: 'nonPtstPage');
         }
 
         return view('livewire.search-karyawan', [
