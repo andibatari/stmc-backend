@@ -19,14 +19,16 @@ class SendAutomatedMcuReminders extends Command
     {
         // 1. Cek Jam Server (Test Mode: 19)
         // $jamSekarang = 19;
-        $jamSekarang = Carbon::now()->hour;
+        // $jamSekarang = Carbon::now()->hour;
+        // 1. Cek Jam Server Saat Ini (Kunci secara eksplisit ke WITA)
+        $jamSekarang = Carbon::now('Asia/Makassar')->hour;
 
         // 2. Tentukan Tanggal Target & Teks
         if ($jamSekarang == 19) {
             $targetTanggal = Carbon::tomorrow()->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == 6) {
+        } elseif ($jamSekarang == 10) {
             $targetTanggal = Carbon::today()->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
