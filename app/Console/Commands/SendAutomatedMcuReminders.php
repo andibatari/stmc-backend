@@ -17,25 +17,23 @@ class SendAutomatedMcuReminders extends Command
 
     public function handle()
     {
-        // 1. Cek Jam Server (Test Mode: 19)
-        // $jamSekarang = 19;
-        // $jamSekarang = Carbon::now()->hour;
         $timezone = 'Asia/Makassar';
-        // 1. Cek Jam Server Saat Ini (Kunci secara eksplisit ke WITA)
-        $jamSekarang = Carbon::now($timezone)->format('H:i'); // Format 24 jam (00-23)
+        
+        // 1. KITA HANYA CEK JAM (Mengabaikan Menit agar tidak pernah meleset)
+        $jamSekarang = Carbon::now($timezone)->hour;
 
         // 2. Tentukan Tanggal Target & Teks
-        if ($jamSekarang == '19:00') {
-            $targetTanggal = Carbon::tomorrow()->toDateString();
+        if ($jamSekarang == 19) {
+            $targetTanggal = Carbon::tomorrow($timezone)->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == '10:39') {
-            $targetTanggal = Carbon::today()->toDateString();
+        } elseif ($jamSekarang == 11) { 
+            // TIPS: Jika ingin test sekarang, ubah angka 6 menjadi jam saat ini (misal 10 atau 11)
+            $targetTanggal = Carbon::today($timezone)->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
         } else {
-            $this->warn("Command berjalan di luar jadwal. Harus jam 06:00 atau 19:00.");
-            return;
+            return; // Berhenti jika bukan jam jadwalnya
         }
 
         // 3. Tarik Data Jadwal
@@ -44,59 +42,60 @@ class SendAutomatedMcuReminders extends Command
                                 ->with(['karyawan', 'pesertaMcu']) 
                                 ->get();
 
-        if ($jadwalTarget->isEmpty()) {
-            $this->info("Tidak ada jadwal MCU untuk {$waktuTeks} ({$targetTanggal}).");
-            return;
-        }
-
+        $totalTarget = $jadwalTarget->count();
         $successCount = 0;
         
-        foreach ($jadwalTarget as $jadwal) {
-            $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
+        // 4. Proses Kirim FCM (HANYA berjalan jika ada target)
+        if ($totalTarget > 0) {
+            foreach ($jadwalTarget as $jadwal) {
+                $targetUser = $jadwal->karyawan ?? $jadwal->pesertaMcu;
 
-            if ($targetUser && !empty($targetUser->fcm_token)) {
-                $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
-                
-                // 4. Pesan Unik dan Menarik
-                $body = "Halo, {$nama}! 👋\n"
-                      . "Kami mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
-                      . "🌟 PERSIAPAN WAJIB:\n"
-                      . "• 💧 Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
-                      . "• 😴 Hindari begadang dan istirahat yang cukup.\n"
-                      . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
-                      . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
+                if ($targetUser && !empty($targetUser->fcm_token)) {
+                    $nama = $targetUser->nama_karyawan ?? $targetUser->nama_lengkap ?? 'Peserta MCU';
+                    
+                    $body = "Halo, {$nama}! 👋\n"
+                          . "Kami mengingatkan bahwa {$waktuTeks} adalah jadwal Medical Check Up Anda di Klinik STMC.\n\n"
+                          . "🌟 PERSIAPAN WAJIB:\n"
+                          . "• 💧 Wajib puasa 10-12 jam sebelum ambil darah (hanya boleh minum air putih).\n"
+                          . "• 😴 Hindari begadang dan istirahat yang cukup.\n"
+                          . "• 🪪 Jangan lupa bawa KTP / ID Card Perusahaan.\n\n"
+                          . "Klik tombol di bawah untuk panduan lengkapnya! 👇";
 
-                $actionLink = 'route:/informasi-mcu'; 
+                    $actionLink = 'route:/informasi-mcu'; 
+                    $recipientSap = $targetUser->no_sap ?? $targetUser->nik_karyawan ?? $targetUser->nik_pasien ?? 'ALL';
 
-                // 5. Kirim Notifikasi (Tanpa Banner)
-                $isSent = FCMService::sendPushNotification(
-                    $targetUser->fcm_token,
-                    $title,
-                    $body,
-                    $actionLink
-                );
+                    $isSent = FCMService::sendPushNotification(
+                        $targetUser->fcm_token,
+                        $title,
+                        $body,
+                        $actionLink,
+                        $recipientSap
+                    );
 
-                if ($isSent) {
-                    $successCount++;
-                    Log::info("CRON: Notifikasi {$waktuTeks} terkirim ke {$nama}");
+                    if ($isSent) {
+                        $successCount++;
+                    }
                 }
             }
         }
 
+        // 🌟 5. PAKSA SIMPAN KE RIWAYAT 
+        // Kode ini PASTI dieksekusi, meskipun $totalTarget adalah 0 (tidak ada jadwal)
         try {
             NotificationLog::create([
                 'mode' => 'automatic',
                 'scheduled_date' => $targetTanggal,
-                'total_targets' => $jadwalTarget->count(),
+                'total_targets' => $totalTarget,
                 'fcm_success' => $successCount,
                 'email_success' => 0,
-                'admin_id' => null, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
+                'admin_users_id' => null, 
             ]);
+            
+            Log::info("CRON SUKSES: Riwayat otomatis berhasil dicatat. Total Target: {$totalTarget}");
+            $this->info("CRON SUKSES: Riwayat otomatis berhasil dicatat.");
         } catch (\Exception $e) {
-            // Jika gagal simpan, catat error-nya di storage/logs/laravel.log
             Log::error("Gagal menyimpan riwayat otomatis: " . $e->getMessage());
+            $this->error("GAGAL SIMPAN RIWAYAT: " . $e->getMessage());
         }
-
-        $this->info("CRON SUKSES: Mengirim {$successCount} pengingat untuk jadwal {$waktuTeks}.");
     }
 }
