@@ -17,34 +17,23 @@ class SendAutomatedMcuReminders extends Command
 
     public function handle()
     {
-        // 1. Cek Jam Server (Test Mode: 19)
-        // $jamSekarang = 19;
-        // $jamSekarang = Carbon::now()->hour;
-        // 1. Cek Jam Server Saat Ini (Kunci secara eksplisit ke WITA)
-        $jamSekarang = Carbon::now('Asia/Makassar')->format('H:i'); // Format 24 jam (00-23)
+        $timezone = 'Asia/Makassar';
 
-        // 2. Tentukan Tanggal Target & Teks
-        if ($jamSekarang == '19:00') {
-            $targetTanggal = Carbon::tomorrow()->toDateString();
-            $waktuTeks = "BESOK";
-            $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == '10:22') {
-            $targetTanggal = Carbon::today()->toDateString();
-            $waktuTeks = "PAGI INI";
-            $title = "⏰ Hari Ini Jadwal MCU Anda!";
-        } else {
-            $this->warn("Command berjalan di luar jadwal. Harus jam 06:00 atau 19:00.");
-            return;
-        }
+        // 🌟 1. KODE BYPASS TESTING (MENGABAIKAN JAM)
+        // Kita paksa aplikasi langsung mencari jadwal untuk BESOK (19 Juni)
+        // tanpa mempedulikan jam berapa sekarang.
+        $targetTanggal = Carbon::tomorrow($timezone)->toDateString();
+        $waktuTeks = "BESOK";
+        $title = "⏰ TEST: Besok Jadwal MCU Anda!";
 
-        // 3. Tarik Data Jadwal
+        // 2. Tarik Data Jadwal
         $jadwalTarget = JadwalMcu::whereDate('tanggal_mcu', $targetTanggal)
                                 ->where('status', 'Scheduled') 
                                 ->with(['karyawan', 'pesertaMcu']) 
                                 ->get();
 
         if ($jadwalTarget->isEmpty()) {
-            $this->info("Tidak ada jadwal MCU untuk {$waktuTeks} ({$targetTanggal}).");
+            $this->info("Tidak ada jadwal MCU aktif untuk {$waktuTeks} ({$targetTanggal}).");
             return;
         }
 
@@ -89,7 +78,7 @@ class SendAutomatedMcuReminders extends Command
                 'total_targets' => $jadwalTarget->count(),
                 'fcm_success' => $successCount,
                 'email_success' => 0,
-                // 'admin_users_id' => 1nu, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
+                'admin_users_id' => null, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
             ]);
         } catch (\Exception $e) {
             // Jika gagal simpan, catat error-nya di storage/logs/laravel.log
