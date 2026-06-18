@@ -23,7 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Eksekusi Pertama: Jam 10:10 WITA
         $schedule->command('mcu:send-reminders')
-                 ->dailyAt('10:13')
+                 ->dailyAt('10:19')
                  ->timezone('Asia/Makassar');
                  
         // Eksekusi Kedua: Jam 19:00 WITA
