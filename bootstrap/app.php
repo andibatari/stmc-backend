@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
          // Atur jadwal pengingat MCU: H-H (Jam 6 Pagi) & H-1 (Jam 7 Malam / 19:00 WITA)
         $schedule->command('mcu:send-reminders')
-                 ->twiceDaily(11, 19)
+                 ->everyMinute() // Cek setiap menit agar tidak pernah meleset
                  ->timezone('Asia/Makassar');
                  
     })->create();
