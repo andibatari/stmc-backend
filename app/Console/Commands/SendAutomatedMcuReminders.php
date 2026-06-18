@@ -29,7 +29,7 @@ class SendAutomatedMcuReminders extends Command
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
         } elseif ($jamSekarang == 14) { 
             // TIPS: Jika ingin test sekarang, ubah angka 6 menjadi jam saat ini (misal 10 atau 11)
-            $targetTanggal = Carbon::today($timezone)->toDateString();
+            $targetTanggal = Carbon::tomorrow($timezone)->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
         } else {
