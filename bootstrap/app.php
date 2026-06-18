@@ -21,9 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         
-        // Atur jadwal pengingat MCU: H-H (Jam 6 Pagi) & H-1 (Jam 7 Malam / 19:00 WITA)
+        // Eksekusi Pertama: Jam 10:10 WITA
         $schedule->command('mcu:send-reminders')
-                 ->twiceDaily(10, 19)
+                 ->dailyAt('10:13')
+                 ->timezone('Asia/Makassar');
+                 
+        // Eksekusi Kedua: Jam 19:00 WITA
+        $schedule->command('mcu:send-reminders')
+                 ->dailyAt('19:00')
                  ->timezone('Asia/Makassar');
                  
     })->create();

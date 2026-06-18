@@ -21,14 +21,14 @@ class SendAutomatedMcuReminders extends Command
         // $jamSekarang = 19;
         // $jamSekarang = Carbon::now()->hour;
         // 1. Cek Jam Server Saat Ini (Kunci secara eksplisit ke WITA)
-        $jamSekarang = Carbon::now('Asia/Makassar')->hour;
+        $jamSekarang = Carbon::now('Asia/Makassar')->format('H:i'); // Format 24 jam (00-23)
 
         // 2. Tentukan Tanggal Target & Teks
-        if ($jamSekarang == 19) {
+        if ($jamSekarang == '19:00') {
             $targetTanggal = Carbon::tomorrow()->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == 10) {
+        } elseif ($jamSekarang == '10:13') {
             $targetTanggal = Carbon::today()->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
@@ -82,13 +82,19 @@ class SendAutomatedMcuReminders extends Command
             }
         }
 
-        NotificationLog::create([
-            'mode' => 'automatic',
-            'scheduled_date' => $targetTanggal,
-            'total_targets' => $jadwalTarget->count(),
-            'fcm_success' => $successCount,
-            'email_success' => 0,
-        ]);
+        try {
+            NotificationLog::create([
+                'mode' => 'automatic',
+                'scheduled_date' => $targetTanggal,
+                'total_targets' => $jadwalTarget->count(),
+                'fcm_success' => $successCount,
+                'email_success' => 0,
+                'admin_id' => 1, // 🌟 TAMBAHKAN INI! Karena Cron tidak punya Auth, kita default ke ID 1 (Sistem/Superadmin)
+            ]);
+        } catch (\Exception $e) {
+            // Jika gagal simpan, catat error-nya di storage/logs/laravel.log
+            Log::error("Gagal menyimpan riwayat otomatis: " . $e->getMessage());
+        }
 
         $this->info("CRON SUKSES: Mengirim {$successCount} pengingat untuk jadwal {$waktuTeks}.");
     }
