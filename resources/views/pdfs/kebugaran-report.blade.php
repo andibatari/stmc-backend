@@ -47,7 +47,6 @@
     <div class="header-bg">
         <table class="header-table">
             <tr>
-                {{-- 🌟 PERBAIKAN: Menggunakan variabel Base64 murni dari Controller --}}
                 <td class="logo-cell">
                     @if(!empty($logoTonasaBase64))
                         <img src="{{ $logoTonasaBase64 }}" class="logo">
@@ -70,7 +69,8 @@
             <tr>
                 <td class="info-label">Tanggal</td>
                 <td class="info-colon">:</td>
-                <td class="info-val">{{ \Carbon\Carbon::parse($kebugaranResult->created_at ?? now())->isoFormat('d F Y') }}</td>
+                {{-- 🌟 PERBAIKAN: Format tanggal ISO diubah agar menampilkan Tanggal Bulan(Teks) Tahun --}}
+                <td class="info-val">{{ \Carbon\Carbon::parse($kebugaranResult->created_at ?? now())->isoFormat('D MMMM Y') }}</td>
             </tr>
             <tr>
                 <td class="info-label">Nama</td>
@@ -123,7 +123,8 @@
 
         <div class="cat-heading">KATEGORI KESEGARAN JASMANI</div>
         <div class="cat-value">
-            VO<sub>2</sub>max ≈ {{ number_format($kebugaranResult->vo2_max, 2, ',', '.') }} ml/kg/menit ({{ $kebugaranResult->kategori }})
+            {{-- 🌟 PERBAIKAN: Simbol ≈ diganti dengan = agar kompatibel dengan font DomPDF --}}
+            VO<sub>2</sub>max = {{ number_format($kebugaranResult->vo2_max, 2, ',', '.') }} ml/kg/menit ({{ $kebugaranResult->kategori }})
         </div>
     </div>
 </body>
