@@ -112,8 +112,10 @@ class KebugaranForm extends Component
 
         // 2. Estimasi VO2 Max (Belum dikoreksi usia)
         // Rumus: VO2 * (HRmax / HRkerja)
+        // Dibulatkan 2 desimal di tengah jalan agar persis dengan hitungan manual kertas
         $hr_max = 220 - $usia;
-        $vo2_max_estimasi = $vo2_submax * ($hr_max / $hr);
+        $rasio_hr = round($hr_max / $hr, 2); 
+        $vo2_max_estimasi = $vo2_submax * $rasio_hr;
 
         // 3. Faktor Koreksi Usia (Astrand Factor Table)
         // Saya tambahkan hingga lansia agar sistemmu tahan banting untuk karyawan senior
