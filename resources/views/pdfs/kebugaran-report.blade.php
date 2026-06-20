@@ -47,8 +47,8 @@
     <div class="header-bg">
         <table class="header-table">
             <tr>
-                <td class="logo-cell"><img src="{{ public_path('images/logo-semen-tonasa.png') }}" class="logo"></td>
-                <td class="logo-cell"><img src="{{ public_path('images/logo-stmc.png') }}" class="logo"></td>
+                <td class="logo-cell"><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-semen-tonasa.png'))) }}" class="logo"></td>
+                <td class="logo-cell"><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-stmc.png'))) }}" class="logo"></td>
                 <td class="title-cell">
                     <p class="title-main">MEDICAL CHECK UP</p>
                     <p class="title-sub">KLINIK SEMEN TONASA MEDICAL CENTRE</p>

@@ -187,12 +187,16 @@ class KebugaranForm extends Component
         $fullPath = 'pdf_reports/' . $fileName; 
 
         try {
-            $pdf = Pdf::loadView('pdfs.kebugaran-report', [
+            // 🌟 PERBAIKAN: Matikan kompresi DomPDF agar PDF bisa di-merge (digabungkan) oleh FPDI
+            $pdf = Pdf::setOptions(['compress' => false])->loadView('pdfs.kebugaran-report', [
                 'patient' => $this->patient, 
                 'kebugaranResult' => $kebugaran, 
                 'instansiPasien' => $this->instansiPasien, 
                 'isKaryawan' => $this->isKaryawan,
             ]);
+            
+            // Render dulu baru diambil outputnya
+            $pdf->render();
             
             Storage::disk('public')->put($fullPath, $pdf->output());
             
