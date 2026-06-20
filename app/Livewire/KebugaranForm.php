@@ -103,32 +103,64 @@ class KebugaranForm extends Component
         }
 
         // ==========================================
-        // RUMUS PERHITUNGAN SESUAI EXCEL
+        // RUMUS ASTRAND-RYHMING CYCLE TEST (Sesuai Standar)
         // ==========================================
         
-        // 1. Hitung VO2 Submaksimal
-        // (1.8 * (Watt * 6) / BB) + 7
+        // 1. Hitung VO2 (Workload) / Konsumsi Oksigen saat bersepeda
+        // Rumus: ((1.8 * (Watt * 6)) / BB) + 7
         $vo2_submax = ((1.8 * ($watt * 6)) / $bb) + 7;
 
-        // 2. Faktor Koreksi Usia (Von Dobeln)
-        $faktorUsia = ($jenisKelamin === 'WANITA' || $jenisKelamin === 'PEREMPUAN') 
-            ? (1.208 - (0.009 * $usia)) 
-            : (1.25 - (0.01 * $usia));
-
-        // 3. Estimasi VO2 Max Total
+        // 2. Estimasi VO2 Max (Belum dikoreksi usia)
+        // Rumus: VO2 * (HRmax / HRkerja)
         $hr_max = 220 - $usia;
-        $vo2_max_calculated = $vo2_submax * ($hr_max / $hr) * $faktorUsia;
+        $vo2_max_estimasi = $vo2_submax * ($hr_max / $hr);
+
+        // 3. Faktor Koreksi Usia (Astrand Factor Table)
+        // Saya tambahkan hingga lansia agar sistemmu tahan banting untuk karyawan senior
+        $faktorUsia = 1.00; 
+        if ($usia >= 26 && $usia <= 30) {
+            $faktorUsia = 0.95;
+        } elseif ($usia >= 31 && $usia <= 35) {
+            $faktorUsia = 0.93;
+        } elseif ($usia >= 36 && $usia <= 40) {
+            $faktorUsia = 0.90;
+        } elseif ($usia >= 41 && $usia <= 45) {
+            $faktorUsia = 0.83; 
+        } elseif ($usia >= 46 && $usia <= 50) {
+            $faktorUsia = 0.78;
+        } elseif ($usia >= 51 && $usia <= 55) {
+            $faktorUsia = 0.75;
+        } elseif ($usia >= 56 && $usia <= 60) {
+            $faktorUsia = 0.71;
+        } elseif ($usia > 60) {
+            $faktorUsia = 0.65;
+        }
+
+        // 4. Hitung VO2 Max Akhir
+        $vo2_max_calculated = $vo2_max_estimasi * $faktorUsia;
 
         $this->vo2_max = round($vo2_max_calculated, 2);
         $this->hasilKebugaran = $this->vo2_max;
 
-        // 4. Kategori Sesuai Excel (=IF(J2<40,"Low",IF(J2<=50,"Average","Good")))
-        if ($this->vo2_max < 40) {
-            $this->keterangan = 'Low';
-        } elseif ($this->vo2_max <= 50) {
-            $this->keterangan = 'Average';
-        } else {
-            $this->keterangan = 'Good';
+        // 5. Kategori Kebugaran (Pisahkan Pria & Wanita sesuai standar tabel)
+        $isPerempuan = in_array($jenisKelamin, ['WANITA', 'PEREMPUAN', 'P', 'W']);
+        
+        if ($isPerempuan) {
+            if ($this->vo2_max < 35) {
+                $this->keterangan = 'Low';
+            } elseif ($this->vo2_max <= 45) {
+                $this->keterangan = 'Average';
+            } else {
+                $this->keterangan = 'Good';
+            }
+        } else { // Aturan untuk Laki-laki
+            if ($this->vo2_max < 40) {
+                $this->keterangan = 'Low';
+            } elseif ($this->vo2_max <= 50) {
+                $this->keterangan = 'Average';
+            } else {
+                $this->keterangan = 'Good';
+            }
         }
 
         // ==========================================
