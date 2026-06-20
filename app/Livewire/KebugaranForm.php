@@ -91,6 +91,12 @@ class KebugaranForm extends Component
     {
         $this->validate();
 
+        // 🌟 PENGAMAN: Mencegah SQL Error jika ID Poli Pasien kosong dari database
+        if (!$this->jadwalPoliId) {
+            session()->flash('error', 'Gagal: Data rincian Jadwal Poli tidak ditemukan untuk pasien ini. Pastikan pasien didaftarkan dengan benar beserta Paket MCU-nya.');
+            return;
+        }
+
         $usia = (int) $this->umur;
         $bb = (float) $this->bb;
         $watt = (float) $this->beban_latihan;
@@ -202,7 +208,6 @@ class KebugaranForm extends Component
             $kebugaran->file_path = $fullPath; 
             $kebugaran->save();
 
-            // 🌟 PERBAIKAN: Gunakan Query Builder langsung untuk menghindari error Array dari Livewire
             JadwalPoli::where('id', $this->jadwalPoliId)->update([
                 'file_path' => $fullPath,
                 'status' => 'Finished'

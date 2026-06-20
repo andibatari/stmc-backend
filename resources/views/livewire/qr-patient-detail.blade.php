@@ -338,9 +338,8 @@
                             </div>
 
                             <div class="p-4 md:p-7">
-                                {{-- PERBAIKAN: MEMASUKKAN POLI MATA --}}
+                               {{-- AMBIL DATA JADWAL POLI SAAT INI --}}
                                 @php
-                                    // Amankan variabel agar tidak crash jika data poli belum ada di database
                                     $currentPoliData = $jadwalPoliData[$poli->id] ?? null;
                                     $currentPoliId = $currentPoliData ? $currentPoliData->id : null;
                                 @endphp
@@ -349,7 +348,7 @@
                                     @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $currentPoliData ], key('gigi-'.$poli->id))
                                 
                                 @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
-    @livewire('kebugaran-form', ['patient' => $patient, 'jadwalPoliId' => $currentPoliId, 'poliData' => $currentPoliData], key('kebugaran-'.$poli->id))
+                                    @livewire('kebugaran-form', ['patient' => $patient, 'jadwalPoliId' => $currentPoliId, 'poliData' => $currentPoliData], key('kebugaran-'.$poli->id))
                                 
                                 @elseif (strtoupper($poli->nama_poli) === 'FISIK')
                                     @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $currentPoliId, 'poliData' => $currentPoliData ], key('fisik-'.$poli->id))
