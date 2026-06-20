@@ -6,7 +6,7 @@
     <style>
         body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 0; font-size: 11pt; color: #000; }
         
-        /* HEADER TEAL/HIJAU TOSCA (Mengikuti Referensi Gambar) */
+        /* HEADER TEAL/HIJAU TOSCA */
         .header-bg { background-color: #009688; padding: 25px 30px; border-bottom: 5px solid #000; color: #000; }
         
         .header-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
@@ -47,8 +47,17 @@
     <div class="header-bg">
         <table class="header-table">
             <tr>
-                <td class="logo-cell"><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-semen-tonasa.png'))) }}" class="logo"></td>
-                <td class="logo-cell"><img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo-stmc.png'))) }}" class="logo"></td>
+                {{-- 🌟 PERBAIKAN: Menggunakan variabel Base64 murni dari Controller --}}
+                <td class="logo-cell">
+                    @if(!empty($logoTonasaBase64))
+                        <img src="{{ $logoTonasaBase64 }}" class="logo">
+                    @endif
+                </td>
+                <td class="logo-cell">
+                    @if(!empty($logoStmcBase64))
+                        <img src="{{ $logoStmcBase64 }}" class="logo">
+                    @endif
+                </td>
                 <td class="title-cell">
                     <p class="title-main">MEDICAL CHECK UP</p>
                     <p class="title-sub">KLINIK SEMEN TONASA MEDICAL CENTRE</p>

@@ -105,20 +105,12 @@ class KebugaranForm extends Component
         // ==========================================
         // RUMUS ASTRAND-RYHMING CYCLE TEST (Sesuai Standar)
         // ==========================================
-        
-        // 1. Hitung VO2 (Workload) / Konsumsi Oksigen saat bersepeda
-        // Rumus: ((1.8 * (Watt * 6)) / BB) + 7
         $vo2_submax = ((1.8 * ($watt * 6)) / $bb) + 7;
 
-        // 2. Estimasi VO2 Max (Belum dikoreksi usia)
-        // Rumus: VO2 * (HRmax / HRkerja)
-        // Dibulatkan 2 desimal di tengah jalan agar persis dengan hitungan manual kertas
         $hr_max = 220 - $usia;
         $rasio_hr = round($hr_max / $hr, 2); 
         $vo2_max_estimasi = $vo2_submax * $rasio_hr;
 
-        // 3. Faktor Koreksi Usia (Astrand Factor Table)
-        // Saya tambahkan hingga lansia agar sistemmu tahan banting untuk karyawan senior
         $faktorUsia = 1.00; 
         if ($usia >= 26 && $usia <= 30) {
             $faktorUsia = 0.95;
@@ -138,13 +130,11 @@ class KebugaranForm extends Component
             $faktorUsia = 0.65;
         }
 
-        // 4. Hitung VO2 Max Akhir
         $vo2_max_calculated = $vo2_max_estimasi * $faktorUsia;
 
         $this->vo2_max = round($vo2_max_calculated, 2);
         $this->hasilKebugaran = $this->vo2_max;
 
-        // 5. Kategori Kebugaran (Pisahkan Pria & Wanita sesuai standar tabel)
         $isPerempuan = in_array($jenisKelamin, ['WANITA', 'PEREMPUAN', 'P', 'W']);
         
         if ($isPerempuan) {
@@ -155,7 +145,7 @@ class KebugaranForm extends Component
             } else {
                 $this->keterangan = 'Good';
             }
-        } else { // Aturan untuk Laki-laki
+        } else {
             if ($this->vo2_max < 40) {
                 $this->keterangan = 'Low';
             } elseif ($this->vo2_max <= 50) {
@@ -187,17 +177,28 @@ class KebugaranForm extends Component
         $fullPath = 'pdf_reports/' . $fileName; 
 
         try {
-            // 🌟 PERBAIKAN: Matikan kompresi DomPDF agar PDF bisa di-merge (digabungkan) oleh FPDI
+            // 🌟 PERBAIKAN: Ambil gambar dengan aman di PHP, cegah crash di server
+            $logoTonasaPath = public_path('images/logo-semen-tonasa.png');
+            $logoTonasaBase64 = file_exists($logoTonasaPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoTonasaPath)) : '';
+
+            $logoStmcPath = public_path('images/logo-stmc.png');
+            $logoStmcBase64 = file_exists($logoStmcPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoStmcPath)) : '';
+
             $pdf = Pdf::setOptions(['compress' => false])->loadView('pdfs.kebugaran-report', [
                 'patient' => $this->patient, 
                 'kebugaranResult' => $kebugaran, 
                 'instansiPasien' => $this->instansiPasien, 
                 'isKaryawan' => $this->isKaryawan,
+                'logoTonasaBase64' => $logoTonasaBase64, // Kirim gambar aman ke blade
+                'logoStmcBase64' => $logoStmcBase64,     // Kirim gambar aman ke blade
             ]);
             
-            // Render dulu baru diambil outputnya
             $pdf->render();
             
+            // Pastikan folder exist
+            if (!Storage::disk('public')->exists('pdf_reports')) {
+                Storage::disk('public')->makeDirectory('pdf_reports');
+            }
             Storage::disk('public')->put($fullPath, $pdf->output());
             
             $kebugaran->file_path = $fullPath; 
@@ -210,7 +211,7 @@ class KebugaranForm extends Component
             session()->flash('success', 'Perhitungan VO2 Max berhasil disimpan!');
         } catch (\Exception $e) {
             Log::error('PDF Kebugaran Gagal: ' . $e->getMessage());
-            session()->flash('error', 'Gagal memproses file dokumen laporan.');
+            session()->flash('error', 'Gagal memproses file dokumen laporan: ' . $e->getMessage());
         }
     }
 
