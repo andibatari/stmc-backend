@@ -339,17 +339,23 @@
 
                             <div class="p-4 md:p-7">
                                 {{-- PERBAIKAN: MEMASUKKAN POLI MATA --}}
+                                @php
+                                    // Amankan variabel agar tidak crash jika data poli belum ada di database
+                                    $currentPoliData = $jadwalPoliData[$poli->id] ?? null;
+                                    $currentPoliId = $currentPoliData ? $currentPoliData->id : null;
+                                @endphp
+
                                 @if (strtoupper($poli->nama_poli) === 'GIGI')
-                                    @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                    @livewire('poli-gigi-form', [ 'jadwalId' => $jadwal->id, 'poliData' => $currentPoliData ], key('gigi-'.$poli->id))
                                 
                                 @elseif (strtoupper($poli->nama_poli) === 'KEBUGARAN')
-                                    @livewire('kebugaran-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                    @livewire('kebugaran-form', ['patient' => $patient, 'jadwalPoliId' => $poli->id, 'poliData' => $poli], key('kebugaran-'.$poli->id))
                                 
                                 @elseif (strtoupper($poli->nama_poli) === 'FISIK')
-                                    @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                    @livewire('poli-fisik-form', [ 'patient' => $patient, 'jadwalId' => $currentPoliId, 'poliData' => $currentPoliData ], key('fisik-'.$poli->id))
                                 
                                 @elseif (strtoupper($poli->nama_poli) === 'MATA')
-                                    @livewire('poli-mata-form', [ 'patient' => $patient, 'jadwalPoliId' => $jadwalPoliData[$poli->id]->id, 'poliData' => $jadwalPoliData[$poli->id] ])
+                                    @livewire('poli-mata-form', [ 'patient' => $patient, 'jadwalPoliId' => $currentPoliId, 'poliData' => $currentPoliData ], key('mata-'.$poli->id))
                                 
                                 @elseif (in_array(strtoupper($poli->nama_poli), $uploadablePoliNames))
                                     <div class="max-w-2xl bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-5 md:p-6 text-center mx-auto">
