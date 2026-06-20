@@ -46,9 +46,9 @@ class KebugaranForm extends Component
         $this->jadwalPoliId = $jadwalPoliId;
         $this->poliData = $poliData;
 
-        $jadwalMcu = $poliData->jadwalMcu ?? null;
-        $karyawanId = $jadwalMcu->karyawan_id ?? null;
-        $pesertaMcuId = $jadwalMcu->peserta_mcus_id ?? null;
+        $jadwalMcu = $poliData['jadwalMcu'] ?? $poliData->jadwalMcu ?? null;
+        $karyawanId = $jadwalMcu['karyawan_id'] ?? $jadwalMcu->karyawan_id ?? null;
+        $pesertaMcuId = $jadwalMcu['peserta_mcus_id'] ?? $jadwalMcu->peserta_mcus_id ?? null;
 
         if ($karyawanId) {
             $this->patient = Karyawan::with('unitKerja')->find($karyawanId);
@@ -62,11 +62,11 @@ class KebugaranForm extends Component
             if ($this->isKaryawan) {
                 $unitKerja = $this->patient->unitKerja->nama_unit_kerja ?? 'Unit Kerja Tidak Diketahui';
                 $this->instansiPasien = "({$unitKerja})";
-                $this->patient->nama_lengkap = $this->patient->nama_karyawan ?? $jadwalMcu->nama_pasien ?? 'N/A';
+                $this->patient->nama_lengkap = $this->patient->nama_karyawan ?? $jadwalMcu['nama_pasien'] ?? 'N/A';
             } else {
-                $perusahaanAsal = $this->patient->perusahaan_asal ?? $jadwalMcu->perusahaan_asal ?? null;
+                $perusahaanAsal = $this->patient->perusahaan_asal ?? $jadwalMcu['perusahaan_asal'] ?? null;
                 $this->instansiPasien = $perusahaanAsal ?? 'NON-KARYAWAN/UMUM';
-                $this->patient->nama_lengkap = $this->patient->nama_lengkap ?? $jadwalMcu->nama_pasien ?? 'N/A';
+                $this->patient->nama_lengkap = $this->patient->nama_lengkap ?? $jadwalMcu['nama_pasien'] ?? 'N/A';
             }
             $this->patient->tanggal_lahir = $this->patient->tanggal_lahir ?? now()->toDateString();
         }
@@ -177,7 +177,6 @@ class KebugaranForm extends Component
         $fullPath = 'pdf_reports/' . $fileName; 
 
         try {
-            // 🌟 PERBAIKAN: Ambil gambar dengan aman di PHP, cegah crash di server
             $logoTonasaPath = public_path('images/logo-semen-tonasa.png');
             $logoTonasaBase64 = file_exists($logoTonasaPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoTonasaPath)) : '';
 
@@ -189,13 +188,12 @@ class KebugaranForm extends Component
                 'kebugaranResult' => $kebugaran, 
                 'instansiPasien' => $this->instansiPasien, 
                 'isKaryawan' => $this->isKaryawan,
-                'logoTonasaBase64' => $logoTonasaBase64, // Kirim gambar aman ke blade
-                'logoStmcBase64' => $logoStmcBase64,     // Kirim gambar aman ke blade
+                'logoTonasaBase64' => $logoTonasaBase64, 
+                'logoStmcBase64' => $logoStmcBase64,     
             ]);
             
             $pdf->render();
             
-            // Pastikan folder exist
             if (!Storage::disk('public')->exists('pdf_reports')) {
                 Storage::disk('public')->makeDirectory('pdf_reports');
             }
@@ -204,9 +202,11 @@ class KebugaranForm extends Component
             $kebugaran->file_path = $fullPath; 
             $kebugaran->save();
 
-            $this->poliData->file_path = $fullPath; 
-            $this->poliData->status = 'Finished';
-            $this->poliData->save();
+            // 🌟 PERBAIKAN: Gunakan Query Builder langsung untuk menghindari error Array dari Livewire
+            JadwalPoli::where('id', $this->jadwalPoliId)->update([
+                'file_path' => $fullPath,
+                'status' => 'Finished'
+            ]);
 
             session()->flash('success', 'Perhitungan VO2 Max berhasil disimpan!');
         } catch (\Exception $e) {
