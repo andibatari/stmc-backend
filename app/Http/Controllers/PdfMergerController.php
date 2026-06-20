@@ -26,7 +26,7 @@ class PdfMergerController extends Controller
 
             // 2. Ambil path file PDF (Harus konsisten untuk semua jenis file)
             $pdfPaths = $jadwal->jadwalPoli
-                ->filter(fn($jp) => $jp->file_path && $jp->status === 'Done') 
+                ->filter(fn($jp) => $jp->file_path && in_array($jp->status, ['Done', 'Finished']))
                 ->pluck('file_path')
                 ->map(function($pathInDb) {
                     // Cek jika path adalah nama file saja (dari upload) atau path penuh (dari form)
@@ -45,7 +45,7 @@ class PdfMergerController extends Controller
                 ->toArray();
             
             if (empty($pdfPaths)) {
-                return back()->with('error', 'Tidak ada file PDF hasil poli yang berstatus Selesai (Done) untuk dilihat. Pastikan status Done.');
+                return back()->with('error', 'Tidak ada file PDF hasil poli yang berstatus Selesai (Finished) untuk dilihat. Pastikan status Finished.');
             }
 
             // 3. Inisialisasi library penggabungan PDF

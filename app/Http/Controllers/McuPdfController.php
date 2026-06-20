@@ -235,8 +235,10 @@ class McuPdfController extends Controller
         }
 
         $fileName = 'Hasil_Lengkap_MCU_' . str_replace(' ', '_', $patientName) . '.pdf';
-        return response($pdfMerger->Output($fileName, 'S'))
-            ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
+        
+        // 🌟 PERBAIKAN: Gunakan parameter 'I' (Inline) dan hentikan script (exit) 
+        // agar PDF langsung dirender oleh browser dengan sempurna
+        $pdfMerger->Output($fileName, 'I');
+        exit;
     }
 }
