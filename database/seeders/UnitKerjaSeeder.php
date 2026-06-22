@@ -23,9 +23,9 @@ class UnitKerjaSeeder extends Seeder
 
         // Ambil ID dari departemen yang sudah ada atau buat jika belum ada
         $departemensId1 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Project Mngmnt & Maint. Support'])->id;
-        $departemensId2 = Departemen::firstOrCreate(['nama_departemen' => 'Department of Finance & Accounting'])->id;
-        $departemensId3 = Departemen::firstOrCreate(['nama_departemen' => 'Department of Human Capital & GRC'])->id;
-        $departemensId4 = Departemen::firstOrCreate(['nama_departemen' => 'Department of Internal Audit'])->id;
+        $departemensId2 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Finance & Accounting'])->id;
+        $departemensId3 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Human Capital & GRC'])->id;
+        $departemensId4 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Internal Audit'])->id;
         $departemensId5 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Clinker & Cement Production'])->id;
         $departemensId6 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Communication, Legal & GA'])->id;
         $departemensId7 = Departemen::firstOrCreate(['nama_departemen' => 'Dept. of Infrastructure'])->id;

@@ -25,9 +25,9 @@ class DepartemenSeeder extends Seeder
         // Masukkan data awal untuk Departemen
         DB::table('departemens') -> insert([
             ['nama_departemen' => 'Dept. of Project Mngmnt & Maint. Support'],
-            ['nama_departemen' => 'Department of Finance & Accounting'],
-            ['nama_departemen' => 'Department of Human Capital & GRC'],
-            ['nama_departemen' => 'Department of Internal Audit'],
+            ['nama_departemen' => 'Dept. of Finance & Accounting'],
+            ['nama_departemen' => 'Dept. of Human Capital & GRC'],
+            ['nama_departemen' => 'Dept. of Internal Audit'],
             ['nama_departemen' => 'Dept. of Clinker & Cement Production'],
             ['nama_departemen' => 'Dept. of Communication, Legal & GA'],
             ['nama_departemen' => 'Dept. of Infrastructure'],
