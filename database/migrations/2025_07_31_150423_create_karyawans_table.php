@@ -35,8 +35,6 @@ return new class extends Migration
             $table->string('hubungan')->nullable();
             $table->string('jabatan')->nullable();
             $table->string('eselon')->nullable();
-            $table->string('suami_istri')->nullable();
-            $table->string('pekerjaan_suami_istri')->nullable();
             $table->string('alamat')->nullable();
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
