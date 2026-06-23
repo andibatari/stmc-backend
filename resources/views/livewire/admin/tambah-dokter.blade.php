@@ -19,50 +19,39 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                     <div class="md:col-span-2">
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Nama Lengkap & Gelar</label>
-                        <input type="text" wire:model="nama_lengkap" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <input type="text" wire:model="nama_lengkap" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 shadow-sm" required>
                         @error('nama_lengkap') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">NIK (KTP)</label>
-                        <input type="text" wire:model="nik" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 font-mono shadow-sm">
+                        <input type="text" wire:model="nik" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 font-mono shadow-sm">
                         @error('nik') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Spesialisasi</label>
-                        <select wire:model="spesialisasi" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 cursor-pointer shadow-sm">
+                        <select wire:model="spesialisasi" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 cursor-pointer shadow-sm">
                             <option value="">Pilih Spesialisasi</option>
-                            @foreach ($daftarSpesialisasi as $spesialisasi) <option value="{{ $spesialisasi }}">{{ $spesialisasi }}</option> @endforeach
+                            @foreach ($daftarSpesialisasi as $spes) <option value="{{ $spes }}">{{ $spes }}</option> @endforeach
                         </select>
                         @error('spesialisasi') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Tanggal Lahir</label>
-                        <input type="date" wire:model="tanggal_lahir" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <input type="date" wire:model="tanggal_lahir" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 shadow-sm">
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Gol. Darah</label>
-                        <select wire:model="golongan_darah" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm"><option value="">Pilih</option><option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option></select>
+                        <select wire:model="golongan_darah" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 shadow-sm"><option value="">Pilih</option><option value="A">A</option><option value="B">B</option><option value="AB">AB</option><option value="O">O</option></select>
                     </div>
                     <div>
                         <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">No Handphone</label>
-                        <input type="text" wire:model="no_hp" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 font-mono shadow-sm">
+                        <input type="text" wire:model="no_hp" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 font-mono shadow-sm">
                     </div>
                     <div>
-                        <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Email Login</label>
-                        <input type="email" wire:model="email" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm">
+                        <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Email Kontak</label>
+                        <input type="email" wire:model="email" class="block w-full px-4 py-3.5 md:py-3 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-blue-500 shadow-sm" required>
+                        @error('email') <p class="mt-1 text-xs font-bold text-red-600">{{ $message }}</p> @enderror
                     </div>
-                    @if (!$isEditing)
-                        <div class="md:col-span-2 lg:col-span-4 border-t border-slate-200 pt-4 mt-2">
-                            <label class="block text-[10px] md:text-xs font-bold text-slate-600 uppercase tracking-widest mb-1.5">Password Akun Baru</label>
-                            <div class="relative w-full md:w-1/2 lg:w-1/4">
-                                <input type="password" id="pass_add_dok" wire:model="password" class="block w-full px-4 py-3.5 md:py-3 pr-10 text-sm font-medium rounded-xl border border-slate-200 bg-white focus:border-red-500 shadow-sm transition-all">
-                                <button type="button" onclick="togglePasswordVisibility('pass_add_dok', 'eyeOpen_ad', 'eyeClosed_ad')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-red-600 focus:outline-none">
-                                    <img id="eyeOpen_ad" src="{{ asset('images/eye-open.png') }}" class="h-4 w-4 opacity-70">
-                                    <img id="eyeClosed_ad" src="{{ asset('images/eye-closed.png') }}" class="h-4 w-4 hidden opacity-70">
-                                </button>
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
 
@@ -70,9 +59,9 @@
             <div class="flex flex-col-reverse sm:flex-row justify-end pt-2 md:pt-4 gap-3">
                 @if ($isEditing)
                     <button type="button" wire:click="cancelEdit" class="w-full sm:w-auto px-6 py-4 md:py-3.5 bg-white border border-slate-300 text-slate-600 font-bold rounded-xl hover:bg-slate-50 transition-all text-sm">Batal Edit</button>
-                    <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">Update Data Dokter</button>
+                    <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg hover:-translate-y-0.5 transition-all text-sm">Update Profil Dokter</button>
                 @else
-                    <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 hover:-translate-y-0.5 transition-all text-sm"><i class="fas fa-save mr-2"></i> Simpan Dokter</button>
+                    <button type="submit" class="w-full sm:w-auto px-8 py-4 md:py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:-translate-y-0.5 transition-all text-sm"><i class="fas fa-save mr-2"></i> Simpan Dokter</button>
                 @endif
             </div>
         </form>
@@ -83,7 +72,6 @@
         <h4 class="text-lg md:text-xl font-black text-slate-800 mb-5 md:mb-6 border-b border-slate-100 pb-4">Direktori Dokter MCU</h4>
         
         <div class="hidden md:block overflow-x-auto border border-slate-100 rounded-2xl">
-            {{-- Tabel Desktop (Sama spt sblmnya) --}}
             <table class="min-w-full text-left">
                 <thead class="bg-slate-50 border-b border-slate-100">
                     <tr>
@@ -97,7 +85,7 @@
                     <tr class="hover:bg-slate-50/50">
                         <td class="px-6 py-4">
                             <p class="font-black text-sm text-slate-800">{{ $dokter->nama_lengkap }}</p>
-                            <p class="text-xs font-bold text-blue-600 mt-0.5">{{ $dokter->spesialisasi }} <span class="text-slate-400 font-normal">| NIK: {{ $dokter->nik }}</span></p>
+                            <p class="text-xs font-bold text-blue-600 mt-0.5">{{ $dokter->spesialisasi }} <span class="text-slate-400 font-normal">| NIK: {{ $dokter->nik ?? '-' }}</span></p>
                         </td>
                         <td class="px-6 py-4">
                             <p class="text-sm font-medium text-slate-600"><i class="fas fa-envelope w-4 opacity-50"></i> {{ $dokter->email }}</p>
@@ -124,7 +112,7 @@
                 <p class="text-xs font-bold text-blue-600 mb-3 mt-1">{{ $dokter->spesialisasi }}</p>
                 
                 <div class="text-xs text-slate-600 font-medium space-y-1.5 mb-5 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p><i class="fas fa-id-card text-slate-400 w-4"></i> NIK: <span class="font-mono">{{ $dokter->nik }}</span></p>
+                    <p><i class="fas fa-id-card text-slate-400 w-4"></i> NIK: <span class="font-mono">{{ $dokter->nik ?? '-' }}</span></p>
                     <p><i class="fas fa-envelope text-slate-400 w-4"></i> {{ $dokter->email }}</p>
                     <p><i class="fas fa-phone text-slate-400 w-4"></i> {{ $dokter->no_hp ?? '-' }}</p>
                 </div>

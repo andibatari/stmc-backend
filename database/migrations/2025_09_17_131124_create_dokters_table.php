@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('dokters', function (Blueprint $table) {
             $table->id();
-            $table->string('nik',20)->nullable(); // Ditambahkan untuk menyimpan NIK dokter
+            $table->string('nik', 20)->nullable();
             $table->string('nama_lengkap');
             $table->string('spesialisasi')->nullable();
-            $table->date('tanggal_lahir')->nullable(); // Ditambahkan untuk tanggal lahir
-            $table->string('golongan_darah')->nullable(); // Ditambahkan untuk golongan darah
+            $table->date('tanggal_lahir')->nullable();
+            $table->string('golongan_darah')->nullable();
             $table->string('no_hp')->nullable();
             $table->string('email')->unique();
-            $table->string('role')->default('dokter'); // Ditambahkan untuk peran pengguna
+            $table->string('role')->default('dokter'); 
+            $table->string('color', 7)->default('#3b82f6'); // Warna default untuk UI/Kalender
             $table->timestamps();
         });
     }
