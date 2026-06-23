@@ -10,6 +10,7 @@ class FCMService
 {
     public static function sendPushNotification($fcmToken, $title, $body, $link = null, $recipientSap = null, $tipe = 'general')
     {
+        Log::info("DEBUG FCM: Mencoba kirim notif ke token: " . $fcmToken);
         try {
             $credentialsPath = storage_path('app/firebase_credentials.json');
             
