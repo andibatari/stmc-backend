@@ -21,27 +21,6 @@ Route::get('/jadwal-mcu/download-laporan-gabungan/{id}', [JadwalMcuApiController
 
 /**
  * ===============================
- * ROUTE UNTUK UPDATE FCM TOKEN (FLUTTER)
- * ===============================
- */
-Route::post('/update-fcm-token', function (Request $request) {
-    $request->validate([
-        'karyawan_id' => 'required',
-        'fcm_token' => 'required'
-    ]);
-
-    Karyawan::where('id', $request->karyawan_id)
-            ->update(['fcm_token' => $request->fcm_token]);
-
-    return response()->json([
-        'status' => 'success', 
-        'message' => 'FCM Token berhasil diperbarui'
-    ]);
-});
-
-
-/**
- * ===============================
  * ROUTE UMUM (SEMUA TOKEN SANCTUM)
  * ===============================
  */
@@ -49,6 +28,22 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ✅ Logout untuk SEMUA USER
     Route::post('/logout', [ApiAuthController::class, 'logout']);
+    Route::post('/update-fcm-token', function (Request $request) {
+        $request->validate(['fcm_token' => 'required']);
+        
+        $user = $request->user(); // Laravel otomatis tahu siapa yang login!
+        
+        // Cek apakah user adalah karyawan
+        if ($user instanceof \App\Models\EmployeeLogin && $user->karyawan) {
+            $user->karyawan->update(['fcm_token' => $request->fcm_token]);
+        } 
+        // Cek apakah user adalah peserta MCU
+        elseif ($user instanceof \App\Models\PesertaMcuLogin && $user->pasien) {
+            $user->pasien->update(['fcm_token' => $request->fcm_token]);
+        }
+
+        return response()->json(['status' => 'success']);
+    });
     // ✅ Ganti password untuk SEMUA USER
     Route::post('/change-password', [ApiAuthController::class, 'changePassword']);
     Route::post('/update-profile', [ApiAuthController::class, 'updateProfile']); 
