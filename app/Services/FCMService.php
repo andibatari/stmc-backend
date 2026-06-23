@@ -21,27 +21,31 @@ class FCMService
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            // 🌟 1. KITA MASUKKAN SEMUA INFO KE DALAM BLOK DATA
+            // 🌟 Atur Channel ID berdasarkan tipe (harus persis sama dengan yang didaftarkan di Flutter main.dart)
+            $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v5' : 'fcm_default_channel';
+
             $messagePayload = [
                 'token' => $fcmToken,
+                // 🌟 KEMBALIKAN BLOK NOTIFICATION INI AGAR GOOGLE PLAY SERVICES BISA MEMBACANYA SAAT APLIKASI DI-KILL
+                'notification' => [
+                    'title' => $title,
+                    'body' => $body,
+                ],
                 'data' => [
                     'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     'action_link' => $link ?? '', 
                     'recipient_sap' => $recipientSap ?? 'ALL',
                     'tipe' => $tipe,
-                    'title' => $title, // Pindahkan title ke sini
-                    'body' => $body,   // Pindahkan body ke sini
+                ],
+                'android' => [
+                    'priority' => 'high',
+                    'notification' => [
+                        'color' => '#C00000',
+                        'channel_id' => $channelId, // 🌟 KUNCI UTAMA: Google Play Services akan mencari channel ini
+                        'sound' => 'ding_dong.wav' // Opsional, sekadar penegas untuk OS
+                    ]
                 ],
             ];
-
-            // 🌟 2. JIKA INI BUKAN ALARM PANGGILAN, BARU KITA TAMBAHKAN BLOK NOTIFICATION
-            // (Agar notifikasi pengumuman biasa tetap muncul normal)
-            if ($tipe !== 'panggilan_poli') {
-                $messagePayload['notification'] = [
-                    'title' => $title,
-                    'body' => $body,
-                ];
-            }
 
             $response = Http::withToken(self::getAccessToken($credentialsPath))
                 ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", [
