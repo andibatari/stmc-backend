@@ -8,7 +8,6 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FCMService
 {
-    // Tambahkan parameter $tipe di akhir
     public static function sendPushNotification($fcmToken, $title, $body, $link = null, $recipientSap = null, $tipe = 'general')
     {
         try {
@@ -22,31 +21,27 @@ class FCMService
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            // Atur nama file suara dan ID channel khusus jika tipenya panggilan poli
-            $soundName = ($tipe === 'panggilan_poli') ? 'ding_dong.wav' : 'default';
-            $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v3' : 'fcm_default_channel';
-
+            // 🌟 1. KITA MASUKKAN SEMUA INFO KE DALAM BLOK DATA
             $messagePayload = [
                 'token' => $fcmToken,
-                'notification' => [
-                    'title' => $title,
-                    'body' => $body,
-                ],
                 'data' => [
                     'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     'action_link' => $link ?? '', 
                     'recipient_sap' => $recipientSap ?? 'ALL',
-                    'tipe' => $tipe, // Data ini akan dibaca oleh main.dart Flutter
-                ],
-                'android' => [
-                    'priority' => 'high',
-                    'notification' => [
-                        'color' => '#C00000',
-                        'sound' => $soundName,
-                        'channel_id' => $channelId,
-                    ]
+                    'tipe' => $tipe,
+                    'title' => $title, // Pindahkan title ke sini
+                    'body' => $body,   // Pindahkan body ke sini
                 ],
             ];
+
+            // 🌟 2. JIKA INI BUKAN ALARM PANGGILAN, BARU KITA TAMBAHKAN BLOK NOTIFICATION
+            // (Agar notifikasi pengumuman biasa tetap muncul normal)
+            if ($tipe !== 'panggilan_poli') {
+                $messagePayload['notification'] = [
+                    'title' => $title,
+                    'body' => $body,
+                ];
+            }
 
             $response = Http::withToken(self::getAccessToken($credentialsPath))
                 ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", [
