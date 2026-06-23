@@ -82,6 +82,26 @@ class AuthController extends Controller
     }
 
     /**
+     * API untuk update token jika login sukses tapi token belum siap
+     * POST /api/update-token
+     */
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate(['fcm_token' => 'required|string']);
+        $user = $request->user('sanctum');
+        Log::info("DEBUG Auth: Mencoba update FCM token untuk user: " . $user->id);
+        if ($user instanceof EmployeeLogin && $user->karyawan) {
+            $user->karyawan()->update(['fcm_token' => $request->fcm_token]);
+            return response()->json(['status' => 'success']);
+        } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
+            $user->pasien()->update(['fcm_token' => $request->fcm_token]);
+            return response()->json(['status' => 'success']);
+        }
+        
+        return response()->json(['status' => 'error'], 400);
+    }
+
+    /**
      * LOGOUT API
      * POST /api/logout
      */
