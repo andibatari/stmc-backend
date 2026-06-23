@@ -42,7 +42,7 @@ class FCMService
                     'notification' => [
                         'color' => '#C00000',
                         'channel_id' => $channelId, // 🌟 KUNCI UTAMA: Google Play Services akan mencari channel ini
-                        'sound' => 'ding_dong.wav' // Opsional, sekadar penegas untuk OS
+                        'sound' => 'ding_dong' // Opsional, sekadar penegas untuk OS
                     ]
                 ],
             ];
