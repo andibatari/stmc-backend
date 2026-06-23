@@ -253,8 +253,10 @@ class QrPatientDetail extends Component
 
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
 
+            // 1. Tembak UI Real-time via Pusher (Untuk layar yang sedang terbuka)
             event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
 
+            // 2. Tembak FCM via Background (Untuk membangunkan HP yang mati)
             $fcmToken = null;
             if ($this->jadwal->karyawan && $this->jadwal->karyawan->user) {
                 $fcmToken = $this->jadwal->karyawan->user->fcm_token;
@@ -264,12 +266,26 @@ class QrPatientDetail extends Component
 
             if ($fcmToken) {
                 $this->sendFcmNotification($fcmToken, $namaPoli);
-            } else {
-                \Log::warning("Token FCM tidak ditemukan untuk jadwal ID: " . $this->jadwal->id);
             }
 
-            $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim ke HP Pasien!"]);
+            $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim!"]);
         }
+    }
+
+    // Fungsi Privat Khusus untuk menembak FCMService
+    private function sendFcmNotification($token, $namaPoli)
+    {
+        $pasienName = $this->jadwal->karyawan->nama_karyawan ?? $this->jadwal->pesertaMcu->nama_lengkap ?? 'Pasien';
+        $noSap = $this->jadwal->karyawan->no_sap ?? null;
+
+        \App\Services\FCMService::sendPushNotification(
+            $token, 
+            "PANGGILAN PEMERIKSAAN", 
+            "Hai {$pasienName}, Giliran Anda! Silakan segera masuk ke ruangan {$namaPoli}", 
+            '', 
+            $noSap, 
+            'panggilan_poli' // Parameter sakti untuk memicu alarm
+        );
     }
 
     public function render()

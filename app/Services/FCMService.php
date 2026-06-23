@@ -8,19 +8,23 @@ use Google\Auth\Credentials\ServiceAccountCredentials;
 
 class FCMService
 {
-    // 🌟 PERBAIKAN: Tambahkan parameter $recipientSap untuk validasi kepemilikan perangkat di mobile
-    public static function sendPushNotification($fcmToken, $title, $body, $link = null, $recipientSap = null)
+    // Tambahkan parameter $tipe di akhir
+    public static function sendPushNotification($fcmToken, $title, $body, $link = null, $recipientSap = null, $tipe = 'general')
     {
         try {
             $credentialsPath = storage_path('app/firebase_credentials.json');
             
             if (!file_exists($credentialsPath)) {
-                Log::error("FCMService: File kredensial tidak ditemukan di " . $credentialsPath);
+                Log::error("FCMService: File kredensial tidak ditemukan.");
                 return false;
             }
 
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
+
+            // Atur nama file suara dan ID channel khusus jika tipenya panggilan poli
+            $soundName = ($tipe === 'panggilan_poli') ? 'ding_dong.wav' : 'default';
+            $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v3' : 'fcm_default_channel';
 
             $messagePayload = [
                 'token' => $fcmToken,
@@ -31,13 +35,15 @@ class FCMService
                 'data' => [
                     'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     'action_link' => $link ?? '', 
-                    'recipient_sap' => $recipientSap ?? 'ALL', // 🌟 Dikirim ke Flutter
+                    'recipient_sap' => $recipientSap ?? 'ALL',
+                    'tipe' => $tipe, // Data ini akan dibaca oleh main.dart Flutter
                 ],
                 'android' => [
                     'priority' => 'high',
                     'notification' => [
                         'color' => '#C00000',
-                        'sound' => 'default',
+                        'sound' => $soundName,
+                        'channel_id' => $channelId,
                     ]
                 ],
             ];
@@ -47,13 +53,7 @@ class FCMService
                     'message' => $messagePayload
                 ]);
 
-            if ($response->successful()) {
-                Log::info("FCMService: Berhasil dikirim ke " . substr($fcmToken, 0, 10));
-                return true;
-            } else {
-                Log::error("FCMService Error: " . $response->body());
-                return false;
-            }
+            return $response->successful();
 
         } catch (\Exception $e) {
             Log::error("FCMService Exception: " . $e->getMessage());
