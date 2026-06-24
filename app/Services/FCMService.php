@@ -22,9 +22,10 @@ class FCMService
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            // 🌟 Atur Channel ID berdasarkan tipe (harus persis sama dengan yang didaftarkan di Flutter main.dart)
-            $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v5' : 'fcm_default_channel';
+            // Atur Channel ID berdasarkan tipe (Gunakan v6 sesuai dengan Flutter main.dart)
+            $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v6' : 'fcm_default_channel';
 
+            // Base Payload (Data Only)
             $messagePayload = [
                 'token' => $fcmToken,
                 'data' => [
@@ -37,8 +38,21 @@ class FCMService
                 ],
                 'android' => [
                     'priority' => 'high',
+                    'notification' => [
+                        'channel_id' => $channelId, // Android butuh ini untuk membedakan suara
+                    ]
                 ],
             ];
+
+            // 🌟 LOGIKA CERDAS ANTI-TABRAKAN 🌟
+            // Jika BUKAN panggilan poli (berarti pengumuman massal/pengingat), 
+            // kita tambahkan blok 'notification' agar Android otomatis memunculkan spanduk di atas layar.
+            if ($tipe !== 'panggilan_poli') {
+                $messagePayload['notification'] = [
+                    'title' => $title,
+                    'body' => $body,
+                ];
+            }
 
             $response = Http::withToken(self::getAccessToken($credentialsPath))
                 ->post("https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send", [
