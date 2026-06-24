@@ -62,5 +62,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/paket', [JadwalMcuApiController::class, 'getPaketMcu']);
         Route::get('/check-ketersediaan', [\App\Http\Controllers\Api\JadwalMcuApiController::class, 'checkKetersediaan']);
     });
-    Route::get('/dropdown-data', [\App\Http\Controllers\Api\AuthController::class, 'getDropdownData']);
 });

@@ -330,52 +330,36 @@ class AuthController extends Controller
                 'kabupaten'     => 'nullable|string',
                 'kecamatan'     => 'nullable|string',
                 'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,webp,heic|max:5120',
-                // Validasi tambahan
-                'departemen'    => 'nullable|string',
-                'unit_kerja'    => 'nullable|string',
-                'golongan_darah'=> 'nullable|string',
-                'pekerjaan'     => 'nullable|string',
-                'pendidikan'    => 'nullable|string',
-                'eselon'        => 'nullable|string',
-                'jabatan'       => 'nullable|string',
-                'tanggal_lahir' => 'nullable|date',
-                'tempat_lahir'  => 'nullable|string',
-                'kebangsaan'    => 'nullable|string',
-                'agama'         => 'nullable|string',
-                'gender'        => 'nullable|string',
             ]);
 
             if ($request->hasFile('foto_profil')) {
                 $file = $request->file('foto_profil');
+                
                 if ($file->isValid()) {
+                    // Hapus foto lama di penyimpanan lokal public jika ada
                     if (!empty($profile->foto_profil)) {
-                        try { Storage::disk('public')->delete($profile->foto_profil); } catch (\Exception $e) {}
+                        try {
+                            Storage::disk('public')->delete($profile->foto_profil);
+                        } catch (\Exception $e) {}
                     }
+
+                    // 🌟 SIMPAN KE DISK PUBLIC HOSTING
                     $path = $file->store('profile_photos', 'public');
                     $profile->foto_profil = $path;
                 }
             }
 
-            // 🌟 PENERJEMAH ID UNTUK DROPDOWN RELASI
-            $provinsiId = null;
+            $provinsiId = null; // Default null jika tidak ada
             if (!empty($request->provinsi)) {
+                // Cari data provinsi di tabel master berdasarkan namanya
                 $provinsiData = \App\Models\Provinsi::where('nama_provinsi', $request->provinsi)->first();
-                if ($provinsiData) $provinsiId = $provinsiData->id;
+                
+                // Jika ketemu, ambil ID-nya
+                if ($provinsiData) {
+                    $provinsiId = $provinsiData->id;
+                }
             }
 
-            $departemenId = null;
-            if (!empty($request->departemen)) {
-                $deptData = \App\Models\Departemen::where('nama_departemen', $request->departemen)->first();
-                if ($deptData) $departemenId = $deptData->id;
-            }
-
-            $unitKerjaId = null;
-            if (!empty($request->unit_kerja)) {
-                $ukData = \App\Models\UnitKerja::where('nama_unit_kerja', $request->unit_kerja)->first();
-                if ($ukData) $unitKerjaId = $ukData->id;
-            }
-
-            // 🌟 SUSUN DATA UPDATE
             $updateData = [
                 'no_hp' => $request->no_hp,
                 'alamat' => $request->alamat,
@@ -384,20 +368,6 @@ class AuthController extends Controller
                 'provinsi_id' => $provinsiId,
                 'nama_kabupaten' => $request->kabupaten,
                 'nama_kecamatan' => $request->kecamatan,
-                
-                // Field Baru
-                'departemen_id' => $departemenId,
-                'unit_kerjas_id' => $unitKerjaId, // Sesuaikan jika nama kolomnya unit_kerja_id
-                'golongan_darah' => $request->golongan_darah,
-                'pekerjaan' => $request->pekerjaan,
-                'pendidikan' => $request->pendidikan,
-                'eselon' => $request->eselon,
-                'jabatan' => $request->jabatan,
-                'tanggal_lahir' => $request->tanggal_lahir,
-                'tempat_lahir' => $request->tempat_lahir,
-                'kebangsaan' => $request->kebangsaan,
-                'agama' => $request->agama,
-                'jenis_kelamin' => $request->gender, 
             ];
 
             if ($user instanceof EmployeeLogin) {
@@ -428,43 +398,6 @@ class AuthController extends Controller
                 'message' => 'Exception: ' . $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => basename($e->getFile())
-            ], 500);
-        }
-    }
-
-    public function getDropdownData()
-    {
-        try {
-            // 1. Tarik semua nama provinsi
-            $provinsi = \App\Models\Provinsi::pluck('nama_provinsi')->toArray();
-
-            // 2. Tarik Departemen & Unit Kerja
-            $departemenData = \App\Models\Departemen::all();
-            $unitKerjaData = \App\Models\UnitKerja::all();
-            
-            $mapDepartemenUnitKerja = [];
-            
-            foreach ($departemenData as $dept) {
-                // Cari semua unit kerja yang departemens_id-nya sama dengan id departemen ini
-                $units = $unitKerjaData->where('departemens_id', $dept->id)
-                                       ->pluck('nama_unit_kerja')
-                                       ->toArray();
-                                       
-                $mapDepartemenUnitKerja[$dept->nama_departemen] = $units;
-            }
-
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'provinsi' => $provinsi,
-                    'departemen_unit_kerja' => $mapDepartemenUnitKerja
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal menarik data master: ' . $e->getMessage()
             ], 500);
         }
     }
