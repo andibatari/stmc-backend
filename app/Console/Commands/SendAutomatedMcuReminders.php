@@ -20,7 +20,7 @@ class SendAutomatedMcuReminders extends Command
         $timezone = 'Asia/Makassar';
         
         // 1. KITA HANYA CEK JAM (Mengabaikan Menit agar tidak pernah meleset)
-        $jamSekarang = 19;
+        $jamSekarang = Carbon::now($timezone)->hour;
 
         // 2. Tentukan Tanggal Target & Teks
         if ($jamSekarang == 19) {
