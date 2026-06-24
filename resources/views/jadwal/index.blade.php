@@ -57,7 +57,7 @@
             <h1 class="text-xl md:text-2xl font-black text-slate-800">Manajemen Jadwal</h1>
             <p class="text-[10px] md:text-sm font-medium text-slate-500 mt-0.5">Kelola dan pantau antrean MCU.</p>
         </div>
-        <a href="{{ route('jadwal.create') }}" class="hidden md:inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm text-xs transition-colors">
+        <a href="{{ route('jadwal-mcu.create') }}" class="hidden md:inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm text-xs transition-colors">
             <i class="fas fa-plus mr-1.5"></i> Tambah Jadwal
         </a>
     </div>
@@ -65,7 +65,7 @@
     <div class="bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
         <div class="p-4 md:p-6">
             
-            <a href="{{ route('jadwal.create') }}" class="md:hidden w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm mb-4 text-xs transition-colors">
+            <a href="{{ route('jadwal-mcu.create') }}" class="md:hidden w-full flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm mb-4 text-xs transition-colors">
                 <i class="fas fa-plus mr-1.5"></i> Buat Jadwal Baru
             </a>
 
