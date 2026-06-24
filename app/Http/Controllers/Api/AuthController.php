@@ -431,4 +431,41 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    public function getDropdownData()
+    {
+        try {
+            // 1. Tarik semua nama provinsi
+            $provinsi = \App\Models\Provinsi::pluck('nama_provinsi')->toArray();
+
+            // 2. Tarik Departemen & Unit Kerja
+            $departemenData = \App\Models\Departemen::all();
+            $unitKerjaData = \App\Models\UnitKerja::all();
+            
+            $mapDepartemenUnitKerja = [];
+            
+            foreach ($departemenData as $dept) {
+                // Cari semua unit kerja yang departemens_id-nya sama dengan id departemen ini
+                $units = $unitKerjaData->where('departemens_id', $dept->id)
+                                       ->pluck('nama_unit_kerja')
+                                       ->toArray();
+                                       
+                $mapDepartemenUnitKerja[$dept->nama_departemen] = $units;
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'provinsi' => $provinsi,
+                    'departemen_unit_kerja' => $mapDepartemenUnitKerja
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menarik data master: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
