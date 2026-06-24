@@ -27,24 +27,16 @@ class FCMService
 
             $messagePayload = [
                 'token' => $fcmToken,
-                // 🌟 KEMBALIKAN BLOK NOTIFICATION INI AGAR GOOGLE PLAY SERVICES BISA MEMBACANYA SAAT APLIKASI DI-KILL
-                'notification' => [
-                    'title' => $title,
-                    'body' => $body,
-                ],
                 'data' => [
                     'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
                     'action_link' => $link ?? '', 
                     'recipient_sap' => $recipientSap ?? 'ALL',
                     'tipe' => $tipe,
+                    'title' => $title, 
+                    'body' => $body,
                 ],
                 'android' => [
                     'priority' => 'high',
-                    'notification' => [
-                        'color' => '#C00000',
-                        'channel_id' => $channelId, // 🌟 KUNCI UTAMA: Google Play Services akan mencari channel ini
-                        'sound' => 'ding_dong' // Opsional, sekadar penegas untuk OS
-                    ]
                 ],
             ];
 
