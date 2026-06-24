@@ -76,13 +76,14 @@ Route::middleware(['auth:admin_users', 'verified'])->prefix('admin')->group(func
     Route::post('/peserta-mcu/import', [KaryawanController::class, 'pesertaMcuImport'])->name('peserta-mcu.import');
 
     // Manajemen Jadwal MCU
-    Route::resource('jadwal', JadwalMcuController::class);
+    //Beritahu Laravel untuk membuat semua rute otomatis, KECUALI 'create'
+    Route::resource('jadwal', JadwalMcuController::class)->except(['create']);
     // Route::get('/jadwal-mcu', [JadwalMcuController::class, 'index'])->name('jadwal.list');
-    Route::get('/jadwal-mcu/create', [JadwalMcuController::class, 'create'])->name('jadwal.create');
-    Route::delete('/jadwal/{jadwal}', [JadwalMcuController::class, 'destroy'])->name('jadwal.destroy');
+    Route::get('/jadwal-mcu/create', [JadwalMcuController::class, 'create'])->name('jadwal-mcu.create');
+    // Route::delete('/jadwal/{jadwal}', [JadwalMcuController::class, 'destroy'])->name('jadwal.destroy');
     Route::get('/jadwal/{jadwal}/detail', \App\Livewire\QrPatientDetail::class)->name('qr-patient-detail');
-    Route::get('/jadwal/{jadwal}/edit', [JadwalMcuController::class, 'edit'])->name('jadwal.edit');
-    Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
+    // Route::get('/jadwal/{jadwal}/edit', [JadwalMcuController::class, 'edit'])->name('jadwal.edit');
+    // Route::put('/jadwal/{jadwal}', [JadwalMcuController::class, 'update'])->name('jadwal.update');
     Route::get('/jadwal-dokter', JadwalDokterManager::class)->name('admin.jadwal-dokter');
     // Rute API untuk Jadwal Dokter (digunakan oleh FullCalendar)
     Route::get('/get-jadwal-dokter', [\App\Http\Controllers\Api\JadwalDokterApiController::class, 'getEvents'])->name('api.jadwal-dokter'); 
