@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Log;
-use App\Events\PanggilPasienEvent;
 use Livewire\Component;
 use App\Models\JadwalMcu;
 use App\Models\Karyawan;
@@ -29,15 +28,10 @@ class QrPatientDetail extends Component
     public $resumeData = [];
     public $resumeSaran;
     public $resumeKategori;
-
     public $uploadedFileNames = [];
-
     public $uploadablePoliNames = ['LABORATORIUM', 'SPIROMETRI', 'AUDIOMETRI', 'EKG', 'THORAX PHOTO', 'TREADMILL', 'USG'];
 
-    protected $listeners = [
-        'updatePoliStatus',
-        'changeTab'
-    ];
+    protected $listeners = ['updatePoliStatus', 'changeTab'];
 
     public function handleUploadError($name, $errors, $isMultiple)
     {
@@ -46,15 +40,11 @@ class QrPatientDetail extends Component
 
     public function changeTab($tabName)
     {
-        if ($tabName) {
-            $this->activeTab = $tabName;
-        }
+        if ($tabName) $this->activeTab = $tabName;
     }
 
-    // PERBAIKAN: Semua kunci diubah menjadi format standar yang aman (snake_case)
     protected $rules = [
         'pdfFiles.*' => 'nullable|file|mimes:pdf|max:10240',
-
         'resumeData.bmi' => 'nullable|string|max:255',
         'resumeData.laboratorium' => 'nullable|string|max:255',
         'resumeData.ekg' => 'nullable|string|max:255',
@@ -67,7 +57,6 @@ class QrPatientDetail extends Component
         'resumeData.thorax' => 'nullable|string|max:255',
         'resumeData.treadmill' => 'nullable|string|max:255',
         'resumeData.usg' => 'nullable|string|max:255',
-
         'resumeSaran' => 'nullable|string|max:5000',
         'resumeKategori' => 'nullable|string|max:255',
     ];
@@ -75,25 +64,18 @@ class QrPatientDetail extends Component
     public function mount(JadwalMcu $jadwal)
     {
         $this->jadwal = $jadwal;
-
-        if (request()->has('tab')) {
-            $this->activeTab = request()->query('tab');
-        }
+        if (request()->has('tab')) $this->activeTab = request()->query('tab');
 
         $patientData = $jadwal->karyawan ?? $jadwal->pesertaMcu;
-
         $existingData = $jadwal->resume_body ? json_decode($jadwal->resume_body, true) : [];
         $this->resumeData = array_merge($this->getDefaultResumeData(), $existingData);
 
-        // PERBAIKAN: Menggunakan key 'bmi' kecil agar sesuai aturan array di atas
         if (empty($this->resumeData['bmi']) && $patientData) {
             $weight = $patientData->berat_badan;
             $height = $patientData->tinggi_badan;
-
             if ($weight > 0 && $height > 0) {
                 $heightInMeter = $height / 100;
                 $bmiValue = $weight / ($heightInMeter * $heightInMeter);
-
                 $this->resumeData['bmi'] = number_format($bmiValue, 1);
             }
         }
@@ -104,45 +86,29 @@ class QrPatientDetail extends Component
 
     protected function getDefaultResumeData()
     {
-        // PERBAIKAN: Key diubah formatnya agar terbaca aman oleh Livewire dan Flutter
         return [
-            'bmi' => null,
-            'laboratorium' => null,
-            'ekg' => null,
-            'gigi' => null,
-            'mata' => null,
-            'spirometri' => null,
-            'audiometri' => null,
-            'kebugaran' => null,
-            'temuan_lain' => null,
-            'thorax' => null,
-            'treadmill' => null,
-            'usg' => null,
+            'bmi' => null, 'laboratorium' => null, 'ekg' => null, 'gigi' => null,
+            'mata' => null, 'spirometri' => null, 'audiometri' => null,
+            'kebugaran' => null, 'temuan_lain' => null, 'thorax' => null,
+            'treadmill' => null, 'usg' => null,
         ];
     }
 
     public function saveResume()
     {
         $this->validate();
-
         try {
             $this->jadwal->update([
                 'resume_body' => json_encode($this->resumeData),
                 'resume_saran' => $this->resumeSaran,
                 'resume_kategori' => $this->resumeKategori,
             ]);
-
-            // TAMBAHAN: Mengirimkan flash message sukses ke tampilan Blade
             session()->flash('success', 'Data resume medis berhasil disimpan!');
-
             $this->dispatch('status-updated', ['message' => 'Resume berhasil disimpan!']);
             $this->jadwal->refresh();
         } catch (\Throwable $e) {
-            \Log::error("Gagal menyimpan resume: " . $e->getMessage());
-            
-            // TAMBAHAN: Mengirimkan flash message error jika gagal
+            Log::error("Gagal menyimpan resume: " . $e->getMessage());
             session()->flash('error', 'Gagal menyimpan resume. Silakan coba lagi.');
-            
             $this->dispatch('error', ['message' => 'Gagal menyimpan resume. Silakan coba lagi.']);
         }
     }
@@ -150,34 +116,26 @@ class QrPatientDetail extends Component
     public function downloadAllPdfs()
     {
         $this->jadwal->refresh();
-
         if (!$this->jadwal || !$this->jadwal->id) {
             $this->dispatch('show-error', ['message' => 'ID Jadwal tidak dapat diakses untuk penggabungan file.']);
             return;
         }
-
         $this->dispatch('view-merged-pdf', jadwalId: $this->jadwal->id);
     }
 
     public function saveStatus($poliId)
     {
         $status = $this->formInputs[$poliId]['status'] ?? null;
-        if ($status) {
-            $this->updatePoliStatus($poliId, $status);
-        }
+        if ($status) $this->updatePoliStatus($poliId, $status);
     }
 
     public function updatePoliStatus($poliId, $status)
     {
         $this->jadwal->refresh();
         $jadwalPoli = $this->jadwal->jadwalPoli->firstWhere('poli_id', $poliId);
-
         if ($jadwalPoli) {
             $jadwalPoli->status = $status;
             $jadwalPoli->save();
-
-            event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
-
             $this->jadwal->load('jadwalPoli.poli');
             $this->dispatch('status-updated', ['message' => 'Status poli berhasil diperbarui.']);
         }
@@ -185,10 +143,7 @@ class QrPatientDetail extends Component
 
     public function savePdf($poliId)
     {
-        $this->validate([
-            "pdfFiles.$poliId" => 'required|file|mimes:pdf|max:10240',
-        ]);
-
+        $this->validate(["pdfFiles.$poliId" => 'required|file|mimes:pdf|max:10240']);
         $jadwalPoli = $this->jadwal->jadwalPoli()->with('poli')->where('poli_id', $poliId)->first();
 
         if (!$jadwalPoli) {
@@ -199,33 +154,23 @@ class QrPatientDetail extends Component
         if (isset($this->pdfFiles[$poliId])) {
             try {
                 $file = $this->pdfFiles[$poliId];
-
                 $patientName = $this->patient->nama_lengkap ?? $this->patient->nama_karyawan ?? 'Pasien';
                 $safePatientName = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $patientName));
-
                 $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
                 $safeNamaPoli = preg_replace('/[^A-Za-z0-9\_]/', '', str_replace(' ', '_', $namaPoli));
-
                 $tahun = now()->format('Y');
-
                 $fileName = 'Hasil_Pemeriksaan_' . $safeNamaPoli . '_' . $safePatientName . '_' . $tahun . '_' . now()->timestamp . '.pdf';
 
-                $folderPath = 'mcu_results';
-
-                $path = $file->storeAs($folderPath, $fileName, 'public');
-
+                $path = $file->storeAs('mcu_results', $fileName, 'public');
                 $jadwalPoli->file_path = $path;
                 $jadwalPoli->status = 'Finished';
                 $jadwalPoli->save();
 
-                event(new \App\Events\StatusPoliUpdatedEvent($this->jadwal->id));
-
                 $this->uploadedFileNames[$poliId] = $fileName;
                 $this->pdfFiles[$poliId] = null;
-
                 $this->dispatch('status-updated', ['message' => 'File berhasil diunggah ke Cloud Storage!']);
             } catch (\Throwable $e) {
-                \Log::error("S3 Upload Error: " . $e->getMessage());
+                Log::error("S3 Upload Error: " . $e->getMessage());
                 $this->dispatch('error', ['message' => 'Gagal mengunggah ke Cloud: ' . $e->getMessage()]);
             }
         } else {
@@ -233,15 +178,8 @@ class QrPatientDetail extends Component
         }
     }
 
-    public function markAsDone($poliId)
-    {
-        $this->updatePoliStatus($poliId, 'Finished');
-    }
-
-    public function markAsPending($poliId)
-    {
-        $this->updatePoliStatus($poliId, 'Pending');
-    }
+    public function markAsDone($poliId) { $this->updatePoliStatus($poliId, 'Finished'); }
+    public function markAsPending($poliId) { $this->updatePoliStatus($poliId, 'Pending'); }
 
     public function panggilPasien($poliId)
     {
@@ -250,29 +188,26 @@ class QrPatientDetail extends Component
         if ($jadwalPoli) {
             $jadwalPoli->status = 'Calling';
             $jadwalPoli->save();
-
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
 
-            // 1. Tembak UI Real-time via Pusher (Untuk layar yang sedang terbuka)
-            event(new \App\Events\PanggilPasienEvent($this->jadwal->id, $namaPoli));
-
-            // 2. Tembak FCM via Background (Untuk membangunkan HP yang mati)
+            // 🌟 PROSES VALIDASI FCM TOKEN LANGSUNG KE TABEL LOGIN
             $fcmToken = null;
-            if ($this->jadwal->karyawan && $this->jadwal->karyawan->user) {
-                $fcmToken = $this->jadwal->karyawan->user->fcm_token;
-            } elseif ($this->jadwal->pesertaMcu && $this->jadwal->pesertaMcu->user) {
-                $fcmToken = $this->jadwal->pesertaMcu->user->fcm_token;
+            if ($this->jadwal->karyawan_id) {
+                $fcmToken = \App\Models\EmployeeLogin::where('karyawan_id', $this->jadwal->karyawan_id)->value('fcm_token');
+            } elseif ($this->jadwal->peserta_mcus_id) {
+                $fcmToken = \App\Models\PesertaMcuLogin::where('peserta_mcu_id', $this->jadwal->peserta_mcus_id)->value('fcm_token');
             }
 
             if ($fcmToken) {
                 $this->sendFcmNotification($fcmToken, $namaPoli);
+                $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim via FCM!"]);
+            } else {
+                Log::warning("Gagal mengirim panggilan: Token FCM kosong untuk jadwal ID: " . $this->jadwal->id);
+                $this->dispatch('error', ['message' => "Gagal memanggil, token perangkat pasien tidak terdaftar."]);
             }
-
-            $this->dispatch('status-updated', ['message' => "Panggilan ke $namaPoli telah dikirim!"]);
         }
     }
 
-    // Fungsi Privat Khusus untuk menembak FCMService
     private function sendFcmNotification($token, $namaPoli)
     {
         $pasienName = $this->jadwal->karyawan->nama_karyawan ?? $this->jadwal->pesertaMcu->nama_lengkap ?? 'Pasien';
@@ -284,7 +219,7 @@ class QrPatientDetail extends Component
             "Hai {$pasienName}, Giliran Anda! Silakan segera masuk ke ruangan {$namaPoli}", 
             '', 
             $noSap, 
-            'panggilan_poli' // Parameter sakti untuk memicu alarm
+            'panggilan_poli'
         );
     }
 
@@ -300,11 +235,8 @@ class QrPatientDetail extends Component
                 'nama_lengkap' => $this->jadwal->nama_pasien ?? 'Pasien Tidak Ditemukan',
                 'nama_karyawan' => $this->jadwal->nama_pasien ?? 'Pasien Tidak Ditemukan',
                 'perusahaan_asal' => $this->jadwal->perusahaan_asal ?? 'N/A',
-                'no_sap' => 'N/A',
-                'nik_pasien' => 'N/A',
-                'nik_karyawan' => 'N/A',
-                'tanggal_lahir' => $this->jadwal->tanggal_mcu,
-                'jenis_kelamin' => 'N/A',
+                'no_sap' => 'N/A', 'nik_pasien' => 'N/A', 'nik_karyawan' => 'N/A',
+                'tanggal_lahir' => $this->jadwal->tanggal_mcu, 'jenis_kelamin' => 'N/A', 'agama' => 'N/A',
             ];
         }
 
