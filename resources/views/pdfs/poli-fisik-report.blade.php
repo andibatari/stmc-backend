@@ -41,6 +41,7 @@
         .pajanan-table td { padding: 3px 5px; border-bottom: 1px dotted #cbd5e1; }
         .pajanan-table .item-label { width: 75%; color: #475569; }
         .pajanan-table .item-value { width: 25%; font-weight: bold; color: #0f4a7b; text-align: right; }
+        .pajanan-category-header { background-color: #e2e8f0; color: #0f172a; font-weight: bold; padding: 4px 5px !important; border-bottom: 1px solid #94a3b8 !important; }
 
         .result-box { background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 8px 12px; margin-bottom: 15px; font-size: 9pt; color: #14532d; }
         
@@ -53,7 +54,6 @@
 </head>
 <body>
     <div class="page">
-        <!-- HEADER -->
         <table class="header">
             <tr>
                 <td style="width: 15%; text-align: left;"><img src="{{ public_path('images/logo-semen-tonasa.png') }}" class="logo"></td>
@@ -67,7 +67,6 @@
 
         <div class="document-title">Laporan Hasil Pemeriksaan Fisik Lengkap</div>
 
-        <!-- INFO PASIEN -->
         <table class="patient-card">
             <tr>
                 <td class="label">Nama Pasien</td><td class="value">{{ $patient->nama_lengkap ?? $patient->nama_karyawan ?? 'N/A' }}</td>
@@ -82,10 +81,46 @@
             </tr>
         </table>
 
-        <!-- 1. TANDA VITAL -->
+        @php 
+            $df = $fisikResult->data_fisik ?? [];
+            $anamnesa = $df['anamnesa'] ?? [];
+            $tv = $df['tanda_vital'] ?? []; 
+            $kepala = $df['kepala'] ?? []; 
+            $leher = $df['leher'] ?? []; 
+            $dada = $df['dada'] ?? []; 
+            $paru = $df['paru'] ?? []; 
+            $abdomen = $df['abdomen'] ?? []; 
+            $eks = $df['ekstremitas'] ?? []; 
+        @endphp
+
         <div class="page-break-avoid">
-            <div class="section-title">1. TANDA VITAL & ANTROPOMETRI</div>
-            @php $tv = $fisikResult->data_fisik['tanda_vital'] ?? []; @endphp
+            <div class="section-title">1. ANAMNESA</div>
+            <table class="grid-table">
+                <tr>
+                    <td class="label-col">Keluhan Utama</td>
+                    <td class="value-col" colspan="3">: {{ $anamnesa['keluhan_utama'] ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">Riwayat Kesehatan</td>
+                    <td class="value-col">: {{ ($anamnesa['riwayat_kesehatan'] ?? '') === 'Lainnya' ? ($anamnesa['riwayat_kesehatan_lainnya'] ?? '-') : ($anamnesa['riwayat_kesehatan'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Riwayat Penyakit Keluarga</td>
+                    <td class="value-col-last">: {{ ($anamnesa['riwayat_penyakit_keluarga'] ?? '') === 'Lainnya' ? ($anamnesa['riwayat_penyakit_keluarga_lainnya'] ?? '-') : ($anamnesa['riwayat_penyakit_keluarga'] ?? '-') }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">Merokok</td>
+                    <td class="value-col">: {{ $anamnesa['merokok'] ?? '-' }} {{ ($anamnesa['merokok'] ?? '') === 'Ya' ? '('.($anamnesa['merokok_jumlah'] ?? '-').' btg/hari)' : '' }}</td>
+                    <td class="label-col" style="padding-left:10px;">Minum Alkohol</td>
+                    <td class="value-col-last">: {{ $anamnesa['minum_alkohol'] ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">Olahraga</td>
+                    <td class="value-col" colspan="3">: {{ $anamnesa['olahraga'] ?? '-' }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="page-break-avoid">
+            <div class="section-title">2. TANDA VITAL & ANTROPOMETRI</div>
             <table class="grid-table" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
                 <tr>
                     <td class="label-col">Tinggi Badan</td><td class="value-col">: {{ $tv['tinggi_badan'] ?? '-' }} cm</td>
@@ -106,43 +141,33 @@
             </table>
         </div>
 
-        <!-- 2. PEMERIKSAAN FISIK -->
-        <div class="section-title">2. PEMERIKSAAN FISIK PER SISTEM</div>
-        
-        @php 
-            $kepala = $fisikResult->data_fisik['kepala'] ?? []; 
-            $leher = $fisikResult->data_fisik['leher'] ?? []; 
-            $dada = $fisikResult->data_fisik['dada'] ?? []; 
-            $paru = $fisikResult->data_fisik['paru'] ?? []; 
-            $abdomen = $fisikResult->data_fisik['abdomen'] ?? []; 
-            $eks = $fisikResult->data_fisik['ekstremitas'] ?? []; 
-        @endphp
-
+        <div class="section-title">3. PEMERIKSAAN FISIK PER SISTEM</div>
         <div class="page-break-avoid">
             <div class="sub-title">A. Area Kepala & Leher</div>
             <table class="grid-table">
                 <tr>
-                    <td class="label-col">Anemi</td><td class="value-col">: {{ $kepala['anemi'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Ikterus</td><td class="value-col-last">: {{ $kepala['ikterus'] ?? '-' }}</td>
+                    <td class="label-col">Anemi</td><td class="value-col">: {{ ($kepala['anemi'] ?? '') === 'Lainnya' ? ($kepala['anemi_lainnya'] ?? '-') : ($kepala['anemi'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Ikterus</td><td class="value-col-last">: {{ ($kepala['ikterus'] ?? '') === 'Lainnya' ? ($kepala['ikterus_lainnya'] ?? '-') : ($kepala['ikterus'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Dyspnoe</td><td class="value-col">: {{ $kepala['dyspnoe'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Cyanosis</td><td class="value-col-last">: {{ $kepala['cyanosis'] ?? '-' }}</td>
+                    <td class="label-col">Dyspnoe</td><td class="value-col">: {{ ($kepala['dyspnoe'] ?? '') === 'Lainnya' ? ($kepala['dyspnoe_lainnya'] ?? '-') : ($kepala['dyspnoe'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Cyanosis</td><td class="value-col-last">: {{ ($kepala['cyanosis'] ?? '') === 'Lainnya' ? ($kepala['cyanosis_lainnya'] ?? '-') : ($kepala['cyanosis'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Refleks Pupil</td><td class="value-col">: {{ $kepala['refleks_pupil'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Membran Timpani</td><td class="value-col-last">: {{ $kepala['membran_timpani'] ?? '-' }}</td>
+                    <td class="label-col">Refleks Pupil</td><td class="value-col">: {{ ($kepala['refleks_pupil'] ?? '') === 'Lainnya' ? ($kepala['refleks_pupil_lainnya'] ?? '-') : ($kepala['refleks_pupil'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Hidung</td><td class="value-col-last">: {{ ($kepala['hidung'] ?? '') === 'Lainnya' ? ($kepala['hidung_lainnya'] ?? '-') : ($kepala['hidung'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Tonsil Kanan / Kiri</td><td class="value-col">: {{ $kepala['tonsil_kanan'] ?? '-' }} / {{ $kepala['tonsil_kiri'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Serumen</td><td class="value-col-last">: {{ $kepala['serumen'] ?? '-' }}</td>
+                    <td class="label-col">Tonsil Kanan / Kiri</td><td class="value-col">: {{ ($kepala['tonsil_kanan'] ?? '') === 'Lainnya' ? ($kepala['tonsil_kanan_lainnya'] ?? '-') : ($kepala['tonsil_kanan'] ?? '-') }} / {{ ($kepala['tonsil_kiri'] ?? '') === 'Lainnya' ? ($kepala['tonsil_kiri_lainnya'] ?? '-') : ($kepala['tonsil_kiri'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Serumen</td><td class="value-col-last">: {{ ($kepala['serumen'] ?? '') === 'Lainnya' ? ($kepala['serumen_lainnya'] ?? '-') : ($kepala['serumen'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">JVP (Leher)</td><td class="value-col">: {{ $leher['jvp'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Kelenjar Tiroid</td><td class="value-col-last">: {{ $leher['tiroid'] ?? '-' }}</td>
+                    <td class="label-col">Membran Timpani</td><td class="value-col">: {{ ($kepala['membran_timpani'] ?? '') === 'Lainnya' ? ($kepala['membran_timpani_lainnya'] ?? '-') : ($kepala['membran_timpani'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">JVP (Leher)</td><td class="value-col-last">: {{ ($leher['jvp'] ?? '') === 'Lainnya' ? ($leher['jvp_lainnya'] ?? '-') : ($leher['jvp'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Kelenjar Getah Bening</td><td class="value-col" colspan="3">: {{ $leher['kelenjar_getah_bening'] ?? '-' }}</td>
+                    <td class="label-col">Tiroid</td><td class="value-col">: {{ ($leher['tiroid'] ?? '') === 'Lainnya' ? ($leher['tiroid_lainnya'] ?? '-') : ($leher['tiroid'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">KGB</td><td class="value-col-last">: {{ ($leher['kelenjar_getah_bening'] ?? '') === 'Lainnya' ? ($leher['kelenjar_getah_bening_lainnya'] ?? '-') : ($leher['kelenjar_getah_bening'] ?? '-') }}</td>
                 </tr>
             </table>
         </div>
@@ -151,20 +176,26 @@
             <div class="sub-title">B. Area Dada, Paru & Abdomen</div>
             <table class="grid-table">
                 <tr>
-                    <td class="label-col">Bunyi Jantung I</td><td class="value-col">: {{ $dada['bunyi_jantung_1'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Bunyi Jantung II</td><td class="value-col-last">: {{ $dada['bunyi_jantung_2'] ?? '-' }}</td>
+                    <td class="label-col">Bunyi Jantung I</td>
+                    <td class="value-col">: {{ ($dada['bunyi_jantung_1_a'] ?? '') === 'Lainnya' ? ($dada['bunyi_jantung_1_a_lainnya'] ?? '-') : ($dada['bunyi_jantung_1_a'] ?? '-') }}, 
+                        {{ ($dada['bunyi_jantung_1_b'] ?? '') === 'Lainnya' ? ($dada['bunyi_jantung_1_b_lainnya'] ?? '-') : ($dada['bunyi_jantung_1_b'] ?? '-') }}
+                    </td>
+                    <td class="label-col" style="padding-left:10px;">Bunyi Jantung II</td>
+                    <td class="value-col-last">: {{ ($dada['bunyi_jantung_2_a'] ?? '') === 'Lainnya' ? ($dada['bunyi_jantung_2_a_lainnya'] ?? '-') : ($dada['bunyi_jantung_2_a'] ?? '-') }}, 
+                        {{ ($dada['bunyi_jantung_2_b'] ?? '') === 'Lainnya' ? ($dada['bunyi_jantung_2_b_lainnya'] ?? '-') : ($dada['bunyi_jantung_2_b'] ?? '-') }}
+                    </td>
                 </tr>
                 <tr>
-                    <td class="label-col">Bunyi Nafas Dasar</td><td class="value-col">: {{ $paru['bunyi_nafas'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Bunyi Tambahan</td><td class="value-col-last">: {{ $paru['bunyi_nafas_tambahan'] ?? '-' }}</td>
+                    <td class="label-col">Bunyi Nafas Dasar</td><td class="value-col">: {{ ($paru['bunyi_nafas'] ?? '') === 'Lainnya' ? ($paru['bunyi_nafas_lainnya'] ?? '-') : ($paru['bunyi_nafas'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Bunyi Tambahan</td><td class="value-col-last">: {{ ($paru['bunyi_nafas_tambahan'] ?? '') === 'Lainnya' ? ($paru['bunyi_nafas_tambahan_lainnya'] ?? '-') : ($paru['bunyi_nafas_tambahan'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Peristaltik</td><td class="value-col">: {{ $abdomen['peristaltik'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Nyeri Tekan</td><td class="value-col-last">: {{ $abdomen['nyeri_tekan'] ?? '-' }}</td>
+                    <td class="label-col">Peristaltik</td><td class="value-col">: {{ ($abdomen['peristaltik'] ?? '') === 'Lainnya' ? ($abdomen['peristaltik_lainnya'] ?? '-') : ($abdomen['peristaltik'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Nyeri Tekan</td><td class="value-col-last">: {{ ($abdomen['nyeri_tekan'] ?? '') === 'Lainnya' ? ($abdomen['nyeri_tekan_lainnya'] ?? '-') : ($abdomen['nyeri_tekan'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Hati</td><td class="value-col">: {{ $abdomen['hati'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Limpa / Massa</td><td class="value-col-last">: {{ $abdomen['limpa'] ?? '-' }} / {{ $abdomen['massa'] ?? '-' }}</td>
+                    <td class="label-col">Hati</td><td class="value-col">: {{ ($abdomen['hati'] ?? '') === 'Lainnya' ? ($abdomen['hati_lainnya'] ?? '-') : ($abdomen['hati'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Limpa / Massa</td><td class="value-col-last">: {{ ($abdomen['limpa'] ?? '') === 'Lainnya' ? ($abdomen['limpa_lainnya'] ?? '-') : ($abdomen['limpa'] ?? '-') }} / {{ ($abdomen['massa'] ?? '') === 'Lainnya' ? ($abdomen['massa_lainnya'] ?? '-') : ($abdomen['massa'] ?? '-') }}</td>
                 </tr>
             </table>
         </div>
@@ -173,40 +204,45 @@
             <div class="sub-title">C. Ekstremitas & Refleks</div>
             <table class="grid-table">
                 <tr>
-                    <td class="label-col">Kondisi Ekstremitas</td><td class="value-col" colspan="3">: {{ $eks['ekstremitas'] ?? '-' }}</td>
+                    <td class="label-col">Kondisi Ekstremitas</td><td class="value-col" colspan="3">: {{ ($eks['ekstremitas'] ?? '') === 'Lainnya' ? ($eks['ekstremitas_lainnya'] ?? '-') : ($eks['ekstremitas'] ?? '-') }}</td>
                 </tr>
                 <tr>
-                    <td class="label-col">Refleks Fisiologis (Ka/Ki)</td><td class="value-col">: {{ $eks['refleks_fisiologis_kanan'] ?? '-' }} / {{ $eks['refleks_fisiologis_kiri'] ?? '-' }}</td>
-                    <td class="label-col" style="padding-left:10px;">Refleks Patologis (Ka/Ki)</td><td class="value-col-last">: {{ $eks['refleks_patologis_kanan'] ?? '-' }} / {{ $eks['refleks_patologis_kiri'] ?? '-' }}</td>
+                    <td class="label-col">Refleks Fis (Ka/Ki)</td><td class="value-col">: {{ ($eks['refleks_fisiologis_kanan'] ?? '') === 'Lainnya' ? ($eks['refleks_fisiologis_kanan_lainnya'] ?? '-') : ($eks['refleks_fisiologis_kanan'] ?? '-') }} / {{ ($eks['refleks_fisiologis_kiri'] ?? '') === 'Lainnya' ? ($eks['refleks_fisiologis_kiri_lainnya'] ?? '-') : ($eks['refleks_fisiologis_kiri'] ?? '-') }}</td>
+                    <td class="label-col" style="padding-left:10px;">Refleks Pat (Ka/Ki)</td><td class="value-col-last">: {{ ($eks['refleks_patologis_kanan'] ?? '') === 'Lainnya' ? ($eks['refleks_patologis_kanan_lainnya'] ?? '-') : ($eks['refleks_patologis_kanan'] ?? '-') }} / {{ ($eks['refleks_patologis_kiri'] ?? '') === 'Lainnya' ? ($eks['refleks_patologis_kiri_lainnya'] ?? '-') : ($eks['refleks_patologis_kiri'] ?? '-') }}</td>
                 </tr>
             </table>
         </div>
 
-        <!-- 3. PAJANAN -->
         <div class="page-break-avoid">
-            <div class="section-title">3. RIWAYAT PAJANAN PEKERJAAN (HAZARD)</div>
+            <div class="section-title">4. RIWAYAT PAJANAN PEKERJAAN (HAZARD)</div>
             <table class="pajanan-container">
                 <tr>
                     <td style="padding-right: 10px;">
-                        <div class="sub-title" style="margin-top: 0;">Bahaya Fisik & Kimia</div>
                         <table class="pajanan-table">
+                            <tr><td colspan="2" class="pajanan-category-header">A. BAHAYA FISIK</td></tr>
                             @foreach ($pajanan['fisik'] ?? [] as $key => $val)
                                 <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td><td class="item-value">{{ $val }}</td></tr>
                             @endforeach
+                            
+                            <tr><td colspan="2" class="pajanan-category-header" style="border-top: 15px solid white;">B. BAHAYA KIMIA</td></tr>
                             @foreach ($pajanan['kimia'] ?? [] as $key => $val)
-                                <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }} (Kimia)</td><td class="item-value">{{ $val }}</td></tr>
+                                <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td><td class="item-value">{{ $val }}</td></tr>
                             @endforeach
                         </table>
                     </td>
                     <td style="padding-left: 10px;">
-                        <div class="sub-title" style="margin-top: 0;">Biologi, Psikologi & Ergonomis</div>
                         <table class="pajanan-table">
+                            <tr><td colspan="2" class="pajanan-category-header">C. BAHAYA BIOLOGI</td></tr>
                             @foreach ($pajanan['biologi'] ?? [] as $key => $val)
                                 <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td><td class="item-value">{{ $val }}</td></tr>
                             @endforeach
+                            
+                            <tr><td colspan="2" class="pajanan-category-header" style="border-top: 15px solid white;">D. BAHAYA PSIKOLOGI</td></tr>
                             @foreach ($pajanan['psikologi'] ?? [] as $key => $val)
                                 <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td><td class="item-value">{{ $val }}</td></tr>
                             @endforeach
+                            
+                            <tr><td colspan="2" class="pajanan-category-header" style="border-top: 15px solid white;">E. BAHAYA ERGONOMIS</td></tr>
                             @foreach ($pajanan['ergonomis'] ?? [] as $key => $val)
                                 <tr><td class="item-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td><td class="item-value">{{ $val }}</td></tr>
                             @endforeach
@@ -216,9 +252,8 @@
             </table>
         </div>
 
-        <!-- 4. KESIMPULAN -->
         <div class="page-break-avoid">
-            <div class="section-title">4. KESIMPULAN & SARAN</div>
+            <div class="section-title">5. KESIMPULAN & SARAN</div>
             <div class="result-box">
                 <strong>Kesimpulan Diagnosa:</strong><br>
                 {{ $fisikResult->kesimpulan ?? 'Belum ada kesimpulan medis yang dicatat.' }}

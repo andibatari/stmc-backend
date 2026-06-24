@@ -9,11 +9,8 @@ use App\Models\PesertaMcu;
 use App\Models\Dokter;
 use App\Models\FisikResult;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
-
 
 class PoliFisikForm extends Component
 {
@@ -35,6 +32,17 @@ class PoliFisikForm extends Component
 
     protected $rules = [
         'dokterId' => 'required|exists:dokters,id',
+        
+        // Validasi Anamnesa Baru
+        'dataFisik.anamnesa.keluhan_utama' => 'nullable|string',
+        'dataFisik.anamnesa.riwayat_kesehatan' => 'nullable|string',
+        'dataFisik.anamnesa.riwayat_kesehatan_lainnya' => 'nullable|string',
+        'dataFisik.anamnesa.riwayat_penyakit_keluarga' => 'nullable|string',
+        'dataFisik.anamnesa.riwayat_penyakit_keluarga_lainnya' => 'nullable|string',
+        'dataFisik.anamnesa.merokok' => 'nullable|string',
+        'dataFisik.anamnesa.merokok_jumlah' => 'nullable|string',
+        'dataFisik.anamnesa.olahraga' => 'nullable|string',
+
         'dataFisik.tanda_vital.tinggi_badan' => 'required|numeric|min:10',
         'dataFisik.tanda_vital.berat_badan' => 'required|numeric|min:5',
         'dataFisik.tanda_vital.tekanan_darah_sistol' => 'required|integer|min:50|max:300',
@@ -52,16 +60,21 @@ class PoliFisikForm extends Component
         'dataFisik.leher.jvp' => 'required|string', 'dataFisik.leher.tiroid' => 'required|string',
         'dataFisik.leher.kelenjar_getah_bening' => 'required|string',
           
-        'dataFisik.dada.bunyi_jantung_1' => 'required|string', 'dataFisik.dada.bunyi_jantung_2' => 'required|string',
+        'dataFisik.dada.bunyi_jantung_1_a' => 'required|string', 'dataFisik.dada.bunyi_jantung_1_b' => 'required|string',
+        'dataFisik.dada.bunyi_jantung_2_a' => 'required|string', 'dataFisik.dada.bunyi_jantung_2_b' => 'required|string',
         'dataFisik.paru.bunyi_nafas' => 'required|string', 'dataFisik.paru.bunyi_nafas_tambahan' => 'required|string',
 
         'dataFisik.abdomen.peristaltik' => 'required|string', 'dataFisik.abdomen.nyeri_tekan' => 'required|string',
         'dataFisik.abdomen.massa' => 'required|string', 'dataFisik.abdomen.hati' => 'required|string',
         'dataFisik.abdomen.limpa' => 'required|string',
         'dataFisik.ekstremitas.ekstremitas' => 'required|string',
-        'dataFisik.ekstremitas.refleks_fisiologis_kanan' => 'required|string', 'dataFisik.ekstremitas.refleks_fisiologis_kiri' => 'required|string',
+        'dataFisik.ekstremitas.refleks_fisiologis_kanan' => 'required|string',
+        'dataFisik.ekstremitas.refleks_fisiologis_kanan_lainnya' => 'nullable|string', 
+        'dataFisik.ekstremitas.refleks_fisiologis_kiri' => 'required|string',
+        'dataFisik.ekstremitas.refleks_fisiologis_kiri_lainnya' => 'nullable|string',
         'dataFisik.ekstremitas.refleks_patologis_kanan' => 'required|string', 'dataFisik.ekstremitas.refleks_patologis_kiri' => 'required|string',
 
+        // Pajanan Rules... (Sama seperti sebelumnya)
         'dataFisik.pajanan.fisik.kebisingan' => 'required|string', 'dataFisik.pajanan.fisik.suhu_panas' => 'required|string',
         'dataFisik.pajanan.fisik.suhu_dingin' => 'required|string', 'dataFisik.pajanan.fisik.radiasi_non_pengion' => 'required|string',
         'dataFisik.pajanan.fisik.radiasi_pengion' => 'required|string', 'dataFisik.pajanan.fisik.getaran_lokal' => 'required|string',
@@ -170,28 +183,39 @@ class PoliFisikForm extends Component
         $bb = $this->patient->berat_badan ?? 60;
 
         $data = [
+            'anamnesa' => [
+                'keluhan_utama' => '',
+                'riwayat_kesehatan' => 'Tidak ada',
+                'riwayat_kesehatan_lainnya' => '',
+                'riwayat_penyakit_keluarga' => 'Tidak ada',
+                'riwayat_penyakit_keluarga_lainnya' => '',
+                'merokok' => 'Tidak',
+                'merokok_jumlah' => '',
+                'olahraga' => '',
+            ],
             'tanda_vital' => [
                 'tinggi_badan' => $tb, 'berat_badan' => $bb, 'tekanan_darah_sistol' => 120, 'tekanan_darah_diastol' => 80,
                 'nadi' => 80, 'pernafasan' => 18, 'suhu' => 36.5, 'spo2' => 97,
             ],
             'kepala' => [
                 'anemi' => 'Tidak', 'ikterus' => 'Tidak', 'dyspnoe' => 'Tidak', 'cyanosis' => 'Tidak',
-                'refleks_pupil' => $this->defaultOption, 'tonsil_kanan' => 'T1', 'tonsil_kiri' => 'T1',
+                'refleks_pupil' => 'RCL +/-', 'tonsil_kanan' => 'T1', 'tonsil_kiri' => 'T1',
                 'serumen' => 'Tidak Ada', 'membran_timpani' => 'Normal',
             ],
             'leher' => [
                 'jvp' => $this->defaultOption, 'tiroid' => $this->defaultOption, 'kelenjar_getah_bening' => $this->defaultOption,
             ],        
-            'dada' => ['bunyi_jantung_1' => 'Murni', 'bunyi_jantung_2' => 'Reguler'],
+            'dada' => ['bunyi_jantung_1_a' => 'Murni', 'bunyi_jantung_1_b' => 'Reguler', 'bunyi_jantung_2_a' => 'Murni', 'bunyi_jantung_2_b' => 'Reguler'],
             'paru' => ['bunyi_nafas' => 'Vesikular', 'bunyi_nafas_tambahan' => 'Tidak ada'],
             'abdomen' => [
                 'peristaltik' => $this->defaultOption, 'nyeri_tekan' => 'Tidak Ada', 'massa' => 'Tidak Ada',
                 'hati' => $this->defaultOption, 'limpa' => $this->defaultOption,
             ],
             'ekstremitas' => [
-                'ekstremitas' => 'Dalam Batas Normal', 'refleks_fisiologis_kanan' => $this->defaultRefleks,
-                'refleks_fisiologis_kiri' => $this->defaultRefleks, 'refleks_patologis_kanan' => 'Tidak Ada',
-                'refleks_patologis_kiri' => 'Tidak Ada',
+                'ekstremitas' => 'Dalam Batas Normal', 
+                'refleks_fisiologis_kanan' => $this->defaultRefleks, 'refleks_fisiologis_kanan_lainnya' => '',
+                'refleks_fisiologis_kiri' => $this->defaultRefleks, 'refleks_fisiologis_kiri_lainnya' => '',
+                'refleks_patologis_kanan' => 'Tidak Ada', 'refleks_patologis_kiri' => 'Tidak Ada',
             ],
             'pajanan' => [
                 'fisik' => [
@@ -256,7 +280,6 @@ class PoliFisikForm extends Component
             $patientIdentifier = $this->patient->nama_pasien ?? $this->patient->nama_karyawan ?? 'N/A';
             $safeIdentifier = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $patientIdentifier);
             
-            // PERBAIKAN: Menghilangkan spasi pada nama file menggunakan underscore (_)
             $fileName = 'Hasil_Pemeriksaan_Poli_Fisik_' . $safeIdentifier . '_Jadwal_' . $this->poliData->id . '_' . time() . '.pdf';
             $folderPath = 'pdf_reports';
             $storagePath = $folderPath . '/' . $fileName; 
@@ -271,10 +294,9 @@ class PoliFisikForm extends Component
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-fisik-report', $reportData);
 
-            // PERBAIKAN: Pengecekan ketat apakah proses upload ke public benar-benar berhasil
             $uploadSuccess = Storage::disk('public')->put($storagePath, $pdf->output());
             if (!$uploadSuccess) {
-                throw new \Exception("Sistem Gagal Mengunggah PDF ke Google Cloud Storage. Pastikan file JSON kredensial valid dan koneksi internet stabil.");
+                throw new \Exception("Sistem Gagal Mengunggah PDF ke public. Pastikan konfigurasi file system valid.");
             }
 
             $this->fisikResult->file_path = $storagePath; 
