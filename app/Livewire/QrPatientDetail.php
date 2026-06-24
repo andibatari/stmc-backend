@@ -129,6 +129,29 @@ class QrPatientDetail extends Component
         if ($status) $this->updatePoliStatus($poliId, $status);
     }
 
+    // 🌟 FUNGSI BARU UNTUK MENGIRIM SINYAL SILUMAN
+    private function sendSilentRefreshSignal()
+    {
+        $fcmToken = null;
+        if ($this->jadwal->karyawan_id) {
+            $fcmToken = \App\Models\EmployeeLogin::where('karyawan_id', $this->jadwal->karyawan_id)->value('fcm_token');
+        } elseif ($this->jadwal->peserta_mcus_id) {
+            $fcmToken = \App\Models\PesertaMcuLogin::where('peserta_mcu_id', $this->jadwal->peserta_mcus_id)->value('fcm_token');
+        }
+
+        if ($fcmToken) {
+            // Tembak FCM dengan tipe 'silent_update' agar HP tidak berbunyi, tapi layarnya merefresh
+            \App\Services\FCMService::sendPushNotification(
+                $fcmToken, 
+                "Update Siluman", 
+                "Refresh Layar", 
+                '', 
+                null, 
+                'silent_update'
+            );
+        }
+    }
+
     public function updatePoliStatus($poliId, $status)
     {
         $this->jadwal->refresh();
@@ -138,6 +161,9 @@ class QrPatientDetail extends Component
             $jadwalPoli->save();
             $this->jadwal->load('jadwalPoli.poli');
             $this->dispatch('status-updated', ['message' => 'Status poli berhasil diperbarui.']);
+            
+            // 🌟 PANGGIL FUNGSI SILUMAN DI SINI
+            $this->sendSilentRefreshSignal();
         }
     }
 
@@ -169,6 +195,10 @@ class QrPatientDetail extends Component
                 $this->uploadedFileNames[$poliId] = $fileName;
                 $this->pdfFiles[$poliId] = null;
                 $this->dispatch('status-updated', ['message' => 'File berhasil diunggah ke Cloud Storage!']);
+                
+                // 🌟 PANGGIL FUNGSI SILUMAN DI SINI
+                $this->sendSilentRefreshSignal();
+                
             } catch (\Throwable $e) {
                 Log::error("S3 Upload Error: " . $e->getMessage());
                 $this->dispatch('error', ['message' => 'Gagal mengunggah ke Cloud: ' . $e->getMessage()]);

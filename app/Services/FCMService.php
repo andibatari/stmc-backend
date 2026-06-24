@@ -24,8 +24,7 @@ class FCMService
 
             $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v6' : 'channel_pengumuman_v1';
 
-            // 🌟 1. PAYLOAD DASAR (100% PURE DATA)
-            // Tidak ada kata 'notification' sama sekali di sini. Murni data untuk Flutter.
+            // Base Payload (Data Only)
             $messagePayload = [
                 'token' => $fcmToken,
                 'data' => [
@@ -37,14 +36,13 @@ class FCMService
                     'body' => $body,
                 ],
                 'android' => [
-                    'priority' => 'high', // Cukup priority high agar Flutter terbangun
+                    'priority' => 'high',
                 ],
             ];
 
-            // 🌟 2. LOGIKA CERDAS
-            // JIKA BUKAN panggilan poli (berarti pengumuman), baru kita tambahkan blok 'notification'
-            // agar OS Android yang mengambil alih untuk memunculkan spanduk dan suara standar.
-            if ($tipe !== 'panggilan_poli') {
+            // 🌟 LOGIKA CERDAS:
+            // Jangan munculkan spanduk (notification block) jika tipenya adalah 'panggilan_poli' ATAU 'silent_update'
+            if ($tipe !== 'panggilan_poli' && $tipe !== 'silent_update') {
                 $messagePayload['notification'] = [
                     'title' => $title,
                     'body' => $body,
