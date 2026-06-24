@@ -112,7 +112,8 @@
         <!-- INTRA ORAL -->
         <div class="section-title">2. PEMERIKSAAN INTRA ORAL</div>
         <table class="data-table">
-            @foreach (['oklusi', 'torus_palatinus', 'torus_mandibularis', 'palatum', 'diastema', 'gigi_anomali', 'ginggiva', 'karang_gigi', 'lain_lain'] as $key)
+            {{-- 🌟 PERBAIKAN: Hanya ubah daftar kata di dalam kurung siku ini sesuai form baru --}}
+            @foreach (['mukosa_pipi', 'palatum', 'mukosa_mulut', 'lidah', 'ginggiva_ra', 'ginggiva_rb', 'karang_gigi', 'pocket'] as $key)
             <tr>
                 <td class="col-label">{{ ucwords(str_replace('_', ' ', $key)) }}</td>
                 <td class="col-value">: {{ $intraOral[$key] ?? 'N/A' }}</td>

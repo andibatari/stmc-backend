@@ -29,18 +29,18 @@ class PoliGigiForm extends Component
     public $kesimpulan; 
     public $keterangan; 
     
+    // 🌟 PERBAIKAN: Menyesuaikan aturan (rules) dengan struktur form STMC yang asli
     protected $rules = [
         'dataForm.ekstraOral.kelenjar_submandibular' => 'nullable',
         'dataForm.ekstraOral.kelenjar_leher' => 'nullable',
-        'dataForm.intraOral.oklusi' => 'required',
-        'dataForm.intraOral.torus_palatinus' => 'required',
-        'dataForm.intraOral.torus_mandibularis' => 'required',
+        'dataForm.intraOral.mukosa_pipi' => 'required',
         'dataForm.intraOral.palatum' => 'required',
-        'dataForm.intraOral.diastema' => 'required',
-        'dataForm.intraOral.gigi_anomali' => 'required',
-        'dataForm.intraOral.ginggiva' => 'required',
-        'dataForm.intraOral.karang_gigi' => 'required',
-        'dataForm.intraOral.lain_lain' => 'nullable',
+        'dataForm.intraOral.mukosa_mulut' => 'required',
+        'dataForm.intraOral.lidah' => 'required',
+        'dataForm.intraOral.ginggiva_ra' => 'required',
+        'dataForm.intraOral.ginggiva_rb' => 'required',
+        'dataForm.intraOral.karang_gigi' => 'nullable', // Boleh string kosong
+        'dataForm.intraOral.pocket' => 'required',
         'keterangan' => 'nullable|string',
         'kesimpulan' => 'nullable|string',
         'gigiKlinis' => 'nullable|array',
@@ -115,12 +115,21 @@ class PoliGigiForm extends Component
             $this->keterangan = $this->poliGigiResult->keterangan;
             $this->dokterId = $this->poliGigiResult->dokter_id; 
         } else {
+            // 🌟 PERBAIKAN: Default form value sesuai standar form gigi STMC
             $this->dataForm = [
-                'ekstraOral' => ['kelenjar_submandibular' => 'Tak ada', 'kelenjar_leher' => 'Tak ada'],
+                'ekstraOral' => [
+                    'kelenjar_submandibular' => 'NORMAL', 
+                    'kelenjar_leher' => 'NORMAL'
+                ],
                 'intraOral' => [
-                    'oklusi' => 'Normal', 'torus_palatinus' => 'Tidak ada', 'torus_mandibularis' => 'Tidak ada', 
-                    'palatum' => 'Dalam/Sedang/Rendah', 'diastema' => 'Tidak Ada', 'gigi_anomali' => 'Tidak Ada', 
-                    'ginggiva' => 'Normal', 'karang_gigi' => 'Tak ada', 'lain_lain' => null
+                    'mukosa_pipi' => 'NORMAL', 
+                    'palatum' => 'SEDANG', 
+                    'mukosa_mulut' => 'NORMAL', 
+                    'lidah' => 'NORMAL', 
+                    'ginggiva_ra' => 'TIDAK ADA', 
+                    'ginggiva_rb' => 'TIDAK ADA', 
+                    'karang_gigi' => '', 
+                    'pocket' => 'TIDAK ADA'
                 ],
             ];
             $this->gigiKlinis = [];
@@ -185,7 +194,6 @@ class PoliGigiForm extends Component
         $safeIdentifier = str_replace(' ', '_', $safeIdentifier);
         $safeIdentifier = substr($safeIdentifier, 0, 50); 
 
-        // PERBAIKAN: Menghilangkan spasi pada nama file menggunakan underscore (_)
         $fileName = 'Hasil_Pemeriksaan_Poli_Gigi_' . $safeIdentifier . '_Jadwal_' . $this->poliGigiResult->jadwal_poli_id .'_'. time(). '.pdf';
         
         $folderPath = 'pdf_reports';
@@ -207,7 +215,6 @@ class PoliGigiForm extends Component
 
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdfs.poli-gigi-report', $data);
 
-            // PERBAIKAN: Pengecekan ketat apakah proses upload ke public benar-benar berhasil
             $uploadSuccess = Storage::disk('public')->put($storagePath, $pdf->output());
             if (!$uploadSuccess) {
                 throw new \Exception("Sistem Gagal Mengunggah PDF ke Google Cloud Storage. Pastikan file JSON kredensial valid dan koneksi internet stabil.");

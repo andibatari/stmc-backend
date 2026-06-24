@@ -43,11 +43,11 @@
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelenjar Submandibular</label>
-                    <input type="text" wire:model.defer="dataForm.ekstraOral.kelenjar_submandibular" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="Normal / Pembesaran...">
+                    <input type="text" wire:model.defer="dataForm.ekstraOral.kelenjar_submandibular" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="Contoh: NORMAL">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelenjar Leher</label>
-                    <input type="text" wire:model.defer="dataForm.ekstraOral.kelenjar_leher" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="Normal / Pembesaran...">
+                    <input type="text" wire:model.defer="dataForm.ekstraOral.kelenjar_leher" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="Contoh: NORMAL">
                 </div>
             </div>
         </div>
@@ -58,35 +58,79 @@
                 <h3 class="text-base font-bold text-slate-800">2. Pemeriksaan Intra Oral</h3>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    @php
-                        $intraOralOptions = [
-                            'oklusi' => ['Normal', 'Cross Bite', 'Deep Bite'],
-                            'torus_palatinus' => ['Tidak ada', 'Kecil', 'Sedang', 'Besar', 'Multiple'],
-                            'torus_mandibularis' => ['Tidak ada', 'Sisi Kiri', 'Sisi Kanan', 'Kedua Sisi'],
-                            'palatum' => ['Dalam/Sedang/Rendah', 'Tinggi', 'Normal'],
-                            'diastema' => ['Tidak Ada', 'Ada'],
-                            'gigi_anomali' => ['Tidak Ada', 'Ada'],
-                            'ginggiva' => ['Normal/Gingivitis', 'Radang'],
-                            'karang_gigi' => ['Tak ada', 'Ada'],
-                        ];
-                    @endphp
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    {{-- 🌟 PERBAIKAN: Form diubah agar sama persis dengan form Intra Oral di gambar PDF STMC --}}
                     
-                    @foreach ($intraOralOptions as $key => $options)
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ str_replace('_', ' ', $key) }}</label>
-                            <select wire:model.defer="dataForm.intraOral.{{ $key }}" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
-                                @foreach ($options as $option)
-                                    <option value="{{ $option }}">{{ $option }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    @endforeach
-                    
-                    <div class="col-span-2 md:col-span-3 lg:col-span-4">
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lain - Lain (Opsional)</label>
-                        <input type="text" wire:model.defer="dataForm.intraOral.lain_lain" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="Tambahkan catatan jika ada...">
+                    {{-- Baris 1 Kiri --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Mukosa Pipi</label>
+                        <select wire:model.defer="dataForm.intraOral.mukosa_pipi" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="NORMAL">NORMAL</option>
+                            <option value="TIDAK NORMAL">TIDAK NORMAL</option>
+                        </select>
                     </div>
+                    
+                    {{-- Baris 1 Kanan --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ginggiva RA</label>
+                        <select wire:model.defer="dataForm.intraOral.ginggiva_ra" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="TIDAK ADA">TIDAK ADA</option>
+                            <option value="ADA">ADA</option>
+                        </select>
+                    </div>
+
+                    {{-- Baris 2 Kiri --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Palatum</label>
+                        <select wire:model.defer="dataForm.intraOral.palatum" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="SEDANG">SEDANG</option>
+                            <option value="DALAM">DALAM</option>
+                            <option value="RENDAH">RENDAH</option>
+                        </select>
+                    </div>
+
+                    {{-- Baris 2 Kanan --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Ginggiva RB</label>
+                        <select wire:model.defer="dataForm.intraOral.ginggiva_rb" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="TIDAK ADA">TIDAK ADA</option>
+                            <option value="ADA">ADA</option>
+                        </select>
+                    </div>
+
+                    {{-- Baris 3 Kiri --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Mukosa Mulut</label>
+                        <select wire:model.defer="dataForm.intraOral.mukosa_mulut" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="NORMAL">NORMAL</option>
+                            <option value="TIDAK NORMAL">TIDAK NORMAL</option>
+                        </select>
+                    </div>
+
+                    {{-- Baris 3 Kanan --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Karang Gigi</label>
+                        <input type="text" wire:model.defer="dataForm.intraOral.karang_gigi" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors" placeholder="(Kosongkan jika tidak ada)">
+                    </div>
+
+                    {{-- Baris 4 Kiri --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lidah</label>
+                        <select wire:model.defer="dataForm.intraOral.lidah" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="NORMAL">NORMAL</option>
+                            <option value="KOTOR">KOTOR</option>
+                        </select>
+                    </div>
+
+                    {{-- Baris 4 Kanan --}}
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pocket</label>
+                        <select wire:model.defer="dataForm.intraOral.pocket" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm font-medium focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="TIDAK ADA">TIDAK ADA</option>
+                            <option value="ADA">ADA</option>
+                        </select>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -99,8 +143,6 @@
             </div>
             
             <div class="p-6 flex flex-col items-center">
-                
-                {{-- RENDER PETA GIGI (KEMBALI MENGGUNAKAN TAILWIND) --}}
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 w-full max-w-4xl overflow-x-auto">
                     <table class="w-full border-collapse min-w-[600px]">
                         <thead class="text-center font-bold text-slate-400">
@@ -209,7 +251,6 @@
                     </table>
                 </div>
 
-                {{-- Keterangan Simbol Legenda (Sama seperti PDF) --}}
                 <div class="flex flex-wrap justify-center gap-4 text-xs font-bold">
                     <div class="flex items-center bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
                         <span class="w-5 h-5 bg-slate-100 border border-slate-300 rounded mr-2"></span> <span class="text-slate-600">Sehat (Normal)</span>
@@ -231,19 +272,19 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-                    <h3 class="text-base font-bold text-slate-800">3. Keterangan Pemeriksaan</h3>
+                    <h3 class="text-base font-bold text-slate-800">3. Keterangan Hasil Pemeriksaan</h3>
                 </div>
                 <div class="p-6">
-                    <textarea wire:model.defer="keterangan" rows="3" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors placeholder-slate-300 resize-none" placeholder="Tuliskan keterangan detail hasil periksa..."></textarea>
+                    <textarea wire:model.defer="keterangan" rows="3" class="block w-full rounded-xl border-slate-200 bg-slate-50 text-sm focus:bg-white focus:border-blue-500 focus:ring-blue-500 transition-colors placeholder-slate-300 resize-none" placeholder="Contoh: 1 GIGI HILANG"></textarea>
                 </div>
             </div>
 
             <div class="bg-amber-50 rounded-2xl border border-amber-200 overflow-hidden shadow-sm">
                 <div class="px-6 py-4 border-b border-amber-200/50 bg-amber-100/50">
-                    <h3 class="text-base font-bold text-amber-900">4. Kesimpulan Akhir</h3>
+                    <h3 class="text-base font-bold text-amber-900">4. Kesimpulan</h3>
                 </div>
                 <div class="p-6">
-                    <input type="text" wire:model.defer="kesimpulan" class="block w-full rounded-xl border-amber-300 bg-white text-sm font-bold text-amber-900 focus:border-amber-500 focus:ring-amber-500 transition-colors placeholder-amber-200" placeholder="Contoh: OHIS Baik, Karies Aktif...">
+                    <input type="text" wire:model.defer="kesimpulan" class="block w-full rounded-xl border-amber-300 bg-white text-sm font-bold text-amber-900 focus:border-amber-500 focus:ring-amber-500 transition-colors placeholder-amber-200" placeholder="Contoh: OHIS BAIK">
                 </div>
             </div>
         </div>
@@ -251,7 +292,6 @@
         {{-- TOMBOL AKSI --}}
         <div class="flex flex-col sm:flex-row justify-end gap-4 pt-4 border-t border-slate-200">
             @if ($poliGigiResult && $poliGigiResult->file_path)
-                {{-- Menggunakan asset() untuk mengakses file di folder public/storage --}}
                 <a href="{{ asset('storage/' . $poliGigiResult->file_path) }}" target="_blank"
                     class="inline-flex items-center justify-center px-6 py-3 bg-white border-2 border-emerald-500 text-emerald-600 font-bold rounded-xl shadow-sm hover:bg-emerald-50 transition-all duration-200">
                     <i class="fas fa-file-pdf mr-2"></i> Laporan PDF
