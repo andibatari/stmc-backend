@@ -349,12 +349,23 @@ class AuthController extends Controller
                 }
             }
 
+            $provinsiId = null; // Default null jika tidak ada
+            if (!empty($request->provinsi)) {
+                // Cari data provinsi di tabel master berdasarkan namanya
+                $provinsiData = \App\Models\Provinsi::where('nama_provinsi', $request->provinsi)->first();
+                
+                // Jika ketemu, ambil ID-nya
+                if ($provinsiData) {
+                    $provinsiId = $provinsiData->id;
+                }
+            }
+
             $updateData = [
                 'no_hp' => $request->no_hp,
                 'alamat' => $request->alamat,
                 'tinggi_badan' => $request->tinggi_badan,
                 'berat_badan' => $request->berat_badan,
-                'provinsi' => $request->provinsi,
+                'provinsi_id' => $provinsiId,
                 'nama_kabupaten' => $request->kabupaten,
                 'nama_kecamatan' => $request->kecamatan,
             ];
