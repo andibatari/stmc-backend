@@ -354,6 +354,7 @@ class AuthController extends Controller
                 'alamat' => $request->alamat,
                 'tinggi_badan' => $request->tinggi_badan,
                 'berat_badan' => $request->berat_badan,
+                'provinsi' => $request->provinsi,
                 'nama_kabupaten' => $request->kabupaten,
                 'nama_kecamatan' => $request->kecamatan,
             ];
