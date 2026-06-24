@@ -22,10 +22,10 @@ class FCMService
             $json = json_decode(file_get_contents($credentialsPath), true);
             $projectId = $json['project_id'];
 
-            /// 🌟 Atur Channel ID berdasarkan tipe
             $channelId = ($tipe === 'panggilan_poli') ? 'channel_panggilan_poli_v6' : 'channel_pengumuman_v1';
 
-            // Base Payload (Data Only)
+            // 🌟 1. PAYLOAD DASAR (100% PURE DATA)
+            // Tidak ada kata 'notification' sama sekali di sini. Murni data untuk Flutter.
             $messagePayload = [
                 'token' => $fcmToken,
                 'data' => [
@@ -37,19 +37,21 @@ class FCMService
                     'body' => $body,
                 ],
                 'android' => [
-                    'priority' => 'high',
-                    'notification' => [
-                        'channel_id' => $channelId, // Android butuh ini untuk membedakan suara
-                        'sound' => ($tipe === 'panggilan_poli') ? 'ding_dong' : 'default', // 🌟 PENEGASAN SUARA
-                    ]
+                    'priority' => 'high', // Cukup priority high agar Flutter terbangun
                 ],
             ];
 
-            // Jika BUKAN panggilan poli, tambahkan blok 'notification' agar muncul spanduk di atas layar
+            // 🌟 2. LOGIKA CERDAS
+            // JIKA BUKAN panggilan poli (berarti pengumuman), baru kita tambahkan blok 'notification'
+            // agar OS Android yang mengambil alih untuk memunculkan spanduk dan suara standar.
             if ($tipe !== 'panggilan_poli') {
                 $messagePayload['notification'] = [
                     'title' => $title,
                     'body' => $body,
+                ];
+                $messagePayload['android']['notification'] = [
+                    'channel_id' => $channelId,
+                    'sound' => 'default',
                 ];
             }
 
