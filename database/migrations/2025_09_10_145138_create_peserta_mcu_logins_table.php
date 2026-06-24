@@ -13,11 +13,10 @@ return new class extends Migration
     {
         Schema::create('peserta_mcu_logins', function (Blueprint $table) {
             $table->id();
-            // Tambahkan kolom 'nik' untuk otentikasi
             $table->string('nik_pasien')->unique(); 
-            // Gunakan `peserta_mcu_id` sebagai foreign key ke tabel `peserta_mcus`
             $table->foreignId('peserta_mcu_id')->constrained('peserta_mcus')->onDelete('cascade');
             $table->string('password');
+            $table->string('fcm_token', 255)->nullable(); // 🌟 Kolom token pindah ke sini
             $table->timestamps();
         });
     }

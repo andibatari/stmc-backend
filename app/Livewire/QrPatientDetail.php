@@ -190,14 +190,12 @@ class QrPatientDetail extends Component
             $jadwalPoli->save();
             $namaPoli = $jadwalPoli->poli->nama_poli ?? 'Poli';
 
-            // 🌟 PERBAIKAN: Ambil token FCM langsung dari tabel Profil, bukan dari tabel Login
+            // 🌟 PERBAIKAN: Ambil token langsung dari tabel login yang baru (employee_logins / peserta_mcu_logins)
             $fcmToken = null;
             if ($this->jadwal->karyawan_id) {
-                // Tembak langsung ke model Karyawan
-                $fcmToken = \App\Models\Karyawan::where('id', $this->jadwal->karyawan_id)->value('fcm_token');
+                $fcmToken = \App\Models\EmployeeLogin::where('karyawan_id', $this->jadwal->karyawan_id)->value('fcm_token');
             } elseif ($this->jadwal->peserta_mcus_id) {
-                // Tembak langsung ke model PesertaMcu
-                $fcmToken = \App\Models\PesertaMcu::where('id', $this->jadwal->peserta_mcus_id)->value('fcm_token');
+                $fcmToken = \App\Models\PesertaMcuLogin::where('peserta_mcu_id', $this->jadwal->peserta_mcus_id)->value('fcm_token');
             }
 
             if ($fcmToken) {

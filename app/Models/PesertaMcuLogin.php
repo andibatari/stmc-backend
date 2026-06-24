@@ -3,13 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Sanctum\HasApiTokens; // Wajib ditambahkan
+use Laravel\Sanctum\HasApiTokens; 
 
 class PesertaMcuLogin extends Authenticatable
 {
-    use HasFactory, HasApiTokens; // Gunakan HasApiTokens untuk Sanctum
+    use HasFactory, HasApiTokens; 
 
     protected $table = 'peserta_mcu_logins';
 
@@ -17,15 +16,13 @@ class PesertaMcuLogin extends Authenticatable
         'peserta_mcu_id',
         'nik_pasien',
         'password',
+        'fcm_token', // 🌟 Diizinkan mass assignment
     ];
 
     protected $hidden = [
         'password',
     ];
 
-    /**
-     * Relasi ke model PesertaMcu.
-     */
     public function pasien()
     {
         return $this->belongsTo(PesertaMcu::class, 'peserta_mcu_id');

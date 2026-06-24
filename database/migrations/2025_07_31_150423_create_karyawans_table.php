@@ -24,7 +24,6 @@ return new class extends Migration
             $table->date('tanggal_lahir')->nullable();
             $table->integer('umur')->nullable();
             
-            // Kolom baru
             $table->decimal('tinggi_badan', 5, 2)->nullable();
             $table->decimal('berat_badan', 5, 2)->nullable();
             
@@ -39,7 +38,6 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
             $table->string('foto_profil')->nullable();
-            $table->string('fcm_token', 255)->nullable();
             
             $table->unsignedBigInteger('departemens_id')->nullable();
             $table->unsignedBigInteger('unit_kerjas_id')->nullable();

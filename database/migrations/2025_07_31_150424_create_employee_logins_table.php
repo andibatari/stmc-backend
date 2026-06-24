@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('karyawan_id')->unique();
             $table->string('no_sap', 50)->unique();
             $table->string('password');
+            $table->string('fcm_token', 255)->nullable(); // 🌟 Kolom token pindah ke sini
             $table->timestamps();
 
             $table->foreign('karyawan_id')->references('id')->on('karyawans')->onDelete('cascade');

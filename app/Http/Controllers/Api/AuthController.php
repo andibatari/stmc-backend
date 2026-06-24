@@ -45,18 +45,13 @@ class AuthController extends Controller
             if (!empty($data['fcm_token'])) {
                 $fcmToken = $data['fcm_token'];
 
-                // Hapus token ini dari Karyawan & Pasien Umum lain (Mencegah Notifikasi Ganda di 1 HP)
-                \App\Models\Karyawan::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
-                \App\Models\PesertaMcu::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
+                // Hapus token ini dari perangkat akun lain jika ada yang sama (Anti-Duplikat)
+                \App\Models\EmployeeLogin::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
+                \App\Models\PesertaMcuLogin::where('fcm_token', $fcmToken)->update(['fcm_token' => null]);
 
-                // Simpan token ke akun yang berhasil login saat ini
-                if ($loginUser instanceof EmployeeLogin && $loginUser->karyawan) {
-                    $loginUser->karyawan->fcm_token = $fcmToken;
-                    $loginUser->karyawan->save();
-                } elseif ($loginUser instanceof PesertaMcuLogin && $loginUser->pasien) {
-                    $loginUser->pasien->fcm_token = $fcmToken;
-                    $loginUser->pasien->save();
-                }
+                // Simpan token langsung ke model tabel login yang sedang aktif saat ini
+                $loginUser->fcm_token = $fcmToken;
+                $loginUser->save();
             }
             // ==========================================
 
@@ -89,12 +84,12 @@ class AuthController extends Controller
     {
         $request->validate(['fcm_token' => 'required|string']);
         $user = $request->user('sanctum');
-        Log::info("DEBUG Auth: Mencoba update FCM token untuk user: " . $user->id);
-        if ($user instanceof EmployeeLogin && $user->karyawan) {
-            $user->karyawan()->update(['fcm_token' => $request->fcm_token]);
-            return response()->json(['status' => 'success']);
-        } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
-            $user->pasien()->update(['fcm_token' => $request->fcm_token]);
+        
+        Log::info("DEBUG Auth: Mencoba update FCM token untuk user ID: " . $user->id);
+        
+        // 🌟 PERBAIKAN: Langsung simpan ke model user login saat ini tanpa lewat jembatan profil
+        if ($user instanceof EmployeeLogin || $user instanceof PesertaMcuLogin) {
+            $user->update(['fcm_token' => $request->fcm_token]);
             return response()->json(['status' => 'success']);
         }
         
@@ -111,20 +106,16 @@ class AuthController extends Controller
 
         if ($user) {
             try {
-                // 🌟 1. Hapus FCM Token dengan metode query yang lebih pasti
-                if ($user instanceof EmployeeLogin && $user->karyawan) {
-                    // Gunakan update() langsung pada relasi agar lebih efisien & pasti tersimpan
-                    $user->karyawan()->update(['fcm_token' => null]);
-                    Log::info("Logout: Token Karyawan ID {$user->karyawan->id} telah dihapus.");
-                } elseif ($user instanceof PesertaMcuLogin && $user->pasien) {
-                    $user->pasien()->update(['fcm_token' => null]);
-                    Log::info("Logout: Token Pasien ID {$user->pasien->id} telah dihapus.");
+                // 🌟 PERBAIKAN: Langsung bersihkan kolom fcm_token pada tabel login miliknya
+                if ($user instanceof EmployeeLogin || $user instanceof PesertaMcuLogin) {
+                    $user->update(['fcm_token' => null]);
+                    Log::info("Logout: Token untuk Login ID {$user->id} telah dibersihkan.");
                 }
             } catch (\Exception $e) {
                 Log::error("Error saat menghapus FCM Token saat logout: " . $e->getMessage());
             }
 
-            // 🌟 2. Hapus session login (Sanctum Token)
+            // 🔑 Hapus session login (Sanctum Token)
             if ($user->currentAccessToken()) {
                 $user->currentAccessToken()->delete();
             }

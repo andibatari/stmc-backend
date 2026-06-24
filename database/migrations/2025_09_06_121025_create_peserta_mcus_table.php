@@ -20,25 +20,25 @@ return new class extends Migration
             $table->date('tanggal_lahir')->nullable();
             $table->integer('umur')->nullable();
             
-            // Kolom baru
             $table->decimal('tinggi_badan', 5, 2)->nullable();
             $table->decimal('berat_badan', 5, 2)->nullable();
-
+            
             $table->string('golongan_darah')->nullable();
+            $table->string('agama')->nullable();
+            $table->string('status_pernikahan')->nullable();
+            $table->string('hubungan')->nullable();
+            $table->string('kebangsaan')->nullable();
             $table->string('pendidikan')->nullable();
             $table->string('pekerjaan')->nullable();
             $table->string('perusahaan_asal')->nullable();
-            $table->string('agama')->nullable();
             $table->string('alamat')->nullable();
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
             $table->string('foto_profil')->nullable();
-            $table->string('fcm_token', 255)->nullable();
 
-            // PERUBAHAN UTAMA: Provinsi tetap ID, Kabupaten/Kecamatan menjadi STRING
             $table->foreignId('provinsi_id')->nullable()->references('id')->on('provinsis')->onDelete('set null'); 
-            $table->string('nama_kabupaten', 255)->nullable(); // Menggunakan nama kolom baru: nama_kabupaten
-            $table->string('nama_kecamatan', 255)->nullable(); // Menggunakan nama kolom baru: nama_kecamatan
+            $table->string('nama_kabupaten', 255)->nullable(); 
+            $table->string('nama_kecamatan', 255)->nullable(); 
 
             $table->foreign('karyawan_id')->references('id')->on('karyawans')->onDelete('cascade');
             $table->timestamps();
