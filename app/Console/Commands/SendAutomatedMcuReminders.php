@@ -27,7 +27,7 @@ class SendAutomatedMcuReminders extends Command
             $targetTanggal = Carbon::tomorrow($timezone)->toDateString();
             $waktuTeks = "BESOK";
             $title = "⏰ Pengingat: Besok Jadwal MCU Anda!";
-        } elseif ($jamSekarang == 6) { 
+        } elseif ($jamSekarang == 10) { 
             $targetTanggal = Carbon::today($timezone)->toDateString();
             $waktuTeks = "PAGI INI";
             $title = "⏰ Hari Ini Jadwal MCU Anda!";
